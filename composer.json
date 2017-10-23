@@ -1,0 +1,12 @@
+{
+	"name": "afterlogic/aurora-module-sales",
+	"type": "aurora-module",
+	"require":{
+		"php":">=5.4.0",
+		"afterlogic/aurora-framework": "~0.6",
+		"afterlogic/aurora-module-sale-objects": "~0.1"
+	},
+	"extra": {
+		"installer-name": "Sales"
+	}
+}
