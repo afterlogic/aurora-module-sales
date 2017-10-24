@@ -111,4 +111,73 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		}
 		return $oProduct;
 	}
+
+
+	/**
+	 * @param array $aProductsId Products id
+	 * @param array $aFieldsList Fields List
+	 * @return array
+	 */
+	public function getProducts($aProductsId, $aFieldsList = [])
+	{
+		$aProducts = [];
+		try
+		{
+			if (is_array($aProductsId) && count($aProductsId) > 0)
+			{
+				$aResults = $this->oEavManager->getEntities(
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+					$aFieldsList,
+					0,
+					0,
+					[],
+					[],
+					\Aurora\System\Enums\SortOrder::ASC,
+					$aProductsId
+				);
+
+				foreach ($aResults as $oProduct)
+				{
+					$aProducts[$oProduct->EntityId] = $oProduct;
+				}
+			}
+			else
+			{
+				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+			}
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$this->setLastException($oException);
+		}
+		return $aProducts;
+	}
+
+	/**
+	 *
+	 * @param int $iProductCode Product code
+	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
+	 * @throws \Aurora\System\Exceptions\BaseException
+	 */
+	public function getProductById($iProductId)
+	{
+		$mProduct = false;
+		try
+		{
+			if (is_numeric($iProductId))
+			{
+				$mProduct = $this->oEavManager->getEntity((int) $iProductId);
+			}
+			else
+			{
+				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+			}
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$mProduct = false;
+			$this->setLastException($oException);
+		}
+		return $mProduct;
+	}
 }

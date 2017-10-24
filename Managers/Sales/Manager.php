@@ -58,6 +58,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	/**
 	 * @param \Aurora\Modules\SaleObjects\Classes\Sale $oSale
 	 * @return bool
+	 * @throws \Aurora\System\Exceptions\BaseException
 	 */
 	public function deleteSale(\Aurora\Modules\SaleObjects\Classes\Sale $oSale)
 	{
@@ -75,10 +76,11 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	}
 
 	/**
-	 *
+	 * @param int $iLimit Limit
+	 * @param int $iOffset Offset
 	 * @return array|bool
 	 */
-	public function getSales()
+	public function getSales($iLimit = 0, $iOffset = 0)
 	{
 		$mResult = false;
 		try
@@ -86,9 +88,10 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			$mResult = $this->oEavManager->getEntities(
 				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Sale',
 				array(),
-				0,
-				0,
-				array()
+				$iOffset,
+				$iLimit,
+				array(),
+				array($this->GetModule()->GetName() . '::Date')
 			);
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)
@@ -97,5 +100,26 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		}
 
 		return $mResult;
+	}
+
+	/**
+	 * @return int
+	 * @throws \Aurora\System\Exceptions\BaseException
+	 */
+	public function getSalesCount()
+	{
+		$iResult = 0;
+		try
+		{
+			$iResult = $this->oEavManager->getEntitiesCount(
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Sale'
+			);
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$this->setLastException($oException);
+		}
+
+		return $iResult;
 	}
 }

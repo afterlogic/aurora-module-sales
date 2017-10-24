@@ -65,6 +65,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	/**
 	 * @param \Aurora\Modules\SaleObjects\Classes\Customer $oCustomer
 	 * @return bool
+	 * @throws \Aurora\System\Exceptions\BaseException
 	 */
 	public function isExists(\Aurora\Modules\SaleObjects\Classes\Customer &$oCustomer)
 	{
@@ -96,6 +97,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	/**
 	 * @param string $sEmail Email
 	 * @return \Aurora\Modules\SaleObjects\Classes\Customer|bool
+	 * @throws \Aurora\System\Exceptions\BaseException
 	 */
 	public function getCustomerByEmail($sEmail)
 	{
@@ -118,6 +120,77 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 				{
 					$mCustomer = $aResults[0];
 				}
+			}
+			else
+			{
+				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+			}
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$mCustomer = false;
+			$this->setLastException($oException);
+		}
+		return $mCustomer;
+	}
+
+	/**
+	 * @param array $aCustomersId Customers id
+	 * @param array $aFieldsList Fields List
+	 * @return array
+	 */
+	public function getCustomers($aCustomersId, $aFieldsList = [])
+	{
+		$aCustomers = [];
+		try
+		{
+			if (is_array($aCustomersId) && count($aCustomersId) > 0)
+			{
+				$aResults = $this->oEavManager->getEntities(
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
+					$aFieldsList,
+					0,
+					0,
+					[],
+					[],
+					\Aurora\System\Enums\SortOrder::ASC,
+					$aCustomersId
+				);
+
+				if (is_array($aResults))
+				{
+					foreach ($aResults as $oCustomer)
+					{
+						$aCustomers[$oCustomer->EntityId] = $oCustomer;
+					}
+				}
+			}
+			else
+			{
+				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+			}
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$this->setLastException($oException);
+		}
+		return $aCustomers;
+	}
+
+	/**
+	 *
+	 * @param int $iCustomerId
+	 * @return \Aurora\Modules\SaleObjects\Classes\Customer|bool
+	 * @throws \Aurora\System\Exceptions\BaseException
+	 */
+	public function getCustomerById($iCustomerId)
+	{
+		$mCustomer = false;
+		try
+		{
+			if (is_numeric($iCustomerId))
+			{
+				$mCustomer = $this->oEavManager->getEntity((int) $iCustomerId);
 			}
 			else
 			{

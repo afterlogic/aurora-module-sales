@@ -41,7 +41,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'Payment' => array('string', ''),
 				'CustomerId' => array('int', 0),
 				'LicenseKey' => array('string', ''),
-				'ProductCode' => array('int', 0),
 				'RefNumber' => array('int', 0),
 				'ShareItProductId' => array('int', 0),
 				'NetTotal' => array('int', 0),
@@ -51,7 +50,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'RecurrentMaintenance' => array('bool', true),
 				'TwoMonthsEmailSent' => array('bool', false),
 				'ParentSaleId' => array('int', 0),
-				'PaymentSystem' => array('int', 0) //1 - ShareIt; 2 - PayPal - перенести в ENUMS
+				'PaymentSystem' => array('int', 0)
 			)
 		);
 
@@ -192,12 +191,34 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 *
 	 * @return array
 	 */
-	public function GetSales()
+	public function GetSales($Limit = 20, $Offset = 0)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
-		$aSales = $this->oApiSalesManager->getSales();
-		return $aSales;
-	}
+		$aCustomersId = [];
+		$aProductsId = [];
+		$aCustomers = [];
+		$aProducts = [];
+		$iSalesCount = $this->oApiSalesManager->getSalesCount();
+		$aSales = $this->oApiSalesManager->getSales($Limit, $Offset);
 
+		foreach ($aSales as $oSale)
+		{
+			$aCustomersId[] = $oSale->{$this->GetName() . '::CustomerId'};
+			$aProductsId[] = $oSale->{$this->GetName() . '::ProductId'};
+		}
+		$aCustomers = $this->oApiCustomersManager->getCustomers(array_unique($aCustomersId), [$this->GetName() . '::Email', $this->GetName() . '::RegName']);
+		$aProducts = $this->oApiProductsManager->getProducts(array_unique($aProductsId), [$this->GetName() . '::ProductCode', $this->GetName() . '::ProductName']);
+
+		foreach ($aSales as &$oSale)
+		{
+			$oSale->{$this->GetName() . '::CustomerEmail'} = $aCustomers[$oSale->{$this->GetName() . '::CustomerId'}]->{$this->GetName() . '::Email'};
+			$oSale->{$this->GetName() . '::CustomerRegName'} = $aCustomers[$oSale->{$this->GetName() . '::CustomerId'}]->{$this->GetName() . '::RegName'};
+			$oSale->{$this->GetName() . '::ProductName'} = $aProducts[$oSale->{$this->GetName() . '::ProductId'}]->{$this->GetName() . '::ProductName'};
+			$oSale->{$this->GetName() . '::ProductCode'} = $aProducts[$oSale->{$this->GetName() . '::ProductId'}]->{$this->GetName() . '::ProductCode'};
+		}
+		return [
+			'ItemsCount' => $iSalesCount,
+			'List' => $aSales
+		];
+	}
 }
