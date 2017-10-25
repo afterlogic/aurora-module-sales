@@ -218,7 +218,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		return [
 			'ItemsCount' => $iSalesCount,
-			'List' => $aSales
+			'List' => array_reverse($aSales)
 		];
 	}
 }

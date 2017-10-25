@@ -91,7 +91,8 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 				$iOffset,
 				$iLimit,
 				array(),
-				array($this->GetModule()->GetName() . '::Date')
+				array($this->GetModule()->GetName() . '::Date'),
+				\Aurora\System\Enums\SortOrder::DESC
 			);
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)
