@@ -191,15 +191,37 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 *
 	 * @return array
 	 */
-	public function GetSales($Limit = 20, $Offset = 0)
+	public function GetSales($Limit = 20, $Offset = 0, $Search = "")
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$aCustomersId = [];
 		$aProductsId = [];
 		$aCustomers = [];
 		$aProducts = [];
-		$iSalesCount = $this->oApiSalesManager->getSalesCount();
-		$aSales = $this->oApiSalesManager->getSales($Limit, $Offset);
+		$aSearchFilters = [];
+		if (!empty($Search))
+		{
+			$aSearchCustomers = $this->oApiCustomersManager->searchCustomers($Search, [$this->GetName() . '::Email']);
+			$aSearchProducts = $this->oApiProductsManager->searchProducts($Search, [$this->GetName() . '::ProductCode']);
+
+			$aSearchFilters = [
+				$this->GetName() . '::LicenseKey' => ['%'.$Search.'%', 'LIKE'],
+				$this->GetName() . '::Date' => ['%'.$Search.'%', 'LIKE']
+			];
+
+			if (is_array($aSearchProducts) && count($aSearchProducts) > 0)
+			{
+				$aSearchFilters[$this->GetName() . '::ProductId'] = [array_keys($aSearchProducts), 'IN'];
+			}
+			if (is_array($aSearchCustomers) && count($aSearchCustomers) > 0)
+			{
+				$aSearchFilters[$this->GetName() . '::CustomerId'] = [array_keys($aSearchCustomers), 'IN'];
+			}
+
+			$aSearchFilters = ['$OR' => $aSearchFilters];
+		}
+		$iSalesCount = $this->oApiSalesManager->getSalesCount($aSearchFilters);
+		$aSales = $this->oApiSalesManager->getSales($Limit, $Offset, $aSearchFilters);
 
 		foreach ($aSales as $oSale)
 		{

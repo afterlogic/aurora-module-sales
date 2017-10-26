@@ -155,7 +155,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 
 	/**
 	 *
-	 * @param int $iProductCode Product code
+	 * @param int $iProductId Product ID
 	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
 	 * @throws \Aurora\System\Exceptions\BaseException
 	 */
@@ -179,5 +179,46 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			$this->setLastException($oException);
 		}
 		return $mProduct;
+	}
+
+	/**
+	 * @param array $aProductsId Products id
+	 * @param array $aFieldsList Fields List
+	 * @return array
+	 */
+	public function searchProducts($sSearch, $aFieldsList = [])
+	{
+		$aProducts = [];
+		try
+		{
+			if (!empty($sSearch))
+			{
+				$aSearchFilters = [
+					$this->GetModule()->GetName() . '::ProductName' => ['%'.$sSearch.'%', 'LIKE']
+				];
+
+				$aResults = $this->oEavManager->getEntities(
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+					$aFieldsList,
+					0,
+					0,
+					$aSearchFilters
+				);
+
+				foreach ($aResults as $oProduct)
+				{
+					$aProducts[$oProduct->EntityId] = $oProduct;
+				}
+			}
+			else
+			{
+				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+			}
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$this->setLastException($oException);
+		}
+		return $aProducts;
 	}
 }

@@ -80,18 +80,18 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 * @param int $iOffset Offset
 	 * @return array|bool
 	 */
-	public function getSales($iLimit = 0, $iOffset = 0)
+	public function getSales($iLimit = 0, $iOffset = 0, $aSearchFilters = [])
 	{
 		$mResult = false;
 		try
 		{
 			$mResult = $this->oEavManager->getEntities(
 				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Sale',
-				array(),
+				[],
 				$iOffset,
 				$iLimit,
-				array(),
-				array($this->GetModule()->GetName() . '::Date'),
+				$aSearchFilters,
+				[$this->GetModule()->GetName() . '::Date'],
 				\Aurora\System\Enums\SortOrder::DESC
 			);
 		}
@@ -107,13 +107,14 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 * @return int
 	 * @throws \Aurora\System\Exceptions\BaseException
 	 */
-	public function getSalesCount()
+	public function getSalesCount($aSearchFilters = [])
 	{
 		$iResult = 0;
 		try
 		{
 			$iResult = $this->oEavManager->getEntitiesCount(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Sale'
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Sale',
+				$aSearchFilters
 			);
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)
@@ -122,5 +123,33 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		}
 
 		return $iResult;
+	}
+
+	/**
+	 *
+	 * @param int $iSaleId Sale ID
+	 * @return \Aurora\Modules\SaleObjects\Classes\Sale|bool
+	 * @throws \Aurora\System\Exceptions\BaseException
+	 */
+	public function getSaleById($iSaleId)
+	{
+		$mSale = false;
+		try
+		{
+			if (is_numeric($iSaleId))
+			{
+				$mSale = $this->oEavManager->getEntity((int) $iSaleId);
+			}
+			else
+			{
+				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+			}
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$mSale = false;
+			$this->setLastException($oException);
+		}
+		return $mSale;
 	}
 }
