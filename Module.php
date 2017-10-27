@@ -233,10 +233,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		foreach ($aSales as &$oSale)
 		{
-			$oSale->{$this->GetName() . '::CustomerEmail'} = $aCustomers[$oSale->{$this->GetName() . '::CustomerId'}]->{$this->GetName() . '::Email'};
-			$oSale->{$this->GetName() . '::CustomerRegName'} = $aCustomers[$oSale->{$this->GetName() . '::CustomerId'}]->{$this->GetName() . '::RegName'};
-			$oSale->{$this->GetName() . '::ProductName'} = $aProducts[$oSale->{$this->GetName() . '::ProductId'}]->{$this->GetName() . '::ProductName'};
-			$oSale->{$this->GetName() . '::ProductCode'} = $aProducts[$oSale->{$this->GetName() . '::ProductId'}]->{$this->GetName() . '::ProductCode'};
+			$oSale->{$this->GetName() . '::CustomerEmail'} = isset($aCustomers[$oSale->{$this->GetName() . '::CustomerId'}]) ? $aCustomers[$oSale->{$this->GetName() . '::CustomerId'}]->{$this->GetName() . '::Email'} : '';
+			$oSale->{$this->GetName() . '::CustomerRegName'} = isset($aCustomers[$oSale->{$this->GetName() . '::CustomerId'}]) ? $aCustomers[$oSale->{$this->GetName() . '::CustomerId'}]->{$this->GetName() . '::RegName'} : '';
+			$oSale->{$this->GetName() . '::ProductName'} = isset($aProducts[$oSale->{$this->GetName() . '::ProductId'}]) ? $aProducts[$oSale->{$this->GetName() . '::ProductId'}]->{$this->GetName() . '::ProductName'} : '';
+			$oSale->{$this->GetName() . '::ProductCode'} = isset($aProducts[$oSale->{$this->GetName() . '::ProductId'}]) ? $aProducts[$oSale->{$this->GetName() . '::ProductId'}]->{$this->GetName() . '::ProductCode'} : '';
 		}
 		return [
 			'ItemsCount' => $iSalesCount,

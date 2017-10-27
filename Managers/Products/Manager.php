@@ -130,10 +130,9 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 					$aFieldsList,
 					0,
 					0,
+					['EntityId' => [$aProductsId, 'IN']],
 					[],
-					[],
-					\Aurora\System\Enums\SortOrder::ASC,
-					$aProductsId
+					\Aurora\System\Enums\SortOrder::ASC
 				);
 
 				foreach ($aResults as $oProduct)

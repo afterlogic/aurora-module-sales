@@ -151,10 +151,9 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 					$aFieldsList,
 					0,
 					0,
+					['EntityId' => [$aCustomersId, 'IN']],
 					[],
-					[],
-					\Aurora\System\Enums\SortOrder::ASC,
-					$aCustomersId
+					\Aurora\System\Enums\SortOrder::ASC
 				);
 
 				if (is_array($aResults))
