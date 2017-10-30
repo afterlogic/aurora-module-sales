@@ -80,14 +80,14 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 * @param int $iOffset Offset
 	 * @return array|bool
 	 */
-	public function getSales($iLimit = 0, $iOffset = 0, $aSearchFilters = [])
+	public function getSales($iLimit = 0, $iOffset = 0, $aSearchFilters = [], $aViewAttributes = [])
 	{
 		$mResult = false;
 		try
 		{
 			$mResult = $this->oEavManager->getEntities(
 				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Sale',
-				[],
+				$aViewAttributes,
 				$iOffset,
 				$iLimit,
 				$aSearchFilters,

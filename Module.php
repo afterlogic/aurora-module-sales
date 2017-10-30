@@ -144,7 +144,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$oCustomer->{$this->GetName() . '::State'} = $State;
 				$oCustomer->{$this->GetName() . '::Phone'} = $Phone;
 				$oCustomer->{$this->GetName() . '::Fax'} = $Fax;
-				$oCustomer->{$this->GetName() . '::Phone'} = $Language;
+				$oCustomer->{$this->GetName() . '::Language'} = $Language;
 				$bCustomerResult = $this->oApiCustomersManager->CreateCustomer($oCustomer);
 				if ($bCustomerResult)
 				{
@@ -228,19 +228,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aCustomersId[] = $oSale->{$this->GetName() . '::CustomerId'};
 			$aProductsId[] = $oSale->{$this->GetName() . '::ProductId'};
 		}
-		$aCustomers = $this->oApiCustomersManager->getCustomers(array_unique($aCustomersId), [$this->GetName() . '::Email', $this->GetName() . '::RegName']);
-		$aProducts = $this->oApiProductsManager->getProducts(array_unique($aProductsId), [$this->GetName() . '::ProductCode', $this->GetName() . '::ProductName']);
+		$aCustomers = $this->oApiCustomersManager->getCustomers(array_unique($aCustomersId));
+		$aProducts = $this->oApiProductsManager->getProducts(array_unique($aProductsId));
 
-		foreach ($aSales as &$oSale)
-		{
-			$oSale->{$this->GetName() . '::CustomerEmail'} = isset($aCustomers[$oSale->{$this->GetName() . '::CustomerId'}]) ? $aCustomers[$oSale->{$this->GetName() . '::CustomerId'}]->{$this->GetName() . '::Email'} : '';
-			$oSale->{$this->GetName() . '::CustomerRegName'} = isset($aCustomers[$oSale->{$this->GetName() . '::CustomerId'}]) ? $aCustomers[$oSale->{$this->GetName() . '::CustomerId'}]->{$this->GetName() . '::RegName'} : '';
-			$oSale->{$this->GetName() . '::ProductName'} = isset($aProducts[$oSale->{$this->GetName() . '::ProductId'}]) ? $aProducts[$oSale->{$this->GetName() . '::ProductId'}]->{$this->GetName() . '::ProductName'} : '';
-			$oSale->{$this->GetName() . '::ProductCode'} = isset($aProducts[$oSale->{$this->GetName() . '::ProductId'}]) ? $aProducts[$oSale->{$this->GetName() . '::ProductId'}]->{$this->GetName() . '::ProductCode'} : '';
-		}
 		return [
 			'ItemsCount' => $iSalesCount,
-			'List' => array_reverse($aSales)
+			'Sales' => is_array($aSales) ? array_reverse($aSales) : [],
+			'Customers' => is_array($aCustomers) ? $aCustomers : [],
+			'Products' => is_array($aProducts) ? $aProducts : []
 		];
 	}
 }
