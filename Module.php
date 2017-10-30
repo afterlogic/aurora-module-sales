@@ -102,6 +102,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function CreateSale($Payment, $PaymentSystem, $MaintenanceExpirationDate, $NetTotal,
 		$Email, $RegName,
 		$ProductName, $ProductCode,
+		$TransactionId = '',
 		$Date = '',$LicenseKey ='', $RefNumber = 0, $ShareItProductId = 0, $ShareItPurchaseId = 0, $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
 		$Salutation = '', $Title = '', $FirstName = '', $LastName = '', $Company = '', $Street = '', $Zip = '', $City = '', $FullCity = '', $Country = '', $State = '', $Phone = '', $Fax = '', $Language = '')
 	{
@@ -172,6 +173,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oSale->{$this->GetName() . '::ParentSaleId'} = $ParentSaleId;
 			$oSale->{$this->GetName() . '::VatId'} = $VatId;
 			$oSale->{$this->GetName() . '::PaymentSystem'} = $PaymentSystem;
+			$oSale->{$this->GetName() . '::TransactionId'} = $TransactionId;
 			if (isset($Date))
 			{
 				$oSale->{$this->GetName() . '::Date'} = $Date;
