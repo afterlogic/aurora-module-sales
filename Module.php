@@ -36,7 +36,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'Aurora\Modules\SaleObjects\Classes\Sale',
 			array(
 				'ProductId' => array('int', 0),
-				'Date' => array('datetime', date('Y-m-d H:i:s')),
+				'Date' => array('datetime', date('Y-m-d H:i:s', 0)),
 				'VatId' => array('string', ''),
 				'Payment' => array('string', ''),
 				'CustomerId' => array('int', 0),
@@ -46,11 +46,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'NetTotal' => array('int', 0),
 				'ShareItPurchaseId' => array('int', 0),
 				'IsNotified' => array('bool', false),
-				'MaintenanceExpirationDate' => array('datetime', date('Y-m-d H:i:s')),
+				'MaintenanceExpirationDate' => array('datetime', date('Y-m-d H:i:s', 0)),
 				'RecurrentMaintenance' => array('bool', true),
 				'TwoMonthsEmailSent' => array('bool', false),
 				'ParentSaleId' => array('int', 0),
-				'PaymentSystem' => array('int', 0)
+				'PaymentSystem' => array('int', 0),
+				'NumberOfLicenses' => array('int', 0)
 			)
 		);
 
@@ -80,7 +81,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'Aurora\Modules\SaleObjects\Classes\Product',
 			array(
 				'ProductCode' => array('int', 0),
-				'ProductName' => array('string', '')
+				'ProductName' => array('string', ''),
+				'ShareItProductId' => array('int', 0),
+				'IsAutocreated' => array('bool', true),
 			)
 		);
 	}
@@ -99,22 +102,32 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * 
 	 * @return \Aurora\Modules\SaleObjects\Classes\Sale|boolean
 	 */
-	public function CreateSale($Payment, $PaymentSystem, $MaintenanceExpirationDate, $NetTotal,
+	public function CreateSale($Payment, $PaymentSystem, $NetTotal,
 		$Email, $RegName,
-		$ProductName, $ProductCode,
+		$ProductName, $ProductCode = null, $MaintenanceExpirationDate = null,
 		$TransactionId = '',
-		$Date = '',$LicenseKey ='', $RefNumber = 0, $ShareItProductId = 0, $ShareItPurchaseId = 0, $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
-		$Salutation = '', $Title = '', $FirstName = '', $LastName = '', $Company = '', $Street = '', $Zip = '', $City = '', $FullCity = '', $Country = '', $State = '', $Phone = '', $Fax = '', $Language = '')
+		$Date = null, $LicenseKey ='', $RefNumber = 0, $ShareItProductId = 0, $ShareItPurchaseId = 0, $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
+		$Salutation = '', $Title = '', $FirstName = '', $LastName = '', $Company = '', $Street = '', $Zip = '', $City = '', $FullCity = '', $Country = '', $State = '', $Phone = '', $Fax = '', $Language = '', $NumberOfLicenses = 0
+	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		if (isset($Email, $RegName, $ProductName, $Payment, $PaymentSystem, $ProductCode, $MaintenanceExpirationDate, $NetTotal))
+		if (isset($Email, $RegName, $ProductName, $Payment, $PaymentSystem, $NetTotal))
 		{
-			$oProduct = $this->oApiProductsManager->getProductByCode($ProductCode);
+			if (isset($ShareItProductId))
+			{
+				$oProduct = $this->oApiProductsManager->getProductByShareItProductId($ShareItProductId);
+			}
+			else if (isset($ProductCode))
+			{
+				$oProduct = $this->oApiProductsManager->getProductByCode($ProductCode);
+			}
 			if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
 			{
 				$oProduct =  new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
 				$oProduct->{$this->GetName() . '::ProductName'} = $ProductName;
 				$oProduct->{$this->GetName() . '::ProductCode'} = $ProductCode;
+				$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
+				$oProduct->{$this->GetName() . '::IsAutocreated'} = true;
 				$bProductResult = $this->oApiProductsManager->createProduct($oProduct);
 				if ($bProductResult)
 				{
@@ -162,7 +175,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oSale->{$this->GetName() . '::CustomerId'} = $oCustomer->EntityId;
 			$oSale->{$this->GetName() . '::Payment'} = $Payment;
 			$oSale->{$this->GetName() . '::LicenseKey'} = $LicenseKey;
-			$oSale->{$this->GetName() . '::MaintenanceExpirationDate'} = $MaintenanceExpirationDate;
 			$oSale->{$this->GetName() . '::NetTotal'} = $NetTotal;
 			$oSale->{$this->GetName() . '::RefNumber'} = $RefNumber;
 			$oSale->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
@@ -174,9 +186,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oSale->{$this->GetName() . '::VatId'} = $VatId;
 			$oSale->{$this->GetName() . '::PaymentSystem'} = $PaymentSystem;
 			$oSale->{$this->GetName() . '::TransactionId'} = $TransactionId;
+			$oSale->{$this->GetName() . '::NumberOfLicenses'} = $NumberOfLicenses;
 			if (isset($Date))
 			{
 				$oSale->{$this->GetName() . '::Date'} = $Date;
+			}
+			if (isset($MaintenanceExpirationDate))
+			{
+				$oSale->{$this->GetName() . '::MaintenanceExpirationDate'} = $MaintenanceExpirationDate;
 			}
 			$bSaleResult = $this->oApiSalesManager->createSale($oSale);
 			if ($bSaleResult)
@@ -191,6 +208,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 	/**
 	 * Get all sales.
 	 *
+	 * @param int $Limit Limit.
+	 * @param int $Offset Offset.
+	 * @param string $Search Search string.
 	 * @return array
 	 */
 	public function GetSales($Limit = 20, $Offset = 0, $Search = "")
@@ -201,10 +221,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$aCustomers = [];
 		$aProducts = [];
 		$aSearchFilters = [];
+		$aSearchProducts = $this->oApiProductsManager->getProducts(0, 0, $Search, [
+				$this->GetName() . '::ProductCode',
+				$this->GetName() . '::ProductName',
+				$this->GetName() . '::ShareItProductId',
+			]);
 		if (!empty($Search))
 		{
 			$aSearchCustomers = $this->oApiCustomersManager->searchCustomers($Search, [$this->GetName() . '::Email']);
-			$aSearchProducts = $this->oApiProductsManager->searchProducts($Search, [$this->GetName() . '::ProductCode']);
 
 			$aSearchFilters = [
 				$this->GetName() . '::LicenseKey' => ['%'.$Search.'%', 'LIKE'],
@@ -231,13 +255,30 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aProductsId[] = $oSale->{$this->GetName() . '::ProductId'};
 		}
 		$aCustomers = $this->oApiCustomersManager->getCustomers(array_unique($aCustomersId));
-		$aProducts = $this->oApiProductsManager->getProducts(array_unique($aProductsId));
 
 		return [
 			'ItemsCount' => $iSalesCount,
 			'Sales' => is_array($aSales) ? array_reverse($aSales) : [],
 			'Customers' => is_array($aCustomers) ? $aCustomers : [],
-			'Products' => is_array($aProducts) ? $aProducts : []
+			'Products' => is_array($aSearchProducts) ? $aSearchProducts : []
+		];
+	}
+
+	/**
+	 * Get all products.
+	 *
+	 * @param int $Limit Limit.
+	 * @param int $Offset Offset.
+	 * @param string $Search Search string.
+	 * @return array
+	 */
+	public function GetProducts($Limit = 20, $Offset = 0, $Search = "")
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$aProducts = $this->oApiProductsManager->getProducts($Limit, $Offset, $Search);
+		return [
+			'Products' => is_array($aProducts) ? $aProducts : [],
+			'ItemsCount'  => $this->oApiProductsManager->getProductsCount()
 		];
 	}
 }

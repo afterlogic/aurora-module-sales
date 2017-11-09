@@ -112,32 +112,30 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		return $oProduct;
 	}
 
-
 	/**
-	 * @param array $aProductsId Products id
-	 * @param array $aFieldsList Fields List
-	 * @return array
+	 * @param int $iProductCode Product code
+	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
 	 */
-	public function getProducts($aProductsId, $aFieldsList = [])
+	public function getProductByShareItProductId($iShareItProductId)
 	{
-		$aProducts = [];
+		$oProduct = false;
 		try
 		{
-			if (is_array($aProductsId) && count($aProductsId) > 0)
+			if (is_numeric($iShareItProductId))
 			{
 				$aResults = $this->oEavManager->getEntities(
 				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
-					$aFieldsList,
+					array(),
 					0,
 					0,
-					['EntityId' => [$aProductsId, 'IN']],
-					[],
-					\Aurora\System\Enums\SortOrder::ASC
+					array(
+						$this->GetModule()->GetName() . '::ShareItProductId' => $iShareItProductId
+					)
 				);
 
-				foreach ($aResults as $oProduct)
+				if (is_array($aResults) && isset($aResults[0]))
 				{
-					$aProducts[$oProduct->EntityId] = $oProduct;
+					$oProduct = $aResults[0];
 				}
 			}
 			else
@@ -147,9 +145,10 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)
 		{
+			$oProduct = false;
 			$this->setLastException($oException);
 		}
-		return $aProducts;
+		return $oProduct;
 	}
 
 	/**
@@ -181,13 +180,16 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	}
 
 	/**
-	 * @param array $aProductsId Products id
-	 * @param array $aFieldsList Fields List
+	 * @param int $iLimit Limit.
+	 * @param int $iOffset Offset.
+	 * @param string $sSearch Search string.
+	 * @param array$aViewAttributes Fields List
 	 * @return array
 	 */
-	public function searchProducts($sSearch, $aFieldsList = [])
+	public function getProducts($iLimit = 0, $iOffset = 0, $sSearch = "", $aViewAttributes = [])
 	{
 		$aProducts = [];
+		$aSearchFilters = [];
 		try
 		{
 			if (!empty($sSearch))
@@ -195,23 +197,18 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 				$aSearchFilters = [
 					$this->GetModule()->GetName() . '::ProductName' => ['%'.$sSearch.'%', 'LIKE']
 				];
-
-				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
-					$aFieldsList,
-					0,
-					0,
-					$aSearchFilters
-				);
-
-				foreach ($aResults as $oProduct)
-				{
-					$aProducts[$oProduct->EntityId] = $oProduct;
-				}
 			}
-			else
+			$aResults = $this->oEavManager->getEntities(
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+				$aViewAttributes,
+				$iOffset,
+				$iLimit,
+				$aSearchFilters
+			);
+
+			foreach ($aResults as $oProduct)
 			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+				$aProducts[$oProduct->EntityId] = $oProduct;
 			}
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)
@@ -219,5 +216,27 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			$this->setLastException($oException);
 		}
 		return $aProducts;
+	}
+
+	/**
+	 * @return int
+	 * @throws \Aurora\System\Exceptions\BaseException
+	 */
+	public function getProductsCount($aSearchFilters = [])
+	{
+		$iResult = 0;
+		try
+		{
+			$iResult = $this->oEavManager->getEntitiesCount(
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+				$aSearchFilters
+			);
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$this->setLastException($oException);
+		}
+
+		return $iResult;
 	}
 }
