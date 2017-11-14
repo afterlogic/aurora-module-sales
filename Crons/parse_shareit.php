@@ -1,5 +1,5 @@
 <?php
-require_once "../system/autoload.php";
+require_once __DIR__ . "/../../../system/autoload.php";
 \Aurora\System\Api::Init(true);
 
 $sIncomingServer = "";
@@ -14,7 +14,7 @@ $sSearchStr = "";
 const ACCOUNT_CONNECT_TO_MAIL_SERVER_FAILED = 4003;
 const ACCOUNT_LOGIN_FAILED = 4004;
 
-$sLastParsedUidPath = \Aurora\System\Api::DataPath() . "/last_parsed_uid";
+$sLastParsedUidPath = \Aurora\System\Api::DataPath() . "/last_parsed_shareit_uid";
 if (file_exists($sLastParsedUidPath))
 {
 	$iLastParsedUid = (int) @file_get_contents($sLastParsedUidPath);
