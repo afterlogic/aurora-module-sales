@@ -38,7 +38,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		{
 			if ($oProduct->validate())
 			{
-				if (!$this->oEavManager->saveEntity($oProduct) && $this->canCreate($oProduct->ProductCode))
+				if (!$this->oEavManager->saveEntity($oProduct))
 				{
 					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ProductManager_ProductCreateFailed);
 				}
@@ -59,15 +59,25 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 * @param \Aurora\Modules\SaleObjects\Classes\Product $oProduct
 	 * @return bool
 	 */
-	public function canCreate($iProductCode)
+	public function updateProduct(\Aurora\Modules\SaleObjects\Classes\Product $oProduct)
 	{
 		$bResult = false;
-
-		$oProduct = $this->getProductByCode($iProductCode);
-
-		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
+		try
 		{
-			$bResult = true;
+			if ($oProduct->validate())
+			{
+				if (!$this->oEavManager->saveEntity($oProduct))
+				{
+					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ProductManager_ProductUpdateFailed);
+				}
+
+				$bResult = true;
+			}
+		}
+		catch (\Exception $oException)
+		{
+			$bResult = false;
+			$this->setLastException($oException);
 		}
 
 		return $bResult;
@@ -203,7 +213,8 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 				$aViewAttributes,
 				$iOffset,
 				$iLimit,
-				$aSearchFilters
+				$aSearchFilters,
+				$this->GetModule()->GetName() . '::ProductName'
 			);
 
 			foreach ($aResults as $oProduct)

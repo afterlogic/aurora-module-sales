@@ -281,4 +281,49 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'ItemsCount'  => $this->oApiProductsManager->getProductsCount()
 		];
 	}
+
+	public function UpdateProduct($ProductId, $Name, $ProductCode = null, $ShareItProductId = null)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+		$oProduct = $this->oApiProductsManager->getProductById((int) $ProductId);
+		$oProduct->{$this->GetName() . '::ProductName'} = $Name;
+		if (isset($ProductCode))
+		{
+			$oProduct->{$this->GetName() . '::ProductCode'} = $ProductCode;
+		}
+		if (isset($ShareItProductId))
+		{
+			$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
+		}
+		return $this->oApiProductsManager->UpdateProduct($oProduct);
+	}
+
+	public function UpdateSale($SaleId,
+		$ProductId = null,
+		$Date = null,
+		$VatId = null,
+		$Payment = null,
+		$CustomerId = null,
+		$LicenseKey = null,
+		$RefNumber = null,
+		$ShareItProductId = null,
+		$NetTotal = null,
+		$ShareItPurchaseId = null,
+		$IsNotified = null,
+		$MaintenanceExpirationDate = null,
+		$RecurrentMaintenance = null,
+		$TwoMonthsEmailSent = null,
+		$ParentSaleId = null,
+		$PaymentSystem = null,
+		$NumberOfLicenses = null
+	)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+		$oSale = $this->oApiSalesManager->getSaleById((int) $SaleId);
+		$oSale->{$this->GetName() . '::ProductId'} = $ProductId;
+
+		return $this->oApiSalesManager->UpdateSale($oSale);
+	}
 }

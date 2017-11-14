@@ -152,4 +152,32 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		}
 		return $mSale;
 	}
+
+	/**
+	 * @param \Aurora\Modules\SaleObjects\Classes\Sale $oSale
+	 * @return bool
+	 */
+	public function updateSale(\Aurora\Modules\SaleObjects\Classes\Sale $oSale)
+	{
+		$bResult = false;
+		try
+		{
+			if ($oSale->validate())
+			{
+				if (!$this->oEavManager->saveEntity($oSale))
+				{
+					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::SaleManager_SaleUpdateFailed);
+				}
+
+				$bResult = true;
+			}
+		}
+		catch (\Exception $oException)
+		{
+			$bResult = false;
+			$this->setLastException($oException);
+		}
+
+		return $bResult;
+	}
 }
