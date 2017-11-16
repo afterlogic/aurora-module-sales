@@ -192,22 +192,15 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	/**
 	 * @param int $iLimit Limit.
 	 * @param int $iOffset Offset.
-	 * @param string $sSearch Search string.
+	 * @param array $aSearchFilters Search filters.
 	 * @param array$aViewAttributes Fields List
 	 * @return array
 	 */
-	public function getProducts($iLimit = 0, $iOffset = 0, $sSearch = "", $aViewAttributes = [])
+	public function getProducts($iLimit = 0, $iOffset = 0, $aSearchFilters = [], $aViewAttributes = [])
 	{
 		$aProducts = [];
-		$aSearchFilters = [];
 		try
 		{
-			if (!empty($sSearch))
-			{
-				$aSearchFilters = [
-					$this->GetModule()->GetName() . '::ProductName' => ['%'.$sSearch.'%', 'LIKE']
-				];
-			}
 			$aResults = $this->oEavManager->getEntities(
 			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
 				$aViewAttributes,

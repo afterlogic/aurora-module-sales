@@ -217,11 +217,15 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$aCustomersId = [];
-		$aProductsId = [];
-		$aCustomers = [];
-		$aProducts = [];
 		$aSearchFilters = [];
-		$aSearchProducts = $this->oApiProductsManager->getProducts(0, 0, $Search, [
+		$aProductSearchFilters = [];
+		if (!empty($Search))
+		{
+			$aProductSearchFilters = [
+				$this->GetName() . '::ProductName' => ['%'.$Search.'%', 'LIKE']
+			];
+		}
+		$aSearchProducts = $this->oApiProductsManager->getProducts(0, 0, $aProductSearchFilters, [
 				$this->GetName() . '::ProductCode',
 				$this->GetName() . '::ProductName',
 				$this->GetName() . '::ShareItProductId',
@@ -252,9 +256,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		foreach ($aSales as $oSale)
 		{
 			$aCustomersId[] = $oSale->{$this->GetName() . '::CustomerId'};
-			$aProductsId[] = $oSale->{$this->GetName() . '::ProductId'};
 		}
-		$aCustomers = $this->oApiCustomersManager->getCustomers(array_unique($aCustomersId));
+		$aCustomers = $this->oApiCustomersManager->getCustomers(\array_unique($aCustomersId));
 
 		return [
 			'ItemsCount' => $iSalesCount,
@@ -272,13 +275,20 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param string $Search Search string.
 	 * @return array
 	 */
-	public function GetProducts($Limit = 20, $Offset = 0, $Search = "")
+	public function GetProducts($Limit = 0, $Offset = 0, $Search = "")
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$aProducts = $this->oApiProductsManager->getProducts($Limit, $Offset, $Search);
+		$aSearchFilters = [];
+		if (!empty($Search))
+		{
+			$aSearchFilters = [
+				$this->GetName() . '::ProductName' => ['%'.$Search.'%', 'LIKE']
+			];
+		}
+		$aProducts = $this->oApiProductsManager->getProducts($Limit, $Offset, $aSearchFilters);
 		return [
 			'Products' => is_array($aProducts) ? $aProducts : [],
-			'ItemsCount'  => $this->oApiProductsManager->getProductsCount()
+			'ItemsCount'  => $this->oApiProductsManager->getProductsCount($aSearchFilters)
 		];
 	}
 
