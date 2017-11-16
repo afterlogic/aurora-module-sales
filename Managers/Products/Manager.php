@@ -96,12 +96,12 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			{
 				$aResults = $this->oEavManager->getEntities(
 				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
-					array(),
+					[],
 					0,
 					0,
-					array(
+					[
 						$this->GetModule()->GetName() . '::ProductCode' => $iProductCode
-					)
+					]
 				);
 
 				if (is_array($aResults) && isset($aResults[0]))
@@ -135,12 +135,12 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			{
 				$aResults = $this->oEavManager->getEntities(
 				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
-					array(),
+					[],
 					0,
 					0,
-					array(
+					[
 						$this->GetModule()->GetName() . '::ShareItProductId' => $iShareItProductId
-					)
+					]
 				);
 
 				if (is_array($aResults) && isset($aResults[0]))
@@ -187,6 +187,45 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			$this->setLastException($oException);
 		}
 		return $mProduct;
+	}
+
+	/**
+	 * @param int $sName Product name
+	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
+	 */
+	public function getProductByName($sName)
+	{
+		$oProduct = false;
+		try
+		{
+			if ($sName !== "")
+			{
+				$aResults = $this->oEavManager->getEntities(
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+					[],
+					0,
+					0,
+					[
+						$this->GetModule()->GetName() . '::ProductName' => $sName
+					]
+				);
+
+				if (is_array($aResults) && isset($aResults[0]))
+				{
+					$oProduct = $aResults[0];
+				}
+			}
+			else
+			{
+				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+			}
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$oProduct = false;
+			$this->setLastException($oException);
+		}
+		return $oProduct;
 	}
 
 	/**

@@ -111,95 +111,94 @@ class Module extends \Aurora\System\Module\AbstractModule
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		if (isset($Email, $RegName, $ProductName, $Payment, $PaymentSystem, $NetTotal))
+
+		if ($ShareItProductId > 0)
 		{
-			if (isset($ShareItProductId))
-			{
-				$oProduct = $this->oApiProductsManager->getProductByShareItProductId($ShareItProductId);
-			}
-			else if (isset($ProductCode))
+			$oProduct = $this->oApiProductsManager->getProductByShareItProductId($ShareItProductId);
+		}
+		else
+		{
+			$oProduct = $this->oApiProductsManager->getProductByName($ProductName);
+		}
+
+		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
+		{
+			$oProduct =  new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
+			$oProduct->{$this->GetName() . '::ProductName'} = $ProductName;
+			$oProduct->{$this->GetName() . '::ProductCode'} = $ProductCode;
+			$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
+			$oProduct->{$this->GetName() . '::IsAutocreated'} = true;
+			$bProductResult = $this->oApiProductsManager->createProduct($oProduct);
+			if ($bProductResult)
 			{
 				$oProduct = $this->oApiProductsManager->getProductByCode($ProductCode);
 			}
 			if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
 			{
-				$oProduct =  new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
-				$oProduct->{$this->GetName() . '::ProductName'} = $ProductName;
-				$oProduct->{$this->GetName() . '::ProductCode'} = $ProductCode;
-				$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
-				$oProduct->{$this->GetName() . '::IsAutocreated'} = true;
-				$bProductResult = $this->oApiProductsManager->createProduct($oProduct);
-				if ($bProductResult)
-				{
-					$oProduct = $this->oApiProductsManager->getProductByCode($ProductCode);
-				}
-				if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
-				{
-					return false;
-				}
+				return false;
 			}
+		}
 
-			$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($Email);
+		$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($Email);
+		if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
+		{
+			$oCustomer =  new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
+			$oCustomer->{$this->GetName() . '::Email'} = $Email;
+			$oCustomer->{$this->GetName() . '::RegName'} = $RegName;
+			$oCustomer->{$this->GetName() . '::Salutation'} = $Salutation;
+			$oCustomer->{$this->GetName() . '::Title'} = $Title;
+			$oCustomer->{$this->GetName() . '::FirstName'} = $FirstName;
+			$oCustomer->{$this->GetName() . '::LastName'} = $LastName;
+			$oCustomer->{$this->GetName() . '::Company'} = $Company;
+			$oCustomer->{$this->GetName() . '::Street'} = $Street;
+			$oCustomer->{$this->GetName() . '::Zip'} = $Zip;
+			$oCustomer->{$this->GetName() . '::City'} = $City;
+			$oCustomer->{$this->GetName() . '::FullCity'} = $FullCity;
+			$oCustomer->{$this->GetName() . '::Country'} = $Country;
+			$oCustomer->{$this->GetName() . '::State'} = $State;
+			$oCustomer->{$this->GetName() . '::Phone'} = $Phone;
+			$oCustomer->{$this->GetName() . '::Fax'} = $Fax;
+			$oCustomer->{$this->GetName() . '::Language'} = $Language;
+			$bCustomerResult = $this->oApiCustomersManager->CreateCustomer($oCustomer);
+			if ($bCustomerResult)
+			{
+				$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($Email);
+			}
 			if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
 			{
-				$oCustomer =  new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
-				$oCustomer->{$this->GetName() . '::Email'} = $Email;
-				$oCustomer->{$this->GetName() . '::RegName'} = $RegName;
-				$oCustomer->{$this->GetName() . '::Salutation'} = $Salutation;
-				$oCustomer->{$this->GetName() . '::Title'} = $Title;
-				$oCustomer->{$this->GetName() . '::FirstName'} = $FirstName;
-				$oCustomer->{$this->GetName() . '::LastName'} = $LastName;
-				$oCustomer->{$this->GetName() . '::Company'} = $Company;
-				$oCustomer->{$this->GetName() . '::Street'} = $Street;
-				$oCustomer->{$this->GetName() . '::Zip'} = $Zip;
-				$oCustomer->{$this->GetName() . '::City'} = $City;
-				$oCustomer->{$this->GetName() . '::FullCity'} = $FullCity;
-				$oCustomer->{$this->GetName() . '::Country'} = $Country;
-				$oCustomer->{$this->GetName() . '::State'} = $State;
-				$oCustomer->{$this->GetName() . '::Phone'} = $Phone;
-				$oCustomer->{$this->GetName() . '::Fax'} = $Fax;
-				$oCustomer->{$this->GetName() . '::Language'} = $Language;
-				$bCustomerResult = $this->oApiCustomersManager->CreateCustomer($oCustomer);
-				if ($bCustomerResult)
-				{
-					$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($Email);
-				}
-				if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
-				{
-					return false;
-				}
+				return false;
 			}
+		}
 
-			$oSale = new \Aurora\Modules\SaleObjects\Classes\Sale($this->GetName());
-			$oSale->{$this->GetName() . '::ProductId'} = $oProduct->EntityId;
-			$oSale->{$this->GetName() . '::CustomerId'} = $oCustomer->EntityId;
-			$oSale->{$this->GetName() . '::Payment'} = $Payment;
-			$oSale->{$this->GetName() . '::LicenseKey'} = $LicenseKey;
-			$oSale->{$this->GetName() . '::NetTotal'} = $NetTotal;
-			$oSale->{$this->GetName() . '::RefNumber'} = $RefNumber;
-			$oSale->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
-			$oSale->{$this->GetName() . '::ShareItPurchaseId'} = $ShareItPurchaseId;
-			$oSale->{$this->GetName() . '::IsNotified'} = $IsNotified;
-			$oSale->{$this->GetName() . '::RecurrentMaintenance'} = $RecurrentMaintenance;
-			$oSale->{$this->GetName() . '::TwoMonthsEmailSent'} = $TwoMonthsEmailSent;
-			$oSale->{$this->GetName() . '::ParentSaleId'} = $ParentSaleId;
-			$oSale->{$this->GetName() . '::VatId'} = $VatId;
-			$oSale->{$this->GetName() . '::PaymentSystem'} = $PaymentSystem;
-			$oSale->{$this->GetName() . '::TransactionId'} = $TransactionId;
-			$oSale->{$this->GetName() . '::NumberOfLicenses'} = $NumberOfLicenses;
-			if (isset($Date))
-			{
-				$oSale->{$this->GetName() . '::Date'} = $Date;
-			}
-			if (isset($MaintenanceExpirationDate))
-			{
-				$oSale->{$this->GetName() . '::MaintenanceExpirationDate'} = $MaintenanceExpirationDate;
-			}
-			$bSaleResult = $this->oApiSalesManager->createSale($oSale);
-			if ($bSaleResult)
-			{
-				return $oSale;
-			}
+		$oSale = new \Aurora\Modules\SaleObjects\Classes\Sale($this->GetName());
+		$oSale->{$this->GetName() . '::ProductId'} = $oProduct->EntityId;
+		$oSale->{$this->GetName() . '::CustomerId'} = $oCustomer->EntityId;
+		$oSale->{$this->GetName() . '::Payment'} = $Payment;
+		$oSale->{$this->GetName() . '::LicenseKey'} = $LicenseKey;
+		$oSale->{$this->GetName() . '::NetTotal'} = $NetTotal;
+		$oSale->{$this->GetName() . '::RefNumber'} = $RefNumber;
+		$oSale->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
+		$oSale->{$this->GetName() . '::ShareItPurchaseId'} = $ShareItPurchaseId;
+		$oSale->{$this->GetName() . '::IsNotified'} = $IsNotified;
+		$oSale->{$this->GetName() . '::RecurrentMaintenance'} = $RecurrentMaintenance;
+		$oSale->{$this->GetName() . '::TwoMonthsEmailSent'} = $TwoMonthsEmailSent;
+		$oSale->{$this->GetName() . '::ParentSaleId'} = $ParentSaleId;
+		$oSale->{$this->GetName() . '::VatId'} = $VatId;
+		$oSale->{$this->GetName() . '::PaymentSystem'} = $PaymentSystem;
+		$oSale->{$this->GetName() . '::TransactionId'} = $TransactionId;
+		$oSale->{$this->GetName() . '::NumberOfLicenses'} = $NumberOfLicenses;
+		if (isset($Date))
+		{
+			$oSale->{$this->GetName() . '::Date'} = $Date;
+		}
+		if (isset($MaintenanceExpirationDate))
+		{
+			$oSale->{$this->GetName() . '::MaintenanceExpirationDate'} = $MaintenanceExpirationDate;
+		}
+		$bSaleResult = $this->oApiSalesManager->createSale($oSale);
+		if ($bSaleResult)
+		{
+			return $oSale;
 		}
 
 		return false;
