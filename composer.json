@@ -4,7 +4,8 @@
 	"require":{
 		"php":">=5.4.0",
 		"afterlogic/aurora-framework": "~0.6",
-		"afterlogic/aurora-module-sale-objects": "~0.1"
+		"afterlogic/aurora-module-sale-objects": "~0.1",
+		"sunra/php-simple-html-dom-parser": "1.5.2"
 	},
 	"extra": {
 		"installer-name": "Sales"
