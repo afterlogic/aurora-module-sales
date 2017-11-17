@@ -1,4 +1,7 @@
 <?php
+
+use Sunra\PhpSimple\HtmlDomParser;
+
 require_once __DIR__ . "/../../../system/autoload.php";
 \Aurora\System\Api::Init(true);
 
@@ -81,28 +84,26 @@ if ($oImapClient->IsLoggined())
 		if ($UID > $iLastParsedUid)
 		{
 			$oMessage = GetMessage($oImapClient, $sFolderFullNameRaw, $UID);
-			echo($oMessage['Html']);
-//			$aData = ParseMessage($oMessage['Plain'], $oMessage['Subject']);
-//			if (isset($aData['Payment']) && $aData['Payment'] !== '' &&
-//				isset($aData['NetTotal']) && $aData['NetTotal'] !== 0 &&
-//				isset($aData['Email']) && $aData['Email'] !== '' &&
-//				isset($aData['RegName']) && $aData['RegName'] !== '' &&
-//				isset($aData['ProductName']) && $aData['ProductName'] !== ''
-//			)
-//			{
-//				$oSalesModuleDecorator->CreateSale($aData['Payment'], \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal, $aData['NetTotal'],
-//					$aData['Email'], $aData['RegName'],
-//					$aData['ProductName'], null, null,
-//					'',
-//					$oMessage['Date'], $aData['LicenseKey'], $aData['RefNumber'], $aData['ShareItProductId'], $aData['ShareItPurchaseId'], false, true, false, 0, $aData['VatId'],
-//					$aData['Salutation'], $aData['Title'], $aData['FirstName'], $aData['LastName'], $aData['Company'], $aData['Street'], $aData['Zip'],
-//					$aData['City'], $aData['FullCity'], $aData['Country'], $aData['State'], $aData['Phone'], $aData['Fax'], $aData['Language'], $aData['NumberOfLicenses']
-//				);
-//				if ($UID > (int) @file_get_contents($sLastParsedUidPath))
-//				{
-//					file_put_contents($sLastParsedUidPath, $UID);
-//				}
-//			}
+			$aData = ParseMessage($oMessage['Html'], $oMessage['Subject']);
+
+			if (isset($aData['NetTotal']) && $aData['NetTotal'] !== 0 &&
+				isset($aData['Email']) && $aData['Email'] !== '' &&
+				isset($aData['RegName']) && $aData['RegName'] !== '' &&
+				isset($aData['ProductName']) && $aData['ProductName'] !== ''
+			)
+			{
+				$oSalesModuleDecorator->CreateSale('PayPal', \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal, $aData['NetTotal'],
+					$aData['Email'], $aData['RegName'],
+					$aData['ProductName'], null, null,
+					isset($aData['TransactionId']) ? $aData['TransactionId'] : '',
+					$oMessage['Date'], '', 0, 0, 0, false, true, false, 0, '',
+					'', '', '', '', '', '', '','', $aData['FullCity']
+				);
+				if ($UID > (int) @file_get_contents($sLastParsedUidPath))
+				{
+					file_put_contents($sLastParsedUidPath, $UID);
+				}
+			}
 		}
 	}
 	
@@ -374,66 +375,38 @@ function GetMessage($oImapClient, $Folder, $Uid, $Rfc822MimeIndex = '')
 	return ['Html' => $sHtml, 'Plain' => $sPlain, 'Subject' => $sSubject, 'Date' => $sDate];
 }
 
-function ParseMessage($sMessagePlainText, $sSubject)
+function ParseMessage($sMessageHtml, $sSubject)
 {
-	$aParams = [
-		'ShareItProductId'	=> [8, 'int'],
-		'NumberOfLicenses'	=> [10, 'int'],
-		'ShareItPurchaseId'	=> [11, 'int'],
-		'Salutation'			=> [25, 'string'],
-		'Title'				=> [26, 'string'],
-		'LastName'			=> [27, 'string'],
-		'FirstName'		=> [28, 'string'],
-		'Company'			=> [29, 'string'],
-		'Street'			=> [30, 'string'],
-		'Zip'				=> [31, 'string'],
-		'City'				=> [32, 'string'],
-		'FullCity'			=> [33, 'string'],
-		'Country'			=> [34, 'string'],
-		'State'			=> [35, 'string'],
-		'Phone'			=> [36, 'string'],
-		'Fax'				=> [37, 'string'],
-		'Email'			=> [38, 'string'],
-		'VatId'			=> [39, 'string'],
-		'Payment'			=> [40, 'string'],
-		'RegName'			=> [41, 'string'],
-		'Language'			=> [42, 'string']
-	];
 	$aResult = [];
-	$aStrings = explode("\r\n", $sMessagePlainText);
+	$dom = HtmlDomParser::str_get_html($sMessageHtml);
 
-	foreach ($aParams as $sParamName => $aParamProperties)
-	{
-		$aParts = explode("=", $aStrings[$aParamProperties[0]]);
-		if (is_array($aParts) && isset($aParts[1]))
-		{
-			//Type casting
-			if(settype( $aParts[1], $aParamProperties[1]))
-			{
-				$aResult[$sParamName] = $aParts[1];
-			}
-		}
-	}
-	//Name
-	$aMatches = [];
-	preg_match('/\"([\s\S]*)\"/', $aStrings[2], $aMatches);
-	$aResult['ProductName'] = isset($aMatches[1]) ? $aMatches[1] : '';
-	//Total
-	$aNetTotalParts = explode("=", $aStrings[21]);
-	if (is_array($aNetTotalParts) && isset($aNetTotalParts[1]))
-	{
-		$aNetTotalParts = explode(" ", trim($aNetTotalParts[1]));
-		if (is_array($aNetTotalParts) && isset($aNetTotalParts[count($aNetTotalParts) - 1]))
-		{
-			$aResult['NetTotal'] = (float) $aNetTotalParts[count($aNetTotalParts) - 1];
-		}
-	}
-	//LicenseKey
-	$aResult['LicenseKey'] = trim($aStrings[48]);
-	//RefNumber
-	$aSubjectMatches = [];
-	preg_match('/Order No\.[\s]*([0-9]*)[\s]for/', $sSubject, $aSubjectMatches);
-	$aResult['RefNumber'] = isset($aSubjectMatches[1]) ? (int) $aSubjectMatches[1] : '';
+	$oTransactionId = $dom->find('table table a', 0);
+	$aResult['TransactionId'] = trim($oTransactionId->plaintext);
 
+	$oData = $dom->find('td.ppsans div div table', 0);
+	$oBuyer = $oData->find('tr', 0)->find('td span', 1);
+	$aResult['RegName'] = trim($oBuyer->plaintext);
+	$oEmail = $oData->find('tr', 0)->find('td span', 2);
+	$aResult['Email'] = trim($oEmail->plaintext);
+
+	$oShipping = $oData->find('tr', 1)->find('td span', 0);
+	$aShipping = explode("\r\n", trim($oShipping->plaintext));
+	unset($aShipping[0]);
+	$aResult['FullCity'] = preg_replace('/ {2,}/', ' ', trim(implode("; ", $aShipping)));
+
+	$oData = $dom->find('td.ppsans div div table', 1)->find('tr', 1);
+	$oDescription = $oData->find('td', 0);
+	$aDescription = explode("\r\n", trim($oDescription->plaintext));
+	$aResult['ProductName'] = trim($aDescription[0]);
+	$oUnitPrice = $oData->find('td', 1);
+	$oQty = $oData->find('td', 2);
+	$oAmount = $oData->find('td', 3);
+
+	$oData = $dom->find('td.ppsans div div table', 2);
+	$oPaymentAmount = $oData->find('table tr', 2)->find('td', 1);
+	$aResult['NetTotal'] = (int) preg_replace('/[^.0-9]/', ' ', $oPaymentAmount->plaintext);
+
+	$dom->clear();
+	unset($dom);
 	return $aResult;
 }
