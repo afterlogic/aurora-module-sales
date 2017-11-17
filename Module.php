@@ -123,7 +123,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
 		{
-			$oProduct =  new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
+			$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
 			$oProduct->{$this->GetName() . '::ProductName'} = $ProductName;
 			$oProduct->{$this->GetName() . '::ProductCode'} = $ProductCode;
 			$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
@@ -142,7 +142,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($Email);
 		if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
 		{
-			$oCustomer =  new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
+			$oCustomer = new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
 			$oCustomer->{$this->GetName() . '::Email'} = $Email;
 			$oCustomer->{$this->GetName() . '::RegName'} = $RegName;
 			$oCustomer->{$this->GetName() . '::Salutation'} = $Salutation;
@@ -216,6 +216,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$aCustomersId = [];
+		$aProductsId = [];
 		$aSearchFilters = [];
 		$aProductSearchFilters = [];
 		if (!empty($Search))
@@ -255,14 +256,22 @@ class Module extends \Aurora\System\Module\AbstractModule
 		foreach ($aSales as $oSale)
 		{
 			$aCustomersId[] = $oSale->{$this->GetName() . '::CustomerId'};
+			$aProductsId[] = $oSale->{$this->GetName() . '::ProductId'};
 		}
 		$aCustomers = $this->oApiCustomersManager->getCustomers(\array_unique($aCustomersId));
+		if (is_array($aProductsId) && count($aProductsId) > 0)
+		{
+			$aProductsSearchFilter = [
+				'EntityId' => [\array_unique($aProductsId), 'IN']
+			];
+			$aProducts = $this->oApiProductsManager->getProducts(0, 0, $aProductsSearchFilter);
+		}
 
 		return [
 			'ItemsCount' => $iSalesCount,
 			'Sales' => is_array($aSales) ? array_reverse($aSales) : [],
 			'Customers' => is_array($aCustomers) ? $aCustomers : [],
-			'Products' => is_array($aSearchProducts) ? $aSearchProducts : []
+			'Products' => is_array($aProducts) ? $aProducts : []
 		];
 	}
 
@@ -287,7 +296,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$aProducts = $this->oApiProductsManager->getProducts($Limit, $Offset, $aSearchFilters);
 		return [
 			'Products' => is_array($aProducts) ? $aProducts : [],
-			'ItemsCount'  => $this->oApiProductsManager->getProductsCount($aSearchFilters)
+			'ItemsCount' => $this->oApiProductsManager->getProductsCount($aSearchFilters)
 		];
 	}
 
