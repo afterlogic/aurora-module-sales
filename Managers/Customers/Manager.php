@@ -69,29 +69,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function isExists(\Aurora\Modules\SaleObjects\Classes\Customer &$oCustomer)
 	{
-		$bResult = false;
-		try
-		{
-			$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
-				['Email'],
-				0,
-				0,
-				[
-					'Email' => [$oCustomer->Email, '=']
-				]
-			);
-
-			if ($aResults && count($aResults) > 0)
-			{
-				$bResult = true;
-			}
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
-		return $bResult;
+		return !!$this->getCustomerByEmail($oCustomer->{$this->GetModule()->GetName() . '::Email'});
 	}
 
 	/**
@@ -108,12 +86,12 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			{
 				$aResults = $this->oEavManager->getEntities(
 				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
-					array(),
+					[],
 					0,
 					0,
-					array(
+					[
 						$this->GetModule()->GetName() . '::Email' => $sEmail
-					)
+					]
 				);
 
 				if (is_array($aResults) && isset($aResults[0]))

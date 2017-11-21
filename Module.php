@@ -119,6 +119,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$oProduct = $this->oApiProductsManager->getProductByShareItProductId($ShareItProductId);
 		}
+		else
+		{
+			$oProduct = null;
+		}
 
 		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product &&
 			!($PaymentSystem === \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal &&

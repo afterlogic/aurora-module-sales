@@ -2,14 +2,15 @@
 require_once __DIR__ . "/../../../system/autoload.php";
 \Aurora\System\Api::Init(true);
 
-$sIncomingServer = "";
+$oSalesModule = \Aurora\System\Api::GetModule('Sales');
+$sIncomingServer =  $oSalesModule->getConfig('IncomingServer', '');
 $iIncomingPort = 993;
 $bIncomingUseSsl = true;
 $bVerifySsl = false;
-$sIncomingLogin = "";
-$sIncomingPassword = "";
-$sFolderFullNameRaw = "";
-$sSearchStr = "";
+$sIncomingLogin = $oSalesModule->getConfig('IncomingLogin', '');
+$sIncomingPassword = $oSalesModule->getConfig('IncomingPassword', '');
+$sFolderFullNameRaw = $oSalesModule->getConfig('FolderFullNameRaw', '');
+$sSearchStr = $oSalesModule->getConfig('ShareItSearchStr', '');
 
 const ACCOUNT_CONNECT_TO_MAIL_SERVER_FAILED = 4003;
 const ACCOUNT_LOGIN_FAILED = 4004;
