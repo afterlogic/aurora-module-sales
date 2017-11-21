@@ -51,7 +51,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'TwoMonthsEmailSent' => array('bool', false),
 				'ParentSaleId' => array('int', 0),
 				'PaymentSystem' => array('int', 0),
-				'NumberOfLicenses' => array('int', 0)
+				'NumberOfLicenses' => array('int', 0),
+				'AdditionalInfo' => array('text', '')
 			)
 		);
 
@@ -83,6 +84,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'ProductCode' => array('int', 0),
 				'ProductName' => array('string', ''),
 				'ShareItProductId' => array('int', 0),
+				'PayPalItem' => array('string', ''),
 				'IsAutocreated' => array('bool', true),
 			)
 		);
@@ -107,7 +109,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$ProductName, $ProductCode = null, $MaintenanceExpirationDate = null,
 		$TransactionId = '',
 		$Date = null, $LicenseKey ='', $RefNumber = 0, $ShareItProductId = 0, $ShareItPurchaseId = 0, $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
-		$Salutation = '', $Title = '', $FirstName = '', $LastName = '', $Company = '', $Street = '', $Zip = '', $City = '', $FullCity = '', $Country = '', $State = '', $Phone = '', $Fax = '', $Language = '', $NumberOfLicenses = 0
+		$Salutation = '', $Title = '', $FirstName = '', $LastName = '', $Company = '', $Street = '', $Zip = '', $City = '', $FullCity = '', $Country = '', $State = '', $Phone = '', $Fax = '', $Language = '', $NumberOfLicenses = 0,
+		$PayPalItem = ''
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
@@ -116,12 +119,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$oProduct = $this->oApiProductsManager->getProductByShareItProductId($ShareItProductId);
 		}
-		else
-		{
-			$oProduct = $this->oApiProductsManager->getProductByName($ProductName);
-		}
 
-		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
+		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product &&
+			!($PaymentSystem === \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal &&
+			$PayPalItem !== '')
+		)
 		{
 			$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
 			$oProduct->{$this->GetName() . '::ProductName'} = $ProductName;
@@ -171,7 +173,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 
 		$oSale = new \Aurora\Modules\SaleObjects\Classes\Sale($this->GetName());
-		$oSale->{$this->GetName() . '::ProductId'} = $oProduct->EntityId;
+		$oSale->{$this->GetName() . '::ProductId'} = isset($oProduct->EntityId) ? $oProduct->EntityId : 0;
 		$oSale->{$this->GetName() . '::CustomerId'} = $oCustomer->EntityId;
 		$oSale->{$this->GetName() . '::Payment'} = $Payment;
 		$oSale->{$this->GetName() . '::LicenseKey'} = $LicenseKey;
@@ -187,6 +189,32 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale->{$this->GetName() . '::PaymentSystem'} = $PaymentSystem;
 		$oSale->{$this->GetName() . '::TransactionId'} = $TransactionId;
 		$oSale->{$this->GetName() . '::NumberOfLicenses'} = $NumberOfLicenses;
+		$oSale->{$this->GetName() . '::AdditionalInfo'} = json_encode([
+			'Product' => [
+				'ProductName' => $ProductName,
+				'ProductCode' => $ProductCode,
+				'ShareItProductId' => $ShareItProductId,
+				'PayPalItem' => $PayPalItem
+			],
+			'Customer' => [
+				'Email' => $Email,
+				'RegName' => $RegName,
+				'Salutation' => $Salutation,
+				'Title' => $Title,
+				'FirstName' => $FirstName,
+				'LastName' => $LastName,
+				'Company' => $Company,
+				'Street' => $Street,
+				'Zip' => $Zip,
+				'City' => $City,
+				'FullCity' => $FullCity,
+				'Country' => $Country,
+				'State' => $State,
+				'Phone' => $Phone,
+				'Fax' => $Fax,
+				'Language' => $Language
+			]
+		]);
 		if (isset($Date))
 		{
 			$oSale->{$this->GetName() . '::Date'} = $Date;
@@ -256,16 +284,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 		foreach ($aSales as $oSale)
 		{
 			$aCustomersId[] = $oSale->{$this->GetName() . '::CustomerId'};
-			$aProductsId[] = $oSale->{$this->GetName() . '::ProductId'};
 		}
 		$aCustomers = $this->oApiCustomersManager->getCustomers(\array_unique($aCustomersId));
-		if (is_array($aProductsId) && count($aProductsId) > 0)
-		{
-			$aProductsSearchFilter = [
-				'EntityId' => [\array_unique($aProductsId), 'IN']
-			];
-			$aProducts = $this->oApiProductsManager->getProducts(0, 0, $aProductsSearchFilter);
-		}
+		$aProducts = $this->oApiProductsManager->getProducts(0, 0);
 
 		return [
 			'ItemsCount' => $iSalesCount,
@@ -300,7 +321,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 	}
 
-	public function UpdateProduct($ProductId, $Name, $ProductCode = null, $ShareItProductId = null)
+	public function UpdateProduct($ProductId, $Name, $ProductCode = null, $ShareItProductId = null, $PayPalItem = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
@@ -313,6 +334,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if (isset($ShareItProductId))
 		{
 			$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
+		}
+		if (isset($PayPalItem))
+		{
+			$oProduct->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
 		}
 		return $this->oApiProductsManager->UpdateProduct($oProduct);
 	}

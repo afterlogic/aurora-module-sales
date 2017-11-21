@@ -190,7 +190,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	}
 
 	/**
-	 * @param int $sName Product name
+	 * @param string $sName Product name
 	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
 	 */
 	public function getProductByName($sName)
@@ -226,6 +226,50 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 			$this->setLastException($oException);
 		}
 		return $oProduct;
+	}
+
+	/**
+	 * @param string $sPayPalItem PayPal product item
+	 * @param int $iNetTotal  Payment amount
+	 *
+	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
+	 */
+	public function getPayPalProducts($sPayPalItem = '')
+	{
+		$oProducts = false;
+		try
+		{
+			if ($sPayPalItem === '')
+			{
+				$aFilters = [
+					$this->GetModule()->GetName() . '::PayPalItem' => ['NULL', 'IS NOT']
+				];
+			}
+			else
+			{
+				$aFilters = [
+					$this->GetModule()->GetName() . '::PayPalItem' => $sPayPalItem
+				];
+			}
+			$aResults = $this->oEavManager->getEntities(
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+				[],
+				0,
+				0,
+				$aFilters
+			);
+
+			if (is_array($aResults))
+			{
+				$oProducts = $aResults;
+			}
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$oProducts = false;
+			$this->setLastException($oException);
+		}
+		return $oProducts;
 	}
 
 	/**
