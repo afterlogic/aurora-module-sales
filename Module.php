@@ -18,7 +18,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 {
 	public $oApiSalesManager = null;
 	public $oApiCustomersManager = null;
-	public $oApiProductsManager = null;
+	public $oApiLicensesManager = null;
 
 	/**
 	 * Initializes Sales Module.
@@ -30,19 +30,18 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		$this->oApiSalesManager = new Managers\Sales\Manager($this);
 		$this->oApiCustomersManager = new Managers\Customers\Manager($this);
-		$this->oApiProductsManager = new Managers\Products\Manager($this);
+		$this->oApiLicensesManager = new Managers\Licenses\Manager($this);
 
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Sale',
 			array(
-				'ProductId' => array('int', 0),
+				'LicenseId' => array('int', 0),
 				'Date' => array('datetime', date('Y-m-d H:i:s', 0)),
 				'VatId' => array('string', ''),
 				'Payment' => array('string', ''),
 				'CustomerId' => array('int', 0),
 				'LicenseKey' => array('string', ''),
 				'RefNumber' => array('int', 0),
-				'ShareItProductId' => array('int', 0),
 				'NetTotal' => array('int', 0),
 				'ShareItPurchaseId' => array('int', 0),
 				'IsNotified' => array('bool', false),
@@ -79,11 +78,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 		);
 
 		$this->extendObject(
-			'Aurora\Modules\SaleObjects\Classes\Product',
+			'Aurora\Modules\SaleObjects\Classes\License',
 			array(
-				'ProductCode' => array('int', 0),
-				'ProductName' => array('string', ''),
-				'ShareItProductId' => array('int', 0),
+				'LicenseCode' => array('int', 0),
+				'LicenseName' => array('string', ''),
+				'ShareItLicenseId' => array('int', 0),
 				'PayPalItem' => array('string', ''),
 				'IsAutocreated' => array('bool', true),
 			)
@@ -99,47 +98,47 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param int $NetTotal Payment amount.
 	 * @param string $Email Email.
 	 * @param string $RegName Full name.
-	 * @param string $ProductName Product name.
-	 * @param string $ProductCode Product code.
+	 * @param string $LicenseName License name.
+	 * @param string $LicenseCode License code.
 	 * 
 	 * @return \Aurora\Modules\SaleObjects\Classes\Sale|boolean
 	 */
 	public function CreateSale($Payment, $PaymentSystem, $NetTotal,
 		$Email, $RegName,
-		$ProductName, $ProductCode = null, $MaintenanceExpirationDate = null,
+		$LicenseName, $LicenseCode = null, $MaintenanceExpirationDate = null,
 		$TransactionId = '',
-		$Date = null, $LicenseKey ='', $RefNumber = 0, $ShareItProductId = 0, $ShareItPurchaseId = 0, $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
+		$Date = null, $LicenseKey ='', $RefNumber = 0, $ShareItLicenseId = 0, $ShareItPurchaseId = 0, $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
 		$Salutation = '', $Title = '', $FirstName = '', $LastName = '', $Company = '', $Street = '', $Zip = '', $City = '', $FullCity = '', $Country = '', $State = '', $Phone = '', $Fax = '', $Language = '', $NumberOfLicenses = 0,
 		$PayPalItem = ''
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		if ($ShareItProductId > 0)
+		if ($ShareItLicenseId > 0)
 		{
-			$oProduct = $this->oApiProductsManager->getProductByShareItProductId($ShareItProductId);
+			$oLicense = $this->oApiLicensesManager->getLicenseByShareItLicenseId($ShareItLicenseId);
 		}
 		else
 		{
-			$oProduct = null;
+			$oLicense = null;
 		}
 
-		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product &&
+		if (!$oLicense instanceof \Aurora\Modules\SaleObjects\Classes\License &&
 			!($PaymentSystem === \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal &&
 			$PayPalItem !== '')
 		)
 		{
-			$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
-			$oProduct->{$this->GetName() . '::ProductName'} = $ProductName;
-			$oProduct->{$this->GetName() . '::ProductCode'} = $ProductCode;
-			$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
-			$oProduct->{$this->GetName() . '::IsAutocreated'} = true;
-			$bProductResult = $this->oApiProductsManager->createProduct($oProduct);
-			if ($bProductResult)
+			$oLicense = new \Aurora\Modules\SaleObjects\Classes\License($this->GetName());
+			$oLicense->{$this->GetName() . '::LicenseName'} = $LicenseName;
+			$oLicense->{$this->GetName() . '::LicenseCode'} = $LicenseCode;
+			$oLicense->{$this->GetName() . '::ShareItLicenseId'} = $ShareItLicenseId;
+			$oLicense->{$this->GetName() . '::IsAutocreated'} = true;
+			$bLicenseResult = $this->oApiLicensesManager->createLicense($oLicense);
+			if ($bLicenseResult)
 			{
-				$oProduct = $this->oApiProductsManager->getProductByCode($ProductCode);
+				$oLicense = $this->oApiLicensesManager->getLicenseByCode($LicenseCode);
 			}
-			if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
+			if (!$oLicense instanceof \Aurora\Modules\SaleObjects\Classes\License)
 			{
 				return false;
 			}
@@ -177,13 +176,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 
 		$oSale = new \Aurora\Modules\SaleObjects\Classes\Sale($this->GetName());
-		$oSale->{$this->GetName() . '::ProductId'} = isset($oProduct->EntityId) ? $oProduct->EntityId : 0;
+		$oSale->{$this->GetName() . '::LicenseId'} = isset($oLicense->EntityId) ? $oLicense->EntityId : 0;
 		$oSale->{$this->GetName() . '::CustomerId'} = $oCustomer->EntityId;
 		$oSale->{$this->GetName() . '::Payment'} = $Payment;
 		$oSale->{$this->GetName() . '::LicenseKey'} = $LicenseKey;
 		$oSale->{$this->GetName() . '::NetTotal'} = $NetTotal;
 		$oSale->{$this->GetName() . '::RefNumber'} = $RefNumber;
-		$oSale->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
 		$oSale->{$this->GetName() . '::ShareItPurchaseId'} = $ShareItPurchaseId;
 		$oSale->{$this->GetName() . '::IsNotified'} = $IsNotified;
 		$oSale->{$this->GetName() . '::RecurrentMaintenance'} = $RecurrentMaintenance;
@@ -194,10 +192,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale->{$this->GetName() . '::TransactionId'} = $TransactionId;
 		$oSale->{$this->GetName() . '::NumberOfLicenses'} = $NumberOfLicenses;
 		$oSale->{$this->GetName() . '::AdditionalInfo'} = json_encode([
-			'Product' => [
-				'ProductName' => $ProductName,
-				'ProductCode' => $ProductCode,
-				'ShareItProductId' => $ShareItProductId,
+			'License' => [
+				'LicenseName' => $LicenseName,
+				'LicenseCode' => $LicenseCode,
+				'ShareItLicenseId' => $ShareItLicenseId,
 				'PayPalItem' => $PayPalItem
 			],
 			'Customer' => [
@@ -248,19 +246,19 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$aCustomersId = [];
-		$aProductsId = [];
+		$aLicensesId = [];
 		$aSearchFilters = [];
-		$aProductSearchFilters = [];
+		$aLicenseSearchFilters = [];
 		if (!empty($Search))
 		{
-			$aProductSearchFilters = [
-				$this->GetName() . '::ProductName' => ['%'.$Search.'%', 'LIKE']
+			$aLicenseSearchFilters = [
+				$this->GetName() . '::LicenseName' => ['%'.$Search.'%', 'LIKE']
 			];
 		}
-		$aSearchProducts = $this->oApiProductsManager->getProducts(0, 0, $aProductSearchFilters, [
-				$this->GetName() . '::ProductCode',
-				$this->GetName() . '::ProductName',
-				$this->GetName() . '::ShareItProductId',
+		$aSearchLicenses = $this->oApiLicensesManager->getLicenses(0, 0, $aLicenseSearchFilters, [
+				$this->GetName() . '::LicenseCode',
+				$this->GetName() . '::LicenseName',
+				$this->GetName() . '::ShareItLicenseId',
 			]);
 		if (!empty($Search))
 		{
@@ -271,9 +269,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$this->GetName() . '::Date' => ['%'.$Search.'%', 'LIKE']
 			];
 
-			if (is_array($aSearchProducts) && count($aSearchProducts) > 0)
+			if (is_array($aSearchLicenses) && count($aSearchLicenses) > 0)
 			{
-				$aSearchFilters[$this->GetName() . '::ProductId'] = [array_keys($aSearchProducts), 'IN'];
+				$aSearchFilters[$this->GetName() . '::LicenseId'] = [array_keys($aSearchLicenses), 'IN'];
 			}
 			if (is_array($aSearchCustomers) && count($aSearchCustomers) > 0)
 			{
@@ -290,13 +288,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aCustomersId[] = $oSale->{$this->GetName() . '::CustomerId'};
 		}
 		$aCustomers = $this->oApiCustomersManager->getCustomers(\array_unique($aCustomersId));
-		$aProducts = $this->oApiProductsManager->getProducts(0, 0);
+		$aLicenses = $this->oApiLicensesManager->getLicenses(0, 0);
 
 		return [
 			'ItemsCount' => $iSalesCount,
 			'Sales' => is_array($aSales) ? array_reverse($aSales) : [],
 			'Customers' => is_array($aCustomers) ? $aCustomers : [],
-			'Products' => is_array($aProducts) ? $aProducts : []
+			'Licenses' => is_array($aLicenses) ? $aLicenses : []
 		];
 	}
 
@@ -308,53 +306,53 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param string $Search Search string.
 	 * @return array
 	 */
-	public function GetProducts($Limit = 0, $Offset = 0, $Search = "")
+	public function GetLicenses($Limit = 0, $Offset = 0, $Search = "")
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$aSearchFilters = [];
 		if (!empty($Search))
 		{
 			$aSearchFilters = [
-				$this->GetName() . '::ProductName' => ['%'.$Search.'%', 'LIKE']
+				$this->GetName() . '::LicenseName' => ['%'.$Search.'%', 'LIKE']
 			];
 		}
-		$aProducts = $this->oApiProductsManager->getProducts($Limit, $Offset, $aSearchFilters);
+		$aLicenses = $this->oApiLicensesManager->getLicenses($Limit, $Offset, $aSearchFilters);
 		return [
-			'Products' => is_array($aProducts) ? $aProducts : [],
-			'ItemsCount' => $this->oApiProductsManager->getProductsCount($aSearchFilters)
+			'Licenses' => is_array($aLicenses) ? $aLicenses : [],
+			'ItemsCount' => $this->oApiLicensesManager->getLicensesCount($aSearchFilters)
 		];
 	}
 
-	public function UpdateProduct($ProductId, $Name, $ProductCode = null, $ShareItProductId = null, $PayPalItem = null)
+	public function UpdateLicense($LicenseId, $Name, $LicenseCode = null, $ShareItLicenseId = null, $PayPalItem = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		$oProduct = $this->oApiProductsManager->getProductById((int) $ProductId);
-		$oProduct->{$this->GetName() . '::ProductName'} = $Name;
-		if (isset($ProductCode))
+		$oLicense = $this->oApiLicensesManager->getLicenseById((int) $LicenseId);
+		$oLicense->{$this->GetName() . '::LicenseName'} = $Name;
+		if (isset($LicenseCode))
 		{
-			$oProduct->{$this->GetName() . '::ProductCode'} = $ProductCode;
+			$oLicense->{$this->GetName() . '::LicenseCode'} = $LicenseCode;
 		}
-		if (isset($ShareItProductId))
+		if (isset($ShareItLicenseId))
 		{
-			$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
+			$oLicense->{$this->GetName() . '::ShareItLicenseId'} = $ShareItLicenseId;
 		}
 		if (isset($PayPalItem))
 		{
-			$oProduct->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
+			$oLicense->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
 		}
-		return $this->oApiProductsManager->UpdateProduct($oProduct);
+		return $this->oApiLicensesManager->UpdateLicense($oLicense);
 	}
 
 	public function UpdateSale($SaleId,
-		$ProductId = null,
+		$LicenseId = null,
 		$Date = null,
 		$VatId = null,
 		$Payment = null,
 		$CustomerId = null,
 		$LicenseKey = null,
 		$RefNumber = null,
-		$ShareItProductId = null,
+		$ShareItLicenseId = null,
 		$NetTotal = null,
 		$ShareItPurchaseId = null,
 		$IsNotified = null,
@@ -371,14 +369,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale = $this->oApiSalesManager->getSaleById((int) $SaleId);
 		if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
 		{
-			$oSale->{$this->GetName() . '::ProductId'} = isset($ProductId) ? $ProductId : $oSale->{$this->GetName() . '::ProductId'};
+			$oSale->{$this->GetName() . '::LicenseId'} = isset($LicenseId) ? $LicenseId : $oSale->{$this->GetName() . '::LicenseId'};
 			$oSale->{$this->GetName() . '::Date'} = isset($Date) ? $Date : $oSale->{$this->GetName() . '::Date'};
 			$oSale->{$this->GetName() . '::VatId'} = isset($VatId) ? $VatId : $oSale->{$this->GetName() . '::VatId'};
 			$oSale->{$this->GetName() . '::Payment'} = isset($Payment) ? $Payment : $oSale->{$this->GetName() . '::Payment'};
 			$oSale->{$this->GetName() . '::CustomerId'} = isset($CustomerId) ? $CustomerId : $oSale->{$this->GetName() . '::CustomerId'};
 			$oSale->{$this->GetName() . '::LicenseKey'} = isset($LicenseKey) ? $LicenseKey : $oSale->{$this->GetName() . '::LicenseKey'};
 			$oSale->{$this->GetName() . '::RefNumber'} = isset($RefNumber) ? $RefNumber : $oSale->{$this->GetName() . '::RefNumber'};
-			$oSale->{$this->GetName() . '::ShareItProductId'} = isset($ShareItProductId) ? $ShareItProductId : $oSale->{$this->GetName() . '::ShareItProductId'};
+			$oSale->{$this->GetName() . '::ShareItLicenseId'} = isset($ShareItLicenseId) ? $ShareItLicenseId : $oSale->{$this->GetName() . '::ShareItLicenseId'};
 			$oSale->{$this->GetName() . '::NetTotal'} = isset($NetTotal) ? $NetTotal : $oSale->{$this->GetName() . '::NetTotal'};
 			$oSale->{$this->GetName() . '::ShareItPurchaseId'} = isset($ShareItPurchaseId) ? $ShareItPurchaseId : $oSale->{$this->GetName() . '::ShareItPurchaseId'};
 			$oSale->{$this->GetName() . '::IsNotified'} = isset($IsNotified) ? $IsNotified : $oSale->{$this->GetName() . '::IsNotified'};
