@@ -51,7 +51,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'ParentSaleId' => array('int', 0),
 				'PaymentSystem' => array('int', 0),
 				'NumberOfLicenses' => array('int', 0),
-				'AdditionalInfo' => array('text', '')
+				'RawData' => array('text', ''),
+				'RawDataType' => array('int', 0)
 			)
 		);
 
@@ -109,7 +110,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$TransactionId = '',
 		$Date = null, $LicenseKey ='', $RefNumber = 0, $ShareItLicenseId = 0, $ShareItPurchaseId = 0, $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
 		$Salutation = '', $Title = '', $FirstName = '', $LastName = '', $Company = '', $Street = '', $Zip = '', $City = '', $FullCity = '', $Country = '', $State = '', $Phone = '', $Fax = '', $Language = '', $NumberOfLicenses = 0,
-		$PayPalItem = ''
+		$PayPalItem = '', $RawData = '', $RawDataType = 0
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
@@ -191,32 +192,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale->{$this->GetName() . '::PaymentSystem'} = $PaymentSystem;
 		$oSale->{$this->GetName() . '::TransactionId'} = $TransactionId;
 		$oSale->{$this->GetName() . '::NumberOfLicenses'} = $NumberOfLicenses;
-		$oSale->{$this->GetName() . '::AdditionalInfo'} = json_encode([
-			'License' => [
-				'LicenseName' => $LicenseName,
-				'LicenseCode' => $LicenseCode,
-				'ShareItLicenseId' => $ShareItLicenseId,
-				'PayPalItem' => $PayPalItem
-			],
-			'Customer' => [
-				'Email' => $Email,
-				'RegName' => $RegName,
-				'Salutation' => $Salutation,
-				'Title' => $Title,
-				'FirstName' => $FirstName,
-				'LastName' => $LastName,
-				'Company' => $Company,
-				'Street' => $Street,
-				'Zip' => $Zip,
-				'City' => $City,
-				'FullCity' => $FullCity,
-				'Country' => $Country,
-				'State' => $State,
-				'Phone' => $Phone,
-				'Fax' => $Fax,
-				'Language' => $Language
-			]
-		]);
+		$oSale->{$this->GetName() . '::RawData'} = $RawData;
+		$oSale->{$this->GetName() . '::RawDataType'} = $RawDataType;
 		if (isset($Date))
 		{
 			$oSale->{$this->GetName() . '::Date'} = $Date;

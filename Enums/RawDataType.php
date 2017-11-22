@@ -10,8 +10,8 @@
 
 namespace Aurora\Modules\Sales\Enums;
 
-class PaymentSystem extends \Aurora\System\Enums\AbstractEnumeration
+class RawDataType extends \Aurora\System\Enums\AbstractEnumeration
 {
-	const ShareIt = 1;
-	const PayPal = 2;
+	const PlainText = 1;
+	const Html = 2;
 }

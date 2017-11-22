@@ -96,7 +96,8 @@ if ($oImapClient->IsLoggined())
 					'',
 					$oMessage['Date'], $aData['LicenseKey'], $aData['RefNumber'], $aData['ShareItLicenseId'], $aData['ShareItPurchaseId'], false, true, false, 0, $aData['VatId'],
 					$aData['Salutation'], $aData['Title'], $aData['FirstName'], $aData['LastName'], $aData['Company'], $aData['Street'], $aData['Zip'],
-					$aData['City'], $aData['FullCity'], $aData['Country'], $aData['State'], $aData['Phone'], $aData['Fax'], $aData['Language'], $aData['NumberOfLicenses']
+					$aData['City'], $aData['FullCity'], $aData['Country'], $aData['State'], $aData['Phone'], $aData['Fax'], $aData['Language'], $aData['NumberOfLicenses'], '',
+					$oMessage['Plain'], \Aurora\Modules\Sales\Enums\RawDataType::PlainText
 				);
 				if ($UID > (int) @file_get_contents($sLastParsedUidPath))
 				{
