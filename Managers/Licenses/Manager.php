@@ -295,7 +295,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 
 			foreach ($aResults as $oLicense)
 			{
-				$aLicenses[$oLicense->EntityId] = $oLicense;
+				$aLicenses[$oLicense->UUID] = $oLicense;
 			}
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)

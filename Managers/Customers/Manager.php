@@ -113,23 +113,23 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	}
 
 	/**
-	 * @param array $aCustomersId Customers id
+	 * @param array $aCustomersUUID Customers UUID
 	 * @param array $aFieldsList Fields List
 	 * @return array
 	 */
-	public function getCustomers($aCustomersId, $aFieldsList = [])
+	public function getCustomers($aCustomersUUID, $aFieldsList = [])
 	{
 		$aCustomers = [];
 		try
 		{
-			if (is_array($aCustomersId) && count($aCustomersId) > 0)
+			if (is_array($aCustomersUUID) && count($aCustomersUUID) > 0)
 			{
 				$aResults = $this->oEavManager->getEntities(
 				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
 					$aFieldsList,
 					0,
 					0,
-					['EntityId' => [$aCustomersId, 'IN']],
+					['UUID' => [$aCustomersUUID, 'IN']],
 					[],
 					\Aurora\System\Enums\SortOrder::ASC
 				);
@@ -138,7 +138,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 				{
 					foreach ($aResults as $oCustomer)
 					{
-						$aCustomers[$oCustomer->EntityId] = $oCustomer;
+						$aCustomers[$oCustomer->UUID] = $oCustomer;
 					}
 				}
 			}

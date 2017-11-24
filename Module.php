@@ -35,11 +35,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Sale',
 			array(
-				'LicenseId' => array('int', 0),
+				'LicenseUUID' => array('string', ''),
 				'Date' => array('datetime', date('Y-m-d H:i:s', 0)),
 				'VatId' => array('string', ''),
 				'Payment' => array('string', ''),
-				'CustomerId' => array('int', 0),
+				'CustomerUUID' => array('string', ''),
 				'LicenseKey' => array('string', ''),
 				'RefNumber' => array('int', 0),
 				'NetTotal' => array('int', 0),
@@ -124,10 +124,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oLicense = null;
 		}
 
-		if (!$oLicense instanceof \Aurora\Modules\SaleObjects\Classes\License &&
-			!($PaymentSystem === \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal &&
-			$PayPalItem !== '')
-		)
+		if (!$oLicense instanceof \Aurora\Modules\SaleObjects\Classes\License && $PaymentSystem !== \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal)
 		{
 			$oLicense = new \Aurora\Modules\SaleObjects\Classes\License($this->GetName());
 			$oLicense->{$this->GetName() . '::LicenseName'} = $LicenseName;
@@ -177,8 +174,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 
 		$oSale = new \Aurora\Modules\SaleObjects\Classes\Sale($this->GetName());
-		$oSale->{$this->GetName() . '::LicenseId'} = isset($oLicense->EntityId) ? $oLicense->EntityId : 0;
-		$oSale->{$this->GetName() . '::CustomerId'} = $oCustomer->EntityId;
+		$oSale->{$this->GetName() . '::LicenseUUID'} = isset($oLicense->UUID) ? $oLicense->UUID : '';
+		$oSale->{$this->GetName() . '::CustomerUUID'} = $oCustomer->UUID;
 		$oSale->{$this->GetName() . '::Payment'} = $Payment;
 		$oSale->{$this->GetName() . '::LicenseKey'} = $LicenseKey;
 		$oSale->{$this->GetName() . '::NetTotal'} = $NetTotal;
@@ -222,8 +219,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function GetSales($Limit = 20, $Offset = 0, $Search = "")
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$aCustomersId = [];
-		$aLicensesId = [];
+		$aCustomersUUID = [];
 		$aSearchFilters = [];
 		$aLicenseSearchFilters = [];
 		if (!empty($Search))
@@ -248,11 +244,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 			if (is_array($aSearchLicenses) && count($aSearchLicenses) > 0)
 			{
-				$aSearchFilters[$this->GetName() . '::LicenseId'] = [array_keys($aSearchLicenses), 'IN'];
+				$aSearchFilters[$this->GetName() . '::LicenseUUID'] = [array_keys($aSearchLicenses), 'IN'];
 			}
 			if (is_array($aSearchCustomers) && count($aSearchCustomers) > 0)
 			{
-				$aSearchFilters[$this->GetName() . '::CustomerId'] = [array_keys($aSearchCustomers), 'IN'];
+				$aSearchFilters[$this->GetName() . '::CustomerUUID'] = [array_keys($aSearchCustomers), 'IN'];
 			}
 
 			$aSearchFilters = ['$OR' => $aSearchFilters];
@@ -262,9 +258,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		foreach ($aSales as $oSale)
 		{
-			$aCustomersId[] = $oSale->{$this->GetName() . '::CustomerId'};
+			$aCustomersUUID[] = $oSale->{$this->GetName() . '::CustomerUUID'};
 		}
-		$aCustomers = $this->oApiCustomersManager->getCustomers(\array_unique($aCustomersId));
+		$aCustomers = $this->oApiCustomersManager->getCustomers(\array_unique($aCustomersUUID));
 		$aLicenses = $this->oApiLicensesManager->getLicenses(0, 0);
 
 		return [
@@ -322,11 +318,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 	}
 
 	public function UpdateSale($SaleId,
-		$LicenseId = null,
+		$LicenseUUID = null,
 		$Date = null,
 		$VatId = null,
 		$Payment = null,
-		$CustomerId = null,
+		$CustomerUUID = null,
 		$LicenseKey = null,
 		$RefNumber = null,
 		$ShareItLicenseId = null,
@@ -346,11 +342,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale = $this->oApiSalesManager->getSaleById((int) $SaleId);
 		if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
 		{
-			$oSale->{$this->GetName() . '::LicenseId'} = isset($LicenseId) ? $LicenseId : $oSale->{$this->GetName() . '::LicenseId'};
+			$oSale->{$this->GetName() . '::LicenseUUID'} = isset($LicenseUUID) ? $LicenseUUID : $oSale->{$this->GetName() . '::LicenseUUID'};
 			$oSale->{$this->GetName() . '::Date'} = isset($Date) ? $Date : $oSale->{$this->GetName() . '::Date'};
 			$oSale->{$this->GetName() . '::VatId'} = isset($VatId) ? $VatId : $oSale->{$this->GetName() . '::VatId'};
 			$oSale->{$this->GetName() . '::Payment'} = isset($Payment) ? $Payment : $oSale->{$this->GetName() . '::Payment'};
-			$oSale->{$this->GetName() . '::CustomerId'} = isset($CustomerId) ? $CustomerId : $oSale->{$this->GetName() . '::CustomerId'};
+			$oSale->{$this->GetName() . '::CustomerUUID'} = isset($CustomerUUID) ? $CustomerUUID : $oSale->{$this->GetName() . '::CustomerUUID'};
 			$oSale->{$this->GetName() . '::LicenseKey'} = isset($LicenseKey) ? $LicenseKey : $oSale->{$this->GetName() . '::LicenseKey'};
 			$oSale->{$this->GetName() . '::RefNumber'} = isset($RefNumber) ? $RefNumber : $oSale->{$this->GetName() . '::RefNumber'};
 			$oSale->{$this->GetName() . '::ShareItLicenseId'} = isset($ShareItLicenseId) ? $ShareItLicenseId : $oSale->{$this->GetName() . '::ShareItLicenseId'};
