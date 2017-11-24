@@ -90,13 +90,13 @@ if ($oImapClient->IsLoggined())
 				isset($aData['ProductName']) && $aData['ProductName'] !== ''
 			)
 			{
+				$sAddress = implode(', ', [$aData['Street'], $aData['City'], $aData['State'], $aData['Zip'], $aData['Country']]);
 				$oSalesModuleDecorator->CreateSale($aData['Payment'], \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt, $aData['NetTotal'],
 					$aData['Email'], $aData['RegName'],
 					$aData['ProductName'], null, null,
 					'',
 					$oMessage['Date'], $aData['LicenseKey'], $aData['RefNumber'], $aData['ShareItProductId'], $aData['ShareItPurchaseId'], false, true, false, 0, $aData['VatId'],
-					$aData['Salutation'], $aData['Title'], $aData['FirstName'], $aData['LastName'], $aData['Company'], $aData['Street'], $aData['Zip'],
-					$aData['City'], $aData['FullCity'], $aData['Country'], $aData['State'], $aData['Phone'], $aData['Fax'], $aData['Language'], $aData['NumberOfLicenses'], '',
+					$aData['Salutation'], $aData['Title'], $aData['FirstName'], $aData['LastName'], $aData['Company'], $sAddress, $aData['Phone'], $aData['Fax'], $aData['Language'], '',
 					$oMessage['Plain'], \Aurora\Modules\Sales\Enums\RawDataType::PlainText
 				);
 				if ($UID > (int) @file_get_contents($sLastParsedUidPath))

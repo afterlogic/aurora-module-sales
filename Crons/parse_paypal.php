@@ -99,7 +99,7 @@ if ($oImapClient->IsLoggined())
 					$aData['ProductName'], null, null,
 					isset($aData['TransactionId']) ? $aData['TransactionId'] : '',
 					$oMessage['Date'], '', 0, 0, 0, false, true, false, 0, '',
-					'', '', '', '', '', '', '','', $aData['FullCity'], '', '', '', '', '', 0, $aData['ProductPayPalItem'],
+					'', '', '', '', '', $aData['FullCity'],'', '', '', $aData['ProductPayPalItem'],
 					$oMessage['Html'], \Aurora\Modules\Sales\Enums\RawDataType::Html
 				);
 				if ($UID > (int) @file_get_contents($sLastParsedUidPath))

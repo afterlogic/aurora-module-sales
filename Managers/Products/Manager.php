@@ -29,30 +29,29 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 
 	/**
 	 * @param \Aurora\Modules\SaleObjects\Classes\Product $oProduct
-	 * @return bool
+	 * @return int|bool
 	 */
 	public function CreateProduct(\Aurora\Modules\SaleObjects\Classes\Product &$oProduct)
 	{
-		$bResult = false;
+		$mResult = false;
 		try
 		{
 			if ($oProduct->validate())
 			{
-				if (!$this->oEavManager->saveEntity($oProduct))
+				$mResult = $this->oEavManager->saveEntity($oProduct);
+				if (!$mResult)
 				{
 					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ProductManager_ProductCreateFailed);
 				}
-
-				$bResult = true;
 			}
 		}
 		catch (\Exception $oException)
 		{
-			$bResult = false;
+			$mResult = false;
 			$this->setLastException($oException);
 		}
 
-		return $bResult;
+		return $mResult;
 	}
 
 	/**
