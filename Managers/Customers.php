@@ -8,9 +8,9 @@
  * For full statements of the licenses see LICENSE-AFTERLOGIC and LICENSE-AGPL3 files.
  */
 
-namespace Aurora\Modules\Sales\Managers\Customers;
+namespace Aurora\Modules\Sales\Managers;
 
-class Manager extends \Aurora\System\Managers\AbstractManager
+class Customers extends \Aurora\System\Managers\AbstractManager
 {
 	/**
 	 * @var \Aurora\System\Managers\Eav

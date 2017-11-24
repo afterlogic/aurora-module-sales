@@ -28,9 +28,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 	public function init()
 	{
-		$this->oApiSalesManager = new Managers\Sales\Manager($this);
-		$this->oApiCustomersManager = new Managers\Customers\Manager($this);
-		$this->oApiProductsManager = new Managers\Products\Manager($this);
+		$this->oApiSalesManager = new Managers\Sales($this);
+		$this->oApiCustomersManager = new Managers\Customers($this);
+		$this->oApiProductsManager = new Managers\Products($this);
 
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Sale',
