@@ -87,14 +87,14 @@ if ($oImapClient->IsLoggined())
 				isset($aData['NetTotal']) && $aData['NetTotal'] !== 0 &&
 				isset($aData['Email']) && $aData['Email'] !== '' &&
 				isset($aData['RegName']) && $aData['RegName'] !== '' &&
-				isset($aData['LicenseName']) && $aData['LicenseName'] !== ''
+				isset($aData['ProductName']) && $aData['ProductName'] !== ''
 			)
 			{
 				$oSalesModuleDecorator->CreateSale($aData['Payment'], \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt, $aData['NetTotal'],
 					$aData['Email'], $aData['RegName'],
-					$aData['LicenseName'], null, null,
+					$aData['ProductName'], null, null,
 					'',
-					$oMessage['Date'], $aData['LicenseKey'], $aData['RefNumber'], $aData['ShareItLicenseId'], $aData['ShareItPurchaseId'], false, true, false, 0, $aData['VatId'],
+					$oMessage['Date'], $aData['LicenseKey'], $aData['RefNumber'], $aData['ShareItProductId'], $aData['ShareItPurchaseId'], false, true, false, 0, $aData['VatId'],
 					$aData['Salutation'], $aData['Title'], $aData['FirstName'], $aData['LastName'], $aData['Company'], $aData['Street'], $aData['Zip'],
 					$aData['City'], $aData['FullCity'], $aData['Country'], $aData['State'], $aData['Phone'], $aData['Fax'], $aData['Language'], $aData['NumberOfLicenses'], '',
 					$oMessage['Plain'], \Aurora\Modules\Sales\Enums\RawDataType::PlainText
@@ -378,7 +378,7 @@ function GetMessage($oImapClient, $Folder, $Uid, $Rfc822MimeIndex = '')
 function ParseMessage($sMessagePlainText, $sSubject)
 {
 	$aParams = [
-		'ShareItLicenseId'	=> [8, 'int'],
+		'ShareItProductId'	=> [8, 'int'],
 		'NumberOfLicenses'	=> [10, 'int'],
 		'ShareItPurchaseId'	=> [11, 'int'],
 		'Salutation'			=> [25, 'string'],
@@ -418,7 +418,7 @@ function ParseMessage($sMessagePlainText, $sSubject)
 	//Name
 	$aMatches = [];
 	preg_match('/\"([\s\S]*)\"/', $aStrings[2], $aMatches);
-	$aResult['LicenseName'] = isset($aMatches[1]) ? $aMatches[1] : '';
+	$aResult['ProductName'] = isset($aMatches[1]) ? $aMatches[1] : '';
 	//Total
 	$aNetTotalParts = explode("=", $aStrings[21]);
 	if (is_array($aNetTotalParts) && isset($aNetTotalParts[1]))

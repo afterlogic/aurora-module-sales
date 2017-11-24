@@ -8,7 +8,7 @@
  * For full statements of the licenses see LICENSE-AFTERLOGIC and LICENSE-AGPL3 files.
  */
 
-namespace Aurora\Modules\Sales\Managers\Licenses;
+namespace Aurora\Modules\Sales\Managers\Products;
 
 class Manager extends \Aurora\System\Managers\AbstractManager
 {
@@ -28,19 +28,19 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	}
 
 	/**
-	 * @param \Aurora\Modules\SaleObjects\Classes\License $oLicense
+	 * @param \Aurora\Modules\SaleObjects\Classes\Product $oProduct
 	 * @return bool
 	 */
-	public function CreateLicense(\Aurora\Modules\SaleObjects\Classes\License &$oLicense)
+	public function CreateProduct(\Aurora\Modules\SaleObjects\Classes\Product &$oProduct)
 	{
 		$bResult = false;
 		try
 		{
-			if ($oLicense->validate())
+			if ($oProduct->validate())
 			{
-				if (!$this->oEavManager->saveEntity($oLicense))
+				if (!$this->oEavManager->saveEntity($oProduct))
 				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::LicenseManager_LicenseCreateFailed);
+					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ProductManager_ProductCreateFailed);
 				}
 
 				$bResult = true;
@@ -56,19 +56,19 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	}
 
 	/**
-	 * @param \Aurora\Modules\SaleObjects\Classes\License $oLicense
+	 * @param \Aurora\Modules\SaleObjects\Classes\Product $oProduct
 	 * @return bool
 	 */
-	public function updateLicense(\Aurora\Modules\SaleObjects\Classes\License $oLicense)
+	public function updateProduct(\Aurora\Modules\SaleObjects\Classes\Product $oProduct)
 	{
 		$bResult = false;
 		try
 		{
-			if ($oLicense->validate())
+			if ($oProduct->validate())
 			{
-				if (!$this->oEavManager->saveEntity($oLicense))
+				if (!$this->oEavManager->saveEntity($oProduct))
 				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::LicenseManager_LicenseUpdateFailed);
+					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ProductManager_ProductUpdateFailed);
 				}
 
 				$bResult = true;
@@ -84,29 +84,29 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	}
 
 	/**
-	 * @param int $iLicenseCode License code
-	 * @return \Aurora\Modules\SaleObjects\Classes\License|bool
+	 * @param int $iProductCode Product code
+	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
 	 */
-	public function getLicenseByCode($iLicenseCode)
+	public function getProductByCode($iProductCode)
 	{
-		$oLicense = false;
+		$oProduct = false;
 		try
 		{
-			if (is_numeric($iLicenseCode))
+			if (is_numeric($iProductCode))
 			{
 				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\License',
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
 					[],
 					0,
 					0,
 					[
-						$this->GetModule()->GetName() . '::LicenseCode' => $iLicenseCode
+						$this->GetModule()->GetName() . '::ProductCode' => $iProductCode
 					]
 				);
 
 				if (is_array($aResults) && isset($aResults[0]))
 				{
-					$oLicense = $aResults[0];
+					$oProduct = $aResults[0];
 				}
 			}
 			else
@@ -116,36 +116,36 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)
 		{
-			$oLicense = false;
+			$oProduct = false;
 			$this->setLastException($oException);
 		}
-		return $oLicense;
+		return $oProduct;
 	}
 
 	/**
-	 * @param int $iLicenseCode License code
-	 * @return \Aurora\Modules\SaleObjects\Classes\License|bool
+	 * @param int $iProductCode Product code
+	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
 	 */
-	public function getLicenseByShareItLicenseId($iShareItLicenseId)
+	public function getProductByShareItProductId($iShareItProductId)
 	{
-		$oLicense = false;
+		$oProduct = false;
 		try
 		{
-			if (is_numeric($iShareItLicenseId))
+			if (is_numeric($iShareItProductId))
 			{
 				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\License',
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
 					[],
 					0,
 					0,
 					[
-						$this->GetModule()->GetName() . '::ShareItLicenseId' => $iShareItLicenseId
+						$this->GetModule()->GetName() . '::ShareItProductId' => $iShareItProductId
 					]
 				);
 
 				if (is_array($aResults) && isset($aResults[0]))
 				{
-					$oLicense = $aResults[0];
+					$oProduct = $aResults[0];
 				}
 			}
 			else
@@ -155,26 +155,26 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)
 		{
-			$oLicense = false;
+			$oProduct = false;
 			$this->setLastException($oException);
 		}
-		return $oLicense;
+		return $oProduct;
 	}
 
 	/**
 	 *
-	 * @param int $iLicenseId License ID
-	 * @return \Aurora\Modules\SaleObjects\Classes\License|bool
+	 * @param int $iProductId Product ID
+	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
 	 * @throws \Aurora\System\Exceptions\BaseException
 	 */
-	public function getLicenseById($iLicenseId)
+	public function getProductById($iProductId)
 	{
-		$mLicense = false;
+		$mProduct = false;
 		try
 		{
-			if (is_numeric($iLicenseId))
+			if (is_numeric($iProductId))
 			{
-				$mLicense = $this->oEavManager->getEntity((int) $iLicenseId);
+				$mProduct = $this->oEavManager->getEntity((int) $iProductId);
 			}
 			else
 			{
@@ -183,36 +183,36 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)
 		{
-			$mLicense = false;
+			$mProduct = false;
 			$this->setLastException($oException);
 		}
-		return $mLicense;
+		return $mProduct;
 	}
 
 	/**
-	 * @param string $sName License name
-	 * @return \Aurora\Modules\SaleObjects\Classes\License|bool
+	 * @param string $sName Product name
+	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
 	 */
-	public function getLicenseByName($sName)
+	public function getProductByName($sName)
 	{
-		$oLicense = false;
+		$oProduct = false;
 		try
 		{
 			if ($sName !== "")
 			{
 				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\License',
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
 					[],
 					0,
 					0,
 					[
-						$this->GetModule()->GetName() . '::LicenseName' => $sName
+						$this->GetModule()->GetName() . '::ProductName' => $sName
 					]
 				);
 
 				if (is_array($aResults) && isset($aResults[0]))
 				{
-					$oLicense = $aResults[0];
+					$oProduct = $aResults[0];
 				}
 			}
 			else
@@ -222,21 +222,21 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)
 		{
-			$oLicense = false;
+			$oProduct = false;
 			$this->setLastException($oException);
 		}
-		return $oLicense;
+		return $oProduct;
 	}
 
 	/**
-	 * @param string $sPayPalItem PayPal license item
+	 * @param string $sPayPalItem PayPal product item
 	 * @param int $iNetTotal  Payment amount
 	 *
-	 * @return \Aurora\Modules\SaleObjects\Classes\License|bool
+	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
 	 */
-	public function getPayPalLicenses($sPayPalItem = '')
+	public function getPayPalProducts($sPayPalItem = '')
 	{
-		$oLicenses = false;
+		$oProducts = false;
 		try
 		{
 			if ($sPayPalItem === '')
@@ -252,7 +252,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 				];
 			}
 			$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\License',
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
 				[],
 				0,
 				0,
@@ -261,15 +261,15 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 
 			if (is_array($aResults))
 			{
-				$oLicenses = $aResults;
+				$oProducts = $aResults;
 			}
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)
 		{
-			$oLicenses = false;
+			$oProducts = false;
 			$this->setLastException($oException);
 		}
-		return $oLicenses;
+		return $oProducts;
 	}
 
 	/**
@@ -279,43 +279,43 @@ class Manager extends \Aurora\System\Managers\AbstractManager
 	 * @param array$aViewAttributes Fields List
 	 * @return array
 	 */
-	public function getLicenses($iLimit = 0, $iOffset = 0, $aSearchFilters = [], $aViewAttributes = [])
+	public function getProducts($iLimit = 0, $iOffset = 0, $aSearchFilters = [], $aViewAttributes = [])
 	{
-		$aLicenses = [];
+		$aProducts = [];
 		try
 		{
 			$aResults = $this->oEavManager->getEntities(
-			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\License',
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
 				$aViewAttributes,
 				$iOffset,
 				$iLimit,
 				$aSearchFilters,
-				$this->GetModule()->GetName() . '::LicenseName'
+				$this->GetModule()->GetName() . '::ProductName'
 			);
 
-			foreach ($aResults as $oLicense)
+			foreach ($aResults as $oProduct)
 			{
-				$aLicenses[$oLicense->UUID] = $oLicense;
+				$aProducts[$oProduct->UUID] = $oProduct;
 			}
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)
 		{
 			$this->setLastException($oException);
 		}
-		return $aLicenses;
+		return $aProducts;
 	}
 
 	/**
 	 * @return int
 	 * @throws \Aurora\System\Exceptions\BaseException
 	 */
-	public function getLicensesCount($aSearchFilters = [])
+	public function getProductsCount($aSearchFilters = [])
 	{
 		$iResult = 0;
 		try
 		{
 			$iResult = $this->oEavManager->getEntitiesCount(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\License',
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
 				$aSearchFilters
 			);
 		}

@@ -90,16 +90,16 @@ if ($oImapClient->IsLoggined())
 			if (isset($aData['NetTotal']) && $aData['NetTotal'] !== 0 &&
 				isset($aData['Email']) && $aData['Email'] !== '' &&
 				isset($aData['RegName']) && $aData['RegName'] !== '' &&
-				isset($aData['LicenseName']) && $aData['LicenseName'] !== '' &&
-				isset($aData['LicensePayPalItem']) && $aData['LicensePayPalItem'] !== ''
+				isset($aData['ProductName']) && $aData['ProductName'] !== '' &&
+				isset($aData['ProductPayPalItem']) && $aData['ProductPayPalItem'] !== ''
 			)
 			{
 				$oSalesModuleDecorator->CreateSale('PayPal', \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal, $aData['NetTotal'],
 					$aData['Email'], $aData['RegName'],
-					$aData['LicenseName'], null, null,
+					$aData['ProductName'], null, null,
 					isset($aData['TransactionId']) ? $aData['TransactionId'] : '',
 					$oMessage['Date'], '', 0, 0, 0, false, true, false, 0, '',
-					'', '', '', '', '', '', '','', $aData['FullCity'], '', '', '', '', '', 0, $aData['LicensePayPalItem'],
+					'', '', '', '', '', '', '','', $aData['FullCity'], '', '', '', '', '', 0, $aData['ProductPayPalItem'],
 					$oMessage['Html'], \Aurora\Modules\Sales\Enums\RawDataType::Html
 				);
 				if ($UID > (int) @file_get_contents($sLastParsedUidPath))
@@ -400,8 +400,8 @@ function ParseMessage($sMessageHtml, $sSubject)
 	$oData = $dom->find('td.ppsans div div table', 1)->find('tr', 1);
 	$oDescription = $oData->find('td', 0);
 	$aDescription = explode("\r\n", trim($oDescription->plaintext));
-	$aResult['LicenseName'] = trim($aDescription[0]);
-	$aResult['LicensePayPalItem'] = trim(str_replace("Item# ", "", $aDescription[1]));
+	$aResult['ProductName'] = trim($aDescription[0]);
+	$aResult['ProductPayPalItem'] = trim(str_replace("Item# ", "", $aDescription[1]));
 //	$oUnitPrice = $oData->find('td', 1);
 //	$oQty = $oData->find('td', 2);
 //	$oAmount = $oData->find('td', 3);
