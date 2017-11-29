@@ -36,14 +36,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'Aurora\Modules\SaleObjects\Classes\Sale',
 			array(
 				'ProductUUID' => array('string', ''),
-				'Date' => array('datetime', date('Y-m-d H:i:s', 0)),
 				'VatId' => array('string', ''),
 				'Payment' => array('string', ''),
 				'CustomerUUID' => array('string', ''),
 				'LicenseKey' => array('string', ''),
 				'RefNumber' => array('int', 0),
 				'ShareItProductId' => array('int', 0),
-				'NetTotal' => array('int', 0),
 				'ShareItPurchaseId' => array('int', 0),
 				'IsNotified' => array('bool', false),
 				'MaintenanceExpirationDate' => array('datetime', date('Y-m-d H:i:s', 0)),
@@ -63,7 +61,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 			array(
 				'Email' => array('string', ''),
 				'Salutation' => array('string', ''),
-				'Title' => array('string', ''),
 				'LastName' => array('string', ''),
 				'FirstName' => array('string', ''),
 				'Company' => array('string', ''),
@@ -93,7 +90,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param string $PaymentSystem Payment system.
 	 * @param datetime $MaintenanceExpirationDate Maintenance expiration date.
 	 * @param string $IncomingLogin Login for IMAP connection.
-	 * @param int $NetTotal Payment amount.
+	 * @param int $Price Payment amount.
 	 * @param string $Email Email.
 	 * @param string $RegName Full name.
 	 * @param string $ProductName Product name.
@@ -101,7 +98,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * 
 	 * @return \Aurora\Modules\SaleObjects\Classes\Sale|boolean
 	 */
-	public function CreateSale($Payment, $PaymentSystem, $NetTotal,
+	public function CreateSale($Payment, $PaymentSystem, $Price,
 		$Email, $RegName,
 		$ProductName, $ProductCode = null, $MaintenanceExpirationDate = null,
 		$TransactionId = '',
@@ -146,7 +143,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oCustomer->{$this->GetName() . '::Email'} = $Email;
 			$oCustomer->{$this->GetName() . '::RegName'} = $RegName;
 			$oCustomer->{$this->GetName() . '::Salutation'} = $Salutation;
-			$oCustomer->{$this->GetName() . '::Title'} = $Title;
+			$oCustomer->Title = $Title;
 			$oCustomer->{$this->GetName() . '::FirstName'} = $FirstName;
 			$oCustomer->{$this->GetName() . '::LastName'} = $LastName;
 			$oCustomer->{$this->GetName() . '::Company'} = $Company;
@@ -170,7 +167,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale->{$this->GetName() . '::CustomerUUID'} = $oCustomer->UUID;
 		$oSale->{$this->GetName() . '::Payment'} = $Payment;
 		$oSale->{$this->GetName() . '::LicenseKey'} = $LicenseKey;
-		$oSale->{$this->GetName() . '::NetTotal'} = $NetTotal;
+		$oSale->Price = $Price;
 		$oSale->{$this->GetName() . '::RefNumber'} = $RefNumber;
 		$oSale->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
 		$oSale->{$this->GetName() . '::ShareItPurchaseId'} = $ShareItPurchaseId;
@@ -186,7 +183,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
 		if (isset($Date))
 		{
-			$oSale->{$this->GetName() . '::Date'} = $Date;
+			$oSale->Date = $Date;
 		}
 		if (isset($MaintenanceExpirationDate))
 		{
@@ -232,7 +229,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 			$aSearchFilters = [
 				$this->GetName() . '::LicenseKey' => ['%'.$Search.'%', 'LIKE'],
-				$this->GetName() . '::Date' => ['%'.$Search.'%', 'LIKE']
+				$this->Date => ['%'.$Search.'%', 'LIKE']
 			];
 
 			if (is_array($aSearchProducts) && count($aSearchProducts) > 0)
@@ -289,7 +286,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 	}
 
-	public function UpdateProduct($ProductId, $Name, $ProductCode = null, $ShareItProductId = null, $PayPalItem = null)
+	public function UpdateProduct($ProductId, $Name, $ProductCode = null, $ShareItProductId = null, $PayPalItem = null, $ProductPrice = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
@@ -307,6 +304,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$oProduct->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
 		}
+		if (isset($ProductPrice))
+		{
+			$oProduct->Price = $ProductPrice;
+		}
 		return $this->oApiProductsManager->UpdateProduct($oProduct);
 	}
 
@@ -319,7 +320,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$LicenseKey = null,
 		$RefNumber = null,
 		$ShareItProductId = null,
-		$NetTotal = null,
+		$Price = null,
 		$ShareItPurchaseId = null,
 		$IsNotified = null,
 		$MaintenanceExpirationDate = null,
@@ -336,14 +337,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
 		{
 			$oSale->{$this->GetName() . '::ProductUUID'} = isset($ProductUUID) ? $ProductUUID : $oSale->{$this->GetName() . '::ProductUUID'};
-			$oSale->{$this->GetName() . '::Date'} = isset($Date) ? $Date : $oSale->{$this->GetName() . '::Date'};
+			$oSale->Date = isset($Date) ? $Date : $oSale->Date;
 			$oSale->{$this->GetName() . '::VatId'} = isset($VatId) ? $VatId : $oSale->{$this->GetName() . '::VatId'};
 			$oSale->{$this->GetName() . '::Payment'} = isset($Payment) ? $Payment : $oSale->{$this->GetName() . '::Payment'};
 			$oSale->{$this->GetName() . '::CustomerUUID'} = isset($CustomerUUID) ? $CustomerUUID : $oSale->{$this->GetName() . '::CustomerUUID'};
 			$oSale->{$this->GetName() . '::LicenseKey'} = isset($LicenseKey) ? $LicenseKey : $oSale->{$this->GetName() . '::LicenseKey'};
 			$oSale->{$this->GetName() . '::RefNumber'} = isset($RefNumber) ? $RefNumber : $oSale->{$this->GetName() . '::RefNumber'};
 			$oSale->{$this->GetName() . '::ShareItProductId'} = isset($ShareItProductId) ? $ShareItProductId : $oSale->{$this->GetName() . '::ShareItProductId'};
-			$oSale->{$this->GetName() . '::NetTotal'} = isset($NetTotal) ? $NetTotal : $oSale->{$this->GetName() . '::NetTotal'};
+			$oSale->Price = isset($Price) ? $Price : $oSale->Price;
 			$oSale->{$this->GetName() . '::ShareItPurchaseId'} = isset($ShareItPurchaseId) ? $ShareItPurchaseId : $oSale->{$this->GetName() . '::ShareItPurchaseId'};
 			$oSale->{$this->GetName() . '::IsNotified'} = isset($IsNotified) ? $IsNotified : $oSale->{$this->GetName() . '::IsNotified'};
 			$oSale->{$this->GetName() . '::MaintenanceExpirationDate'} = isset($MaintenanceExpirationDate) ? $MaintenanceExpirationDate : $oSale->{$this->GetName() . '::MaintenanceExpirationDate'};

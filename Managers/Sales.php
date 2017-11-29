@@ -91,7 +91,7 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 				$iOffset,
 				$iLimit,
 				$aSearchFilters,
-				[$this->GetModule()->GetName() . '::Date'],
+				['Date'],
 				\Aurora\System\Enums\SortOrder::DESC
 			);
 		}
