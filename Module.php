@@ -229,7 +229,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 			$aSearchFilters = [
 				$this->GetName() . '::LicenseKey' => ['%'.$Search.'%', 'LIKE'],
-				$this->Date => ['%'.$Search.'%', 'LIKE']
+				'Date' => ['%'.$Search.'%', 'LIKE']
 			];
 
 			if (is_array($aSearchProducts) && count($aSearchProducts) > 0)

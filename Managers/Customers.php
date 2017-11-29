@@ -213,7 +213,7 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 				{
 					foreach ($aResults as $oCustomer)
 					{
-						$aCustomers[$oCustomer->EntityId] = $oCustomer;
+						$aCustomers[$oCustomer->UUID] = $oCustomer;
 					}
 				}
 			}
