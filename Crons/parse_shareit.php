@@ -90,7 +90,18 @@ if ($oImapClient->IsLoggined())
 				isset($aData['ProductName']) && $aData['ProductName'] !== ''
 			)
 			{
-				$sAddress = implode(', ', [$aData['Street'], $aData['City'], $aData['State'], $aData['Zip'], $aData['Country']]);
+				$aAdressParts = [$aData['Street'], $aData['City'], $aData['State'], $aData['Zip'], $aData['Country']];
+				$aAdressPartsClear = [];
+				foreach ($aAdressParts as $sPart)
+				{
+
+					if (trim($sPart) !== '')
+					{
+						array_push($aAdressPartsClear, trim($sPart));
+					}
+				}
+
+				$sAddress = implode(', ', $aAdressPartsClear);
 				$oSalesModuleDecorator->CreateSale($aData['Payment'], \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt, $aData['NetTotal'],
 					$aData['Email'], $aData['RegName'],
 					$aData['ProductName'], null, null,
