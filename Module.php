@@ -286,7 +286,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 	}
 
-	public function UpdateProduct($ProductId, $Name, $ProductCode = null, $ShareItProductId = null, $PayPalItem = null, $ProductPrice = null)
+	public function UpdateProduct($ProductId, $Name, $ProductCode = null, $ShareItProductId = null, $PayPalItem = null, $ProductPrice = null, $Homepage = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
@@ -307,6 +307,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if (isset($ProductPrice))
 		{
 			$oProduct->Price = $ProductPrice;
+		}
+		if (isset($Homepage))
+		{
+			$oProduct->Homepage = $Homepage;
 		}
 		return $this->oApiProductsManager->UpdateProduct($oProduct);
 	}
