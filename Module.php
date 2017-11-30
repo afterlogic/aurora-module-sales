@@ -19,6 +19,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public $oApiSalesManager = null;
 	public $oApiCustomersManager = null;
 	public $oApiProductsManager = null;
+	public $oApiProductGroupsManager = null;
 
 	/**
 	 * Initializes Sales Module.
@@ -31,6 +32,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->oApiSalesManager = new Managers\Sales($this);
 		$this->oApiCustomersManager = new Managers\Customers($this);
 		$this->oApiProductsManager = new Managers\Products($this);
+		$this->oApiProductGroupsManager = new Managers\ProductGroups($this);
 
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Sale',
@@ -81,11 +83,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Product',
 			array(
-				'ProductCode' => array('int', 0),
 				'ProductName' => array('string', ''),
 				'ShareItProductId' => array('int', 0),
 				'PayPalItem' => array('string', ''),
 				'IsAutocreated' => array('bool', true),
+			)
+		);
+
+		$this->extendObject(
+			'Aurora\Modules\SaleObjects\Classes\ProductGroup',
+			array(
+				'ProductCode' => array('string', '')
 			)
 		);
 	}
@@ -128,7 +136,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
 			$oProduct->{$this->GetName() . '::ProductName'} = $ProductName;
-			$oProduct->{$this->GetName() . '::ProductCode'} = $ProductCode;
+			if (isset($ProductCode))
+			{
+				$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByCode($ProductCode);
+				if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
+				{
+					$oProduct->{$this->GetName() . '::ProductGroupUUID'} = $oProductGroup->UUID;
+				}
+			}
 			$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
 			$oProduct->{$this->GetName() . '::IsAutocreated'} = true;
 			$iProductId = $this->oApiProductsManager->createProduct($oProduct);
@@ -225,7 +240,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			];
 		}
 		$aSearchProducts = $this->oApiProductsManager->getProducts(0, 0, $aProductSearchFilters, [
-				$this->GetName() . '::ProductCode',
+				$this->GetName() . '::ProductGroupUUID',
 				$this->GetName() . '::ProductName',
 				$this->GetName() . '::ShareItProductId',
 			]);
@@ -292,15 +307,15 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 	}
 
-	public function UpdateProduct($ProductId, $Name, $ProductCode = null, $ShareItProductId = null, $PayPalItem = null, $ProductPrice = null, $Homepage = '')
+	public function UpdateProduct($ProductId, $Name, $ProductGroupUUID = null, $ShareItProductId = null, $PayPalItem = null, $ProductPrice = null, $Homepage = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$oProduct = $this->oApiProductsManager->getProductById((int) $ProductId);
 		$oProduct->{$this->GetName() . '::ProductName'} = $Name;
-		if (isset($ProductCode))
+		if (isset($ProductGroupUUID))
 		{
-			$oProduct->{$this->GetName() . '::ProductCode'} = $ProductCode;
+			$oProduct->ProductGroupUUID = $ProductGroupUUID;
 		}
 		if (isset($ShareItProductId))
 		{
