@@ -69,6 +69,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'Fax' => array('string', ''),
 				'RegName' => array('string', ''),
 				'Language' => array('string', ''),
+
+				'Notify' => array('bool', true),
+				'GotGreeting' => array('bool', true),
+				'GotGreeting2' => array('bool', true),
+				'GotSurvey' => array('bool', true),
+				'IsSale' => array('bool', true)
 			)
 		);
 
