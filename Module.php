@@ -141,7 +141,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByCode($ProductCode);
 				if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 				{
-					$oProduct->{$this->GetName() . '::ProductGroupUUID'} = $oProductGroup->UUID;
+					$oProduct->ProductGroupUUID = $oProductGroup->UUID;
 				}
 			}
 			$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
@@ -240,7 +240,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			];
 		}
 		$aSearchProducts = $this->oApiProductsManager->getProducts(0, 0, $aProductSearchFilters, [
-				$this->GetName() . '::ProductGroupUUID',
+				'ProductGroupUUID',
 				$this->GetName() . '::ProductName',
 				$this->GetName() . '::ShareItProductId',
 			]);
