@@ -273,12 +273,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		$aCustomers = $this->oApiCustomersManager->getCustomers(\array_unique($aCustomersUUID));
 		$aProducts = $this->oApiProductsManager->getProducts(0, 0);
+		$aProductGroups = $this->oApiProductGroupsManager->getProductGroups(0, 0);
 
 		return [
 			'ItemsCount' => $iSalesCount,
 			'Sales' => is_array($aSales) ? array_reverse($aSales) : [],
 			'Customers' => is_array($aCustomers) ? $aCustomers : [],
-			'Products' => is_array($aProducts) ? $aProducts : []
+			'Products' => is_array($aProducts) ? $aProducts : [],
+			'ProductGroups' => is_array($aProductGroups) ? $aProductGroups : [],
 		];
 	}
 
@@ -307,12 +309,40 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 	}
 
-	public function UpdateProduct($ProductId, $Name, $ProductGroupUUID = null, $ShareItProductId = null, $PayPalItem = null, $ProductPrice = null, $Homepage = '')
+	/**
+	 * Get all products groups.
+	 *
+	 * @param int $Limit Limit.
+	 * @param int $Offset Offset.
+	 * @param string $Search Search string.
+	 * @return array
+	 */
+	public function GetProductGroups($Limit = 0, $Offset = 0, $Search = "")
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$aSearchFilters = [];
+		if (!empty($Search))
+		{
+			$aSearchFilters = [
+				'Title' => ['%'.$Search.'%', 'LIKE']
+			];
+		}
+		$aProductGroups = $this->oApiProductGroupsManager->getProductGroups($Limit, $Offset, $aSearchFilters);
+		return [
+			'ProductGroups' => is_array($aProductGroups) ? $aProductGroups : [],
+			'ItemsCount' => $this->oApiProductGroupsManager->getProductGroupsCount($aSearchFilters)
+		];
+	}
+
+	public function UpdateProduct($ProductId, $Name = null, $ProductGroupUUID = null, $ShareItProductId = null, $PayPalItem = null, $ProductPrice = null, $Homepage = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$oProduct = $this->oApiProductsManager->getProductById((int) $ProductId);
-		$oProduct->{$this->GetName() . '::ProductName'} = $Name;
+		if (isset($Name))
+		{
+			$oProduct->{$this->GetName() . '::ProductName'} = $Name;
+		}
 		if (isset($ProductGroupUUID))
 		{
 			$oProduct->ProductGroupUUID = $ProductGroupUUID;
@@ -334,6 +364,22 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oProduct->Homepage = $Homepage;
 		}
 		return $this->oApiProductsManager->UpdateProduct($oProduct);
+	}
+
+	public function UpdateProductGroup($ProductGroupId, $Title = null, $Homepage = null)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+		$oProductGroup = $this->oApiProductGroupsManager->getProductGroupById((int) $ProductGroupId);
+		if (isset($Title))
+		{
+			$oProductGroup->Title = $Title;
+		}
+		if (isset($Homepage))
+		{
+			$oProductGroup->Homepage = $Homepage;
+		}
+		return $this->oApiProductGroupsManager->UpdateProductGroup($oProductGroup);
 	}
 
 	public function UpdateSale($SaleId,
