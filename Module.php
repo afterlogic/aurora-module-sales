@@ -270,17 +270,16 @@ class Module extends \Aurora\System\Module\AbstractModule
 		foreach ($aSales as $oSale)
 		{
 			$aCustomersUUID[] = $oSale->{$this->GetName() . '::CustomerUUID'};
+			$aProductsUUID[] = $oSale->{$this->GetName() . '::ProductUUID'};
 		}
 		$aCustomers = $this->oApiCustomersManager->getCustomers(\array_unique($aCustomersUUID));
-		$aProducts = $this->oApiProductsManager->getProducts(0, 0);
-		$aProductGroups = $this->oApiProductGroupsManager->getProductGroups(0, 0);
+		$aProducts = $this->oApiProductsManager->getProducts(0, 0, ['UUID' => [$aProductsUUID, 'IN']]);
 
 		return [
 			'ItemsCount' => $iSalesCount,
 			'Sales' => is_array($aSales) ? array_reverse($aSales) : [],
 			'Customers' => is_array($aCustomers) ? $aCustomers : [],
-			'Products' => is_array($aProducts) ? $aProducts : [],
-			'ProductGroups' => is_array($aProductGroups) ? $aProductGroups : [],
+			'Products' => is_array($aProducts) ? $aProducts : []
 		];
 	}
 
@@ -366,7 +365,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		return $this->oApiProductsManager->UpdateProduct($oProduct);
 	}
 
-	public function UpdateProductGroup($ProductGroupId, $Title = null, $Homepage = null)
+	public function UpdateProductGroup($ProductGroupId, $Title = null, $Homepage = null, $ProductCode = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
@@ -378,6 +377,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if (isset($Homepage))
 		{
 			$oProductGroup->Homepage = $Homepage;
+		}
+		if (isset($ProductCode))
+		{
+			$oProductGroup->{$this->GetName() . '::ProductCode'} = (int) $ProductCode;
 		}
 		return $this->oApiProductGroupsManager->UpdateProductGroup($oProductGroup);
 	}
