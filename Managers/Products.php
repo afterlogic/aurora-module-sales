@@ -205,7 +205,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 					0,
 					0,
 					[
-						$this->GetModule()->GetName() . '::ProductName' => $sName
+						'Title' => $sName
 					]
 				);
 
@@ -289,7 +289,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 				$iOffset,
 				$iLimit,
 				$aSearchFilters,
-				$this->GetModule()->GetName() . '::ProductName'
+				'Title'
 			);
 
 			foreach ($aResults as $oProduct)

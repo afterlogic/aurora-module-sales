@@ -83,7 +83,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Product',
 			array(
-				'ProductName' => array('string', ''),
 				'ShareItProductId' => array('int', 0),
 				'PayPalItem' => array('string', ''),
 				'IsAutocreated' => array('bool', true),
@@ -107,17 +106,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param int $Price Payment amount.
 	 * @param string $Email Email.
 	 * @param string $RegName Full name.
-	 * @param string $ProductName Product name.
+	 * @param string $ProductTitle Product name.
 	 * @param string $ProductCode Product code.
 	 * 
 	 * @return \Aurora\Modules\SaleObjects\Classes\Sale|boolean
 	 */
 	public function CreateSale($Payment, $PaymentSystem, $Price,
 		$Email, $RegName,
-		$ProductName, $ProductCode = null, $MaintenanceExpirationDate = null,
+		$ProductTitle, $ProductCode = null, $MaintenanceExpirationDate = null,
 		$TransactionId = '',
 		$Date = null, $LicenseKey ='', $RefNumber = 0, $ShareItProductId = 0, $ShareItPurchaseId = 0, $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
-		$Salutation = '', $Title = '', $FirstName = '', $LastName = '', $Company = '', $Address = '', $Phone = '', $Fax = '', $Language = '',
+		$Salutation = '', $CustomerTitle = '', $FirstName = '', $LastName = '', $Company = '', $Address = '', $Phone = '', $Fax = '', $Language = '',
 		$PayPalItem = '', $RawData = '', $RawDataType = 0
 	)
 	{
@@ -143,7 +142,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 					$ProductGroupUUID = $oProductGroup->UUID;
 				}
 			}
-			$iProductId = $this->CreateProduct($ProductName, $ShareItProductId, true, $ProductGroupUUID);
+			$iProductId = $this->CreateProduct($ProductTitle, $ShareItProductId, true, $ProductGroupUUID);
 			if ($iProductId)
 			{
 				$oProduct = $this->oApiProductsManager->getProductById($iProductId);
@@ -161,7 +160,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oCustomer->{$this->GetName() . '::Email'} = $Email;
 			$oCustomer->{$this->GetName() . '::RegName'} = $RegName;
 			$oCustomer->{$this->GetName() . '::Salutation'} = $Salutation;
-			$oCustomer->Title = $Title;
+			$oCustomer->Title = $CustomerTitle;
 			$oCustomer->{$this->GetName() . '::FirstName'} = $FirstName;
 			$oCustomer->{$this->GetName() . '::LastName'} = $LastName;
 			$oCustomer->{$this->GetName() . '::Company'} = $Company;
@@ -234,11 +233,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if (!empty($Search))
 		{
 			$aProductSearchFilters = [
-				$this->GetName() . '::ProductName' => ['%'.$Search.'%', 'LIKE']
+				'Title' => ['%'.$Search.'%', 'LIKE']
 			];
 			$aSearchProducts = $this->oApiProductsManager->getProducts(0, 0, $aProductSearchFilters, [
 				'ProductGroupUUID',
-				$this->GetName() . '::ProductName',
+				'Title',
 				$this->GetName() . '::ShareItProductId',
 			]);
 			$aCustomersSearchFilters = ['$OR' => [
@@ -300,7 +299,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if (!empty($Search))
 		{
 			$aSearchFilters = [
-				$this->GetName() . '::ProductName' => ['%'.$Search.'%', 'LIKE']
+				'Title' => ['%'.$Search.'%', 'LIKE']
 			];
 		}
 		$aProducts = $this->oApiProductsManager->getProducts($Limit, $Offset, $aSearchFilters);
@@ -335,14 +334,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 	}
 
-	public function UpdateProduct($ProductId, $Name = null, $ProductGroupUUID = null, $ShareItProductId = null, $PayPalItem = null, $ProductPrice = null, $Homepage = '')
+	public function UpdateProduct($ProductId, $Title = null, $ShareItProductId = null, $IsAutocreated = null, $ProductGroupUUID = null, $Description = null, $Homepage = null, $ProductPrice = null, $Status = 0, $PayPalItem = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$oProduct = $this->oApiProductsManager->getProductById((int) $ProductId);
-		if (isset($Name))
+		if (isset($Title))
 		{
-			$oProduct->{$this->GetName() . '::ProductName'} = $Name;
+			$oProduct->Title = $Title;
 		}
 		if (isset($ProductGroupUUID))
 		{
@@ -356,13 +355,25 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$oProduct->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
 		}
+		if (isset($IsAutocreated))
+		{
+			$oProduct->{$this->GetName() . '::IsAutocreated'} = $IsAutocreated;
+		}
 		if (isset($ProductPrice))
 		{
 			$oProduct->Price = $ProductPrice;
 		}
+		if (isset($Description))
+		{
+			$oProduct->Description = $Description;
+		}
 		if (isset($Homepage))
 		{
 			$oProduct->Homepage = $Homepage;
+		}
+		if (isset($Status))
+		{
+			$oProduct->Status = $Status;
 		}
 		return $this->oApiProductsManager->UpdateProduct($oProduct);
 	}
@@ -440,7 +451,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 	/**
 	 * Creates product.
-	 * @param string $ProductName Product name.
+	 * @param string $Title Product name.
 	 * @param string $ShareItProductId ShareIt product ID.
 	 * @param boolean $IsAutocreated Is product was created automatically.
 	 * @param string $ProductGroupUUID UUID of product group.
@@ -452,7 +463,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 *
 	 * @return  int|boolean
 	 */
-	public function CreateProduct($Title, $ShareItProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Description = '', $Homepage = '', $Price = 0, $Status = 0)
+	public function CreateProduct($Title, $ShareItProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Description = '', $Homepage = '', $Price = 0, $Status = 0, $PayPalItem = '')
 	{
 		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
 		if (isset($ProductGroupUUID))
@@ -465,6 +476,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
 		$oProduct->{$this->GetName() . '::IsAutocreated'} = $IsAutocreated;
+		$oProduct->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
 		$oProduct->Title = $Title;
 		$oProduct->Description = $Description;
 		$oProduct->Homepage = $Homepage;
