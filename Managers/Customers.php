@@ -117,34 +117,27 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 	 * @param array $aFieldsList Fields List
 	 * @return array
 	 */
-	public function getCustomers($aCustomersUUID, $aFieldsList = [])
+	public function getCustomers($iLimit = 0, $iOffset = 0,  $aSearchFilters = [], $aViewAttributes = [])
 	{
 		$aCustomers = [];
 		try
 		{
-			if (is_array($aCustomersUUID) && count($aCustomersUUID) > 0)
-			{
-				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
-					$aFieldsList,
-					0,
-					0,
-					['UUID' => [$aCustomersUUID, 'IN']],
-					[],
-					\Aurora\System\Enums\SortOrder::ASC
-				);
+			$aResults = $this->oEavManager->getEntities(
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
+				$aViewAttributes,
+				0,
+				0,
+				$aSearchFilters,
+				[],
+				\Aurora\System\Enums\SortOrder::ASC
+			);
 
-				if (is_array($aResults))
-				{
-					foreach ($aResults as $oCustomer)
-					{
-						$aCustomers[$oCustomer->UUID] = $oCustomer;
-					}
-				}
-			}
-			else
+			if (is_array($aResults))
 			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+				foreach ($aResults as $oCustomer)
+				{
+					$aCustomers[$oCustomer->UUID] = $oCustomer;
+				}
 			}
 		}
 		catch (\Aurora\System\Exceptions\BaseException $oException)
@@ -180,52 +173,5 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 			$this->setLastException($oException);
 		}
 		return $mCustomer;
-	}
-
-	/**
-	 * @param string $sSearch Search string
-	 * @param array $aFieldsList Fields List
-	 * @return array
-	 */
-	public function searchCustomers($sSearch, $aFieldsList = [])
-	{
-		$aCustomers = [];
-		try
-		{
-			if (!empty($sSearch))
-			{
-				$aSearchFilters = ['$OR' => [
-						$this->GetModule()->GetName() . '::Email' => ['%'.$sSearch.'%', 'LIKE'],
-						$this->GetModule()->GetName() . '::RegName' => ['%'.$sSearch.'%', 'LIKE'],
-						$this->GetModule()->GetName() . '::FirstName' => ['%'.$sSearch.'%', 'LIKE'],
-						$this->GetModule()->GetName() . '::LastName' => ['%'.$sSearch.'%', 'LIKE']
-					]
-				];
-				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
-					$aFieldsList,
-					0,
-					0,
-					$aSearchFilters
-				);
-
-				if (is_array($aResults))
-				{
-					foreach ($aResults as $oCustomer)
-					{
-						$aCustomers[$oCustomer->UUID] = $oCustomer;
-					}
-				}
-			}
-			else
-			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
-			}
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
-		return $aCustomers;
 	}
 }

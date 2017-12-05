@@ -246,7 +246,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 			]);
 		if (!empty($Search))
 		{
-			$aSearchCustomers = $this->oApiCustomersManager->searchCustomers($Search, [$this->GetName() . '::Email']);
+			$aCustomersSearchFilters = ['$OR' => [
+					$this->GetName() . '::Email' => ['%'.$Search.'%', 'LIKE'],
+					$this->GetName() . '::RegName' => ['%'.$Search.'%', 'LIKE'],
+					$this->GetName() . '::FirstName' => ['%'.$Search.'%', 'LIKE'],
+					$this->GetName() . '::LastName' => ['%'.$Search.'%', 'LIKE']
+				]
+			];
+			$aSearchCustomers = $this->oApiCustomersManager->getCustomers(0, 0, $aCustomersSearchFilters, [$this->GetName() . '::Email']);
 
 			$aSearchFilters = [
 				$this->GetName() . '::LicenseKey' => ['%'.$Search.'%', 'LIKE'],
@@ -272,7 +279,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aCustomersUUID[] = $oSale->{$this->GetName() . '::CustomerUUID'};
 			$aProductsUUID[] = $oSale->{$this->GetName() . '::ProductUUID'};
 		}
-		$aCustomers = $this->oApiCustomersManager->getCustomers(\array_unique($aCustomersUUID));
+		$aCustomers = $this->oApiCustomersManager->getCustomers(0, 0, ['UUID' => [\array_unique($aCustomersUUID), 'IN']]);
 		$aProducts = $this->oApiProductsManager->getProducts(0, 0, ['UUID' => [$aProductsUUID, 'IN']]);
 
 		return [
