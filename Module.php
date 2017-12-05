@@ -255,7 +255,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 			if (is_array($aSearchProducts) && count($aSearchProducts) > 0)
 			{
-				$aSearchFilters[$this->GetName() . '::ProductUUID'] = [array_keys($aSearchLicenses), 'IN'];
+				$aSearchFilters[$this->GetName() . '::ProductUUID'] = [array_keys($aSearchProducts), 'IN'];
 			}
 			if (is_array($aSearchCustomers) && count($aSearchCustomers) > 0)
 			{
