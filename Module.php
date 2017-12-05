@@ -20,6 +20,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public $oApiCustomersManager = null;
 	public $oApiProductsManager = null;
 	public $oApiProductGroupsManager = null;
+	public $oApiDownloadsManager = null;
 
 	/**
 	 * Initializes Sales Module.
@@ -33,6 +34,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->oApiCustomersManager = new Managers\Customers($this);
 		$this->oApiProductsManager = new Managers\Products($this);
 		$this->oApiProductGroupsManager = new Managers\ProductGroups($this);
+		$this->oApiDownloadsManager = new Managers\Downloads($this);
 
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Sale',
@@ -457,107 +459,31 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$IsUpgrade,
 		$PlatformType,
 		$CustomerUUID,
-		$ProductGroupUUID)
+		$ProductUUID)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-
+//		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$oDownload = new Classes\Download($this->GetName());
-		
-/*		if (isset($ProductCode))
-		{
-			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByCode($ProductCode);
-			if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
-			{
-				$oDownload->ProductGroupUUID = $oProductGroup->UUID;
-			}
-		}
- * 
- */
-/*		
-		$this->DownloadId, 
-		$this->ProductCode, 
-		$this->Date, 
-		$this->Referer, 
-		$this->Ip, 
-		$this->Gad, 
-		$this->ProductVersion, 
-		$this->TrialKey, 
-		$this->LicenseType, 
-		$this->ReferrerPage, 
-		$this->IsUpgrade,
-		$this->PlatformType,
-		$this->CustomerUUID,
-		$this->ProductGroupUUID
-*/				
-		$oProduct->{$this->GetName() . '::IsAutocreated'} = true;
-		$iProductId = $this->oApiProductsManager->createProduct($oProduct);
-		if ($iProductId)
-		{
-			$oProduct = $this->oApiProductsManager->getProductById($iProductId);
-		}
-		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
-		{
-			return false;
-		}
 
-		$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($Email);
-		if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
-		{
-			$oCustomer = new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
-			$oCustomer->{$this->GetName() . '::Email'} = $Email;
-			$oCustomer->{$this->GetName() . '::RegName'} = $RegName;
-			$oCustomer->{$this->GetName() . '::Salutation'} = $Salutation;
-			$oCustomer->Title = $Title;
-			$oCustomer->{$this->GetName() . '::FirstName'} = $FirstName;
-			$oCustomer->{$this->GetName() . '::LastName'} = $LastName;
-			$oCustomer->{$this->GetName() . '::Company'} = $Company;
-			$oCustomer->{$this->GetName() . '::Address'} = $Address;
-			$oCustomer->{$this->GetName() . '::Phone'} = $Phone;
-			$oCustomer->{$this->GetName() . '::Fax'} = $Fax;
-			$oCustomer->{$this->GetName() . '::Language'} = $Language;
-			$bCustomerResult = $this->oApiCustomersManager->CreateCustomer($oCustomer);
-			if ($bCustomerResult)
-			{
-				$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($Email);
-			}
-			if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
-			{
-				return false;
-			}
-		}
+		$oDownload->DownloadId = $DownloadId; 
+		$oDownload->ProductCode = $ProductCode; 
+		$oDownload->Date = $Date;
+		$oDownload->Referer = $Referer;
+		$oDownload->Ip = $Ip;
+		$oDownload->Gad = $Gad; 
+		$oDownload->ProductVersion = $ProductVersion; 
+		$oDownload->TrialKey = $TrialKey; 
+		$oDownload->LicenseType = $LicenseType; 
+		$oDownload->ReferrerPage = $ReferrerPage; 
+		$oDownload->IsUpgrade = $IsUpgrade;
+		$oDownload->PlatformType = $PlatformType;
+		$oDownload->CustomerUUID = $CustomerUUID;
+		$oDownload->ProductUUID = $ProductUUID;
 
-		$oSale = new \Aurora\Modules\SaleObjects\Classes\Sale($this->GetName());
-		$oSale->{$this->GetName() . '::ProductUUID'} = isset($oProduct->UUID) ? $oProduct->UUID : '';
-		$oSale->{$this->GetName() . '::CustomerUUID'} = $oCustomer->UUID;
-		$oSale->{$this->GetName() . '::Payment'} = $Payment;
-		$oSale->{$this->GetName() . '::LicenseKey'} = $LicenseKey;
-		$oSale->Price = $Price;
-		$oSale->{$this->GetName() . '::RefNumber'} = $RefNumber;
-		$oSale->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
-		$oSale->{$this->GetName() . '::ShareItPurchaseId'} = $ShareItPurchaseId;
-		$oSale->{$this->GetName() . '::IsNotified'} = $IsNotified;
-		$oSale->{$this->GetName() . '::RecurrentMaintenance'} = $RecurrentMaintenance;
-		$oSale->{$this->GetName() . '::TwoMonthsEmailSent'} = $TwoMonthsEmailSent;
-		$oSale->{$this->GetName() . '::ParentSaleId'} = $ParentSaleId;
-		$oSale->{$this->GetName() . '::VatId'} = $VatId;
-		$oSale->{$this->GetName() . '::PaymentSystem'} = $PaymentSystem;
-		$oSale->{$this->GetName() . '::TransactionId'} = $TransactionId;
-		$oSale->{$this->GetName() . '::RawData'} = $RawData;
-		$oSale->{$this->GetName() . '::RawDataType'} = $RawDataType;
-		$oSale->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
-		if (isset($Date))
+		$bResult = $this->oApiDownloadsManager->createDownload($oDownload);
+		if ($bResult)
 		{
-			$oSale->Date = $Date;
-		}
-		if (isset($MaintenanceExpirationDate))
-		{
-			$oSale->{$this->GetName() . '::MaintenanceExpirationDate'} = $MaintenanceExpirationDate;
-		}
-		$bSaleResult = $this->oApiSalesManager->createSale($oSale);
-		if ($bSaleResult)
-		{
-			return $oSale;
+			return $oDownload;
 		}
 
 		return false;
@@ -566,31 +492,120 @@ class Module extends \Aurora\System\Module\AbstractModule
 	
 	public function ImportDownloads()
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+//		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		
 		$sDbHost = "127.0.0.1";
 		$sDbLogin = "root";
-		$sDbPassword = "";
+		$sDbPassword = "12345";
 		$oPdo = @new \PDO('mysql:dbname=sales' . (empty($sDbHost) ? '' : ';host='.$sDbHost), $sDbLogin, $sDbPassword);
-		$sQuery = "SELECT * FROM downloads";
+		$sQuery = "SELECT * FROM downloads LIMIT 1000;";
 		$stmt = $oPdo->prepare($sQuery);
 		$stmt->execute();
 		$aResult = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-		foreach ($aResult as $aSale)
+		foreach ($aResult as $aDownload)
 		{
-		 if ((int) $aSale['shareit_product_id'] < 1)
-		 {
-		  continue;
-		 }
-		 $this->CreateSale($aSale['payment'], \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt,  $aSale['net_total'],
-		  $aSale['email'], $aSale['reg_name'],
-		  $aSale['product'], $aSale['product_code'], $aSale['maintenance_expiration_date'],
-		  '',
-		  $aSale['date'], $aSale['license_key'], $aSale['ref_number'], $aSale['shareit_product_id'], $aSale['share_it_purchase_id'], $aSale['is_notified'], $aSale['recurrent_maintenance'], $aSale['two_months_email_sent'], $aSale['parent_sale_id'], $aSale['vat_id'],
-		  $aSale['salutation'], $aSale['title'], $aSale['first_name'], $aSale['last_name'], $aSale['company'], $aSale['street'], $aSale['zip'], $aSale['city'], $aSale['full_city'],
-		  $aSale['country'], $aSale['state'], $aSale['phone'], $aSale['fax'], $aSale['language']
-		 );
+			$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($aDownload['email']);
+			if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
+			{
+				$oCustomer = new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
+
+				$oCustomer->{$this->GetName() . '::Email'} = $aDownload['email'];
+				$oCustomer->{$this->GetName() . '::Notify'} = $aDownload['notify'];
+				$oCustomer->{$this->GetName() . '::GotGreeting'} = $aDownload['got_greeting'];
+				$oCustomer->{$this->GetName() . '::GotGreeting2'} = $aDownload['got_greeting2'];
+				$oCustomer->{$this->GetName() . '::GotSurvey'} = $aDownload['got_survey'];
+				$oCustomer->{$this->GetName() . '::IsSale'} = $aDownload['is_sale'];
+
+				$this->oApiCustomersManager->CreateCustomer($oCustomer);
+			}			
+			if ($oCustomer)
+			{
+				$CustomerUUID = $oCustomer->UUID;
+			}
+			
+			$oProduct = $this->oApiProductsManager->getProductByCode($aDownload['product_id']);
+			if ($oProduct)
+			{
+				$ProductUUID = $oProduct->UUID;
+			}
+			
+			$this->CreateDownload(
+				$aDownload['download_id'], 
+				$aDownload['product_id'], 
+				$aDownload['download_date'], 
+				$aDownload['referer'], 
+				$aDownload['ip'], 
+				$aDownload['gad'], 
+				$aDownload['product_version'], 
+				$aDownload['trial_key'], 
+				$aDownload['license_type'], 
+				$aDownload['referrer_page'], 
+				$aDownload['is_upgrade'], 
+				$aDownload['platform_type'], 
+				$CustomerUUID, 
+				$ProductUUID
+			);
 		}
 
 		return true;
 	}	
+	
+	public function CreateProducts()
+	{
+		$aProductGroups = $this->oApiProductGroupsManager->getProductGroups();
+		if (is_array($aProductGroups))
+		{
+			foreach ($aProductGroups as $oProductGroup)
+			{
+				if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
+				{
+					$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
+					$oProduct->ProductGroupUUID = $oProductGroup->UUID;
+					$oProduct->Title = 'Free';
+					$oProduct->{$this->GetName() . '::ProductCode'} = $oProductGroup->{$this->GetName() . '::ProductCode'};
+					
+					$this->oApiProductsManager->updateProduct($oProduct);
+				}
+			}
+		}
+	}
+	
+	public function CreateGroups()
+	 {
+	  $aGroups = [
+	   ["Title" => "MailBee Objects","ProductCode" => "1"],
+	   ["Title" => "MailBee POP3 Component","ProductCode" => "2"],
+	   ["Title" => "MailBee SMTP Component","ProductCode" => "3"],
+	   ["Title" => "MailBee IMAP4 Component","ProductCode" => "4"],
+	   ["Title" => "MailBee Message Queue","ProductCode" => "5"],
+	   ["Title" => "MailBee S\/MIME Component","ProductCode" => "6"],
+	   ["Title" => "AfterLogic WebMail Pro ASP.NET","ProductCode" => "17"],
+	   ["Title" => "AfterLogic WebMail Pro PHP","ProductCode" => "22"],
+	   ["Title" => "MailBee.NET Objects","ProductCode" => "32"],
+	   ["Title" => "MailBee.NET POP3 Component","ProductCode" => "33"],
+	   ["Title" => "MailBee.NET SMTP Component","ProductCode" => "34"],
+	   ["Title" => "MailBee.NET IMAP Component","ProductCode" => "35"],
+	   ["Title" => "MailBee.NET Security Component","ProductCode" => "36"],
+	   ["Title" => "MailBee.NET AntiSpam Component","ProductCode" => "37"],
+	   ["Title" => "MailBee.NET Outlook Converter","ProductCode" => "38"],
+	   ["Title" => "PRODUCT_XMAIL_SERVER_PRO_WIN","ProductCode" => "41"],
+	   ["Title" => "PRODUCT_XMAIL_SERVER_PRO_LINUX","ProductCode" => "42"],
+	   ["Title" => "AfterLogic MailSuite Pro","ProductCode" => "44"],
+	   ["Title" => "MailBee.NET IMAP Bundle","ProductCode" => "48"],
+	   ["Title" => "MailBee.NET POP3 Bundle","ProductCode" => "49"],
+	   ["Title" => "Undefined 95","ProductCode" => "95"],
+	   ["Title" => "Undefined 96","ProductCode" => "96"],
+	   ["Title" => "Undefined 97","ProductCode" => "97"],
+	   ["Title" => "Undefined 98","ProductCode" => "98"],
+	   ["Title" => "Undefined 99","ProductCode" => "99"]
+	  ];
+	  foreach ($aGroups as $aGroup)
+	  {
+	   $oProductGroup = new \Aurora\Modules\SaleObjects\Classes\ProductGroup($this->GetName());
+	   $oProductGroup->Title = $aGroup['Title'];
+	   $oProductGroup->{$this->GetName() . '::ProductCode'} = (int) $aGroup['ProductCode'];
+	   $iProductGroupId = $this->oApiProductGroupsManager->createProductGroup($oProductGroup);
+	   unset($oProductGroup);
+	  }
+ }	
 }

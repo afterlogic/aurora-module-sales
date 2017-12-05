@@ -34,7 +34,7 @@ class Download extends \Aurora\System\EAV\Entity
 			'IsUpgrade'			=> array('bool', false),
 			'PlatformType'		=> array('int', 0),
 			'CustomerUUID'		=> array('string', ''),
-			'ProductGroupUUID'	=> array('string', '')
+			'ProductUUID'	=> array('string', '')
 		);
 		parent::__construct($sModule);
 	}
