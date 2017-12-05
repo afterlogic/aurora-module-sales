@@ -440,4 +440,157 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		return $this->oApiSalesManager->UpdateSale($oSale);
 	}
+	
+	/**
+	 */
+	public function CreateDownload(
+		$DownloadId, 
+		$ProductCode, 
+		$Date, 
+		$Referer, 
+		$Ip, 
+		$Gad, 
+		$ProductVersion, 
+		$TrialKey, 
+		$LicenseType, 
+		$ReferrerPage, 
+		$IsUpgrade,
+		$PlatformType,
+		$CustomerUUID,
+		$ProductGroupUUID)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+
+		$oDownload = new Classes\Download($this->GetName());
+		
+/*		if (isset($ProductCode))
+		{
+			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByCode($ProductCode);
+			if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
+			{
+				$oDownload->ProductGroupUUID = $oProductGroup->UUID;
+			}
+		}
+ * 
+ */
+/*		
+		$this->DownloadId, 
+		$this->ProductCode, 
+		$this->Date, 
+		$this->Referer, 
+		$this->Ip, 
+		$this->Gad, 
+		$this->ProductVersion, 
+		$this->TrialKey, 
+		$this->LicenseType, 
+		$this->ReferrerPage, 
+		$this->IsUpgrade,
+		$this->PlatformType,
+		$this->CustomerUUID,
+		$this->ProductGroupUUID
+*/				
+		$oProduct->{$this->GetName() . '::IsAutocreated'} = true;
+		$iProductId = $this->oApiProductsManager->createProduct($oProduct);
+		if ($iProductId)
+		{
+			$oProduct = $this->oApiProductsManager->getProductById($iProductId);
+		}
+		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
+		{
+			return false;
+		}
+
+		$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($Email);
+		if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
+		{
+			$oCustomer = new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
+			$oCustomer->{$this->GetName() . '::Email'} = $Email;
+			$oCustomer->{$this->GetName() . '::RegName'} = $RegName;
+			$oCustomer->{$this->GetName() . '::Salutation'} = $Salutation;
+			$oCustomer->Title = $Title;
+			$oCustomer->{$this->GetName() . '::FirstName'} = $FirstName;
+			$oCustomer->{$this->GetName() . '::LastName'} = $LastName;
+			$oCustomer->{$this->GetName() . '::Company'} = $Company;
+			$oCustomer->{$this->GetName() . '::Address'} = $Address;
+			$oCustomer->{$this->GetName() . '::Phone'} = $Phone;
+			$oCustomer->{$this->GetName() . '::Fax'} = $Fax;
+			$oCustomer->{$this->GetName() . '::Language'} = $Language;
+			$bCustomerResult = $this->oApiCustomersManager->CreateCustomer($oCustomer);
+			if ($bCustomerResult)
+			{
+				$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($Email);
+			}
+			if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
+			{
+				return false;
+			}
+		}
+
+		$oSale = new \Aurora\Modules\SaleObjects\Classes\Sale($this->GetName());
+		$oSale->{$this->GetName() . '::ProductUUID'} = isset($oProduct->UUID) ? $oProduct->UUID : '';
+		$oSale->{$this->GetName() . '::CustomerUUID'} = $oCustomer->UUID;
+		$oSale->{$this->GetName() . '::Payment'} = $Payment;
+		$oSale->{$this->GetName() . '::LicenseKey'} = $LicenseKey;
+		$oSale->Price = $Price;
+		$oSale->{$this->GetName() . '::RefNumber'} = $RefNumber;
+		$oSale->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
+		$oSale->{$this->GetName() . '::ShareItPurchaseId'} = $ShareItPurchaseId;
+		$oSale->{$this->GetName() . '::IsNotified'} = $IsNotified;
+		$oSale->{$this->GetName() . '::RecurrentMaintenance'} = $RecurrentMaintenance;
+		$oSale->{$this->GetName() . '::TwoMonthsEmailSent'} = $TwoMonthsEmailSent;
+		$oSale->{$this->GetName() . '::ParentSaleId'} = $ParentSaleId;
+		$oSale->{$this->GetName() . '::VatId'} = $VatId;
+		$oSale->{$this->GetName() . '::PaymentSystem'} = $PaymentSystem;
+		$oSale->{$this->GetName() . '::TransactionId'} = $TransactionId;
+		$oSale->{$this->GetName() . '::RawData'} = $RawData;
+		$oSale->{$this->GetName() . '::RawDataType'} = $RawDataType;
+		$oSale->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
+		if (isset($Date))
+		{
+			$oSale->Date = $Date;
+		}
+		if (isset($MaintenanceExpirationDate))
+		{
+			$oSale->{$this->GetName() . '::MaintenanceExpirationDate'} = $MaintenanceExpirationDate;
+		}
+		$bSaleResult = $this->oApiSalesManager->createSale($oSale);
+		if ($bSaleResult)
+		{
+			return $oSale;
+		}
+
+		return false;
+	}
+	
+	
+	public function ImportDownloads()
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$sDbHost = "127.0.0.1";
+		$sDbLogin = "root";
+		$sDbPassword = "";
+		$oPdo = @new \PDO('mysql:dbname=sales' . (empty($sDbHost) ? '' : ';host='.$sDbHost), $sDbLogin, $sDbPassword);
+		$sQuery = "SELECT * FROM downloads";
+		$stmt = $oPdo->prepare($sQuery);
+		$stmt->execute();
+		$aResult = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+		foreach ($aResult as $aSale)
+		{
+		 if ((int) $aSale['shareit_product_id'] < 1)
+		 {
+		  continue;
+		 }
+		 $this->CreateSale($aSale['payment'], \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt,  $aSale['net_total'],
+		  $aSale['email'], $aSale['reg_name'],
+		  $aSale['product'], $aSale['product_code'], $aSale['maintenance_expiration_date'],
+		  '',
+		  $aSale['date'], $aSale['license_key'], $aSale['ref_number'], $aSale['shareit_product_id'], $aSale['share_it_purchase_id'], $aSale['is_notified'], $aSale['recurrent_maintenance'], $aSale['two_months_email_sent'], $aSale['parent_sale_id'], $aSale['vat_id'],
+		  $aSale['salutation'], $aSale['title'], $aSale['first_name'], $aSale['last_name'], $aSale['company'], $aSale['street'], $aSale['zip'], $aSale['city'], $aSale['full_city'],
+		  $aSale['country'], $aSale['state'], $aSale['phone'], $aSale['fax'], $aSale['language']
+		 );
+		}
+
+		return true;
+	}	
 }

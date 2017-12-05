@@ -22,7 +22,7 @@ class Download extends \Aurora\System\EAV\Entity
 	{
 		$this->aStaticMap = array(
 			'DownloadId'		=> array('int', 0),
-			'ProductId'			=> array('int', 0),
+			'ProductCode'		=> array('int', 0),
 			'Date'				=> array('datetime', date('Y-m-d H:i:s')),
 			'Referer'			=> array('text', ''),
 			'Ip'				=> array('string', ''),
@@ -32,7 +32,9 @@ class Download extends \Aurora\System\EAV\Entity
 			'LicenseType'		=> array('int', 0),
 			'ReferrerPage'		=> array('int', 0),
 			'IsUpgrade'			=> array('bool', false),
-			'PlatformType'		=> array('int', 0)
+			'PlatformType'		=> array('int', 0),
+			'CustomerUUID'		=> array('string', ''),
+			'ProductGroupUUID'	=> array('string', '')
 		);
 		parent::__construct($sModule);
 	}
