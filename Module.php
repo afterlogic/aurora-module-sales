@@ -231,6 +231,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$aCustomersUUID = [];
+		$aProductsUUID = [];
 		$aSearchFilters = [];
 		$aProductSearchFilters = [];
 		if (!empty($Search))
@@ -238,14 +239,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aProductSearchFilters = [
 				$this->GetName() . '::ProductName' => ['%'.$Search.'%', 'LIKE']
 			];
-		}
-		$aSearchProducts = $this->oApiProductsManager->getProducts(0, 0, $aProductSearchFilters, [
+			$aSearchProducts = $this->oApiProductsManager->getProducts(0, 0, $aProductSearchFilters, [
 				'ProductGroupUUID',
 				$this->GetName() . '::ProductName',
 				$this->GetName() . '::ShareItProductId',
 			]);
-		if (!empty($Search))
-		{
 			$aCustomersSearchFilters = ['$OR' => [
 					$this->GetName() . '::Email' => ['%'.$Search.'%', 'LIKE'],
 					$this->GetName() . '::RegName' => ['%'.$Search.'%', 'LIKE'],
@@ -279,8 +277,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aCustomersUUID[] = $oSale->{$this->GetName() . '::CustomerUUID'};
 			$aProductsUUID[] = $oSale->{$this->GetName() . '::ProductUUID'};
 		}
-		$aCustomers = $this->oApiCustomersManager->getCustomers(0, 0, ['UUID' => [\array_unique($aCustomersUUID), 'IN']]);
-		$aProducts = $this->oApiProductsManager->getProducts(0, 0, ['UUID' => [$aProductsUUID, 'IN']]);
+		$aCustomers = count($aCustomersUUID) > 0 ? $this->oApiCustomersManager->getCustomers(0, 0, ['UUID' => [\array_unique($aCustomersUUID), 'IN']]) : [];
+		$aProducts = count($aProductsUUID) > 0 ? $this->oApiProductsManager->getProducts(0, 0, ['UUID' => [$aProductsUUID, 'IN']]) : [];
 
 		return [
 			'ItemsCount' => $iSalesCount,
