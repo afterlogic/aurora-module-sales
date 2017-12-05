@@ -134,19 +134,16 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product && $PaymentSystem !== \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal)
 		{
-			$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
-			$oProduct->{$this->GetName() . '::ProductName'} = $ProductName;
+			$ProductGroupUUID = '';
 			if (isset($ProductCode))
 			{
 				$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByCode($ProductCode);
 				if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 				{
-					$oProduct->ProductGroupUUID = $oProductGroup->UUID;
+					$ProductGroupUUID = $oProductGroup->UUID;
 				}
 			}
-			$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
-			$oProduct->{$this->GetName() . '::IsAutocreated'} = true;
-			$iProductId = $this->oApiProductsManager->createProduct($oProduct);
+			$iProductId = $this->CreateProduct($ProductName, $ShareItProductId, true, $ProductGroupUUID);
 			if ($iProductId)
 			{
 				$oProduct = $this->oApiProductsManager->getProductById($iProductId);
@@ -439,5 +436,62 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 
 		return $this->oApiSalesManager->UpdateSale($oSale);
+	}
+
+	/**
+	 * Creates product.
+	 * @param string $ProductName Product name.
+	 * @param string $ShareItProductId ShareIt product ID.
+	 * @param bool $IsAutocreated Is product was created automatically.
+	 * @param string $ProductGroupUUID UUID of product group.
+	 * @param string $Title Title.
+	 * @param string $Description Description.
+	 * @param string $Homepage Homepage.
+	 * @param int $Price Product price.
+	 * @param int  $Status Product status.
+	 *
+	 * @return  int|boolean
+	 */
+	public function CreateProduct($ProductName, $ShareItProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Title = '', $Description = '', $Homepage = '', $Price = 0, $Status = 0)
+	{
+		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
+		$oProduct->{$this->GetName() . '::ProductName'} = $ProductName;
+		if (isset($ProductCode))
+		{
+			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupById($ProductGroupUUID);
+			if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
+			{
+				$oProduct->ProductGroupUUID = $oProductGroup->UUID;
+			}
+		}
+		$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
+		$oProduct->{$this->GetName() . '::IsAutocreated'} = $IsAutocreated;
+		$oProduct->Title = $Title;
+		$oProduct->Description = $Description;
+		$oProduct->Homepage = $Homepage;
+		$oProduct->Price = $Price;
+		$oProduct->Status = $Status;
+
+		return $this->oApiProductsManager->createProduct($oProduct);
+	}
+
+	/**
+	 * Creates product.
+	 * @param string $Title Title.
+	 * @param string $Description Description.
+	 * @param string $Homepage Homepage.
+	 * @param string $ProductCode Product code.
+	 *
+	 * @return int|boolean
+	 */
+	public function CreateProductGroup($Title, $Description = '', $Homepage = '', $ProductCode = '')
+	{
+		$oProductGroup = new \Aurora\Modules\SaleObjects\Classes\ProductGroup($this->GetName());
+		$oProductGroup->{$this->GetName() . '::ProductCode'} = $ProductCode;
+		$oProductGroup->Title = $Title;
+		$oProductGroup->Description = $Description;
+		$oProductGroup->Homepage = $Homepage;
+
+		return  $this->oApiProductGroupsManager->createProductGroup($oProductGroup);
 	}
 }
