@@ -442,7 +442,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * Creates product.
 	 * @param string $ProductName Product name.
 	 * @param string $ShareItProductId ShareIt product ID.
-	 * @param bool $IsAutocreated Is product was created automatically.
+	 * @param boolean $IsAutocreated Is product was created automatically.
 	 * @param string $ProductGroupUUID UUID of product group.
 	 * @param string $Title Title.
 	 * @param string $Description Description.
@@ -452,11 +452,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 *
 	 * @return  int|boolean
 	 */
-	public function CreateProduct($ProductName, $ShareItProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Title = '', $Description = '', $Homepage = '', $Price = 0, $Status = 0)
+	public function CreateProduct($Title, $ShareItProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Description = '', $Homepage = '', $Price = 0, $Status = 0)
 	{
 		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
-		$oProduct->{$this->GetName() . '::ProductName'} = $ProductName;
-		if (isset($ProductCode))
+		if (isset($ProductGroupUUID))
 		{
 			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupById($ProductGroupUUID);
 			if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
