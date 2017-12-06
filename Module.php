@@ -452,6 +452,29 @@ class Module extends \Aurora\System\Module\AbstractModule
 	}
 	
 	/**
+	 * Get all products.
+	 *
+	 * @param int $Limit Limit.
+	 * @param int $Offset Offset.
+	 * @param string $Search Search string.
+	 * @return array
+	 */
+	public function GetDownloads($Limit = 0, $Offset = 0, $Search = "")
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$aSearchFilters = [];
+		if (!empty($Search))
+		{
+			$aSearchFilters = []; // TODO
+		}
+		$aDownloads = $this->oApiDownloadsManager->getDownloads($Limit, $Offset, $aSearchFilters);
+		return [
+			'Downloads' => is_array($aDownloads) ? $aDownloads : [],
+			'ItemsCount' => $this->oApiDownloadsManager->getDownloadsCount($aSearchFilters)
+		];
+	}	
+	
+	/**
 	 */
 	public function CreateDownload(
 		$DownloadId, 

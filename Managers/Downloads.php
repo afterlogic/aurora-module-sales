@@ -111,4 +111,59 @@ class Downloads extends \Aurora\System\Managers\AbstractManager
 		}
 		return $mCustomer;
 	}
+	
+	/**
+	 * @param int $iLimit Limit.
+	 * @param int $iOffset Offset.
+	 * @param array $aSearchFilters Search filters.
+	 * @param array$aViewAttributes Fields List
+	 * @return array
+	 */
+	public function getDownloads($iLimit = 0, $iOffset = 0, $aSearchFilters = [], $aViewAttributes = [])
+	{
+		$aDownloads = [];
+		try
+		{
+			$aResults = $this->oEavManager->getEntities(
+			\Aurora\System\Api::GetModule('Sales')->getNamespace() . '\Classes\Download',
+				$aViewAttributes,
+				$iOffset,
+				$iLimit,
+				$aSearchFilters,
+				'Date'
+			);
+
+			foreach ($aResults as $oDownload)
+			{
+				$aDownloads[$oDownload->UUID] = $oDownload;
+			}
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$this->setLastException($oException);
+		}
+		return $aDownloads;
+	}
+
+	/**
+	 * @return int
+	 * @throws \Aurora\System\Exceptions\BaseException
+	 */
+	public function getDownloadsCount($aSearchFilters = [])
+	{
+		$iResult = 0;
+		try
+		{
+			$iResult = $this->oEavManager->getEntitiesCount(
+				\Aurora\System\Api::GetModule('Sales')->getNamespace() . '\Classes\Download',
+				$aSearchFilters
+			);
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$this->setLastException($oException);
+		}
+
+		return $iResult;
+	}	
 }
