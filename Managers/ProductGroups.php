@@ -123,18 +123,18 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 
 	/**
 	 *
-	 * @param int $iProductGroupId Product group ID
+	 * @param int|string $mIdOrUUID
 	 * @return \Aurora\Modules\SaleObjects\Classes\ProductGroup|bool
 	 * @throws \Aurora\System\Exceptions\BaseException
 	 */
-	public function getProductGroupById($iProductGroupId)
+	public function getProductGroupById($mIdOrUUID)
 	{
 		$mProductGroup = false;
 		try
 		{
-			if (is_numeric($iProductGroupId))
+			if ($mIdOrUUID)
 			{
-				$mProductGroup = $this->oEavManager->getEntity((int) $iProductGroupId);
+				$mProductGroup = $this->oEavManager->getEntity($mIdOrUUID);
 			}
 			else
 			{
