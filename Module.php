@@ -85,7 +85,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Product',
 			array(
-				'ProductName' => array('string', ''),
 				'ShareItProductId' => array('int', 0),
 				'PayPalItem' => array('string', ''),
 				'IsAutocreated' => array('bool', true),
@@ -109,17 +108,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param int $Price Payment amount.
 	 * @param string $Email Email.
 	 * @param string $RegName Full name.
-	 * @param string $ProductName Product name.
+	 * @param string $ProductTitle Product name.
 	 * @param string $ProductCode Product code.
 	 * 
 	 * @return \Aurora\Modules\SaleObjects\Classes\Sale|boolean
 	 */
 	public function CreateSale($Payment, $PaymentSystem, $Price,
 		$Email, $RegName,
-		$ProductName, $ProductCode = null, $MaintenanceExpirationDate = null,
+		$ProductTitle, $ProductCode = null, $MaintenanceExpirationDate = null,
 		$TransactionId = '',
 		$Date = null, $LicenseKey ='', $RefNumber = 0, $ShareItProductId = 0, $ShareItPurchaseId = 0, $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
-		$Salutation = '', $Title = '', $FirstName = '', $LastName = '', $Company = '', $Address = '', $Phone = '', $Fax = '', $Language = '',
+		$Salutation = '', $CustomerTitle = '', $FirstName = '', $LastName = '', $Company = '', $Address = '', $Phone = '', $Fax = '', $Language = '',
 		$PayPalItem = '', $RawData = '', $RawDataType = 0
 	)
 	{
@@ -136,19 +135,16 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product && $PaymentSystem !== \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal)
 		{
-			$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
-			$oProduct->{$this->GetName() . '::ProductName'} = $ProductName;
+			$ProductGroupUUID = '';
 			if (isset($ProductCode))
 			{
 				$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByCode($ProductCode);
 				if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 				{
-					$oProduct->ProductGroupUUID = $oProductGroup->UUID;
+					$ProductGroupUUID = $oProductGroup->UUID;
 				}
 			}
-			$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
-			$oProduct->{$this->GetName() . '::IsAutocreated'} = true;
-			$iProductId = $this->oApiProductsManager->createProduct($oProduct);
+			$iProductId = $this->CreateProduct($ProductTitle, $ShareItProductId, true, $ProductGroupUUID);
 			if ($iProductId)
 			{
 				$oProduct = $this->oApiProductsManager->getProductById($iProductId);
@@ -166,7 +162,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oCustomer->{$this->GetName() . '::Email'} = $Email;
 			$oCustomer->{$this->GetName() . '::RegName'} = $RegName;
 			$oCustomer->{$this->GetName() . '::Salutation'} = $Salutation;
-			$oCustomer->Title = $Title;
+			$oCustomer->Title = $CustomerTitle;
 			$oCustomer->{$this->GetName() . '::FirstName'} = $FirstName;
 			$oCustomer->{$this->GetName() . '::LastName'} = $LastName;
 			$oCustomer->{$this->GetName() . '::Company'} = $Company;
@@ -239,11 +235,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if (!empty($Search))
 		{
 			$aProductSearchFilters = [
-				$this->GetName() . '::ProductName' => ['%'.$Search.'%', 'LIKE']
+				'Title' => ['%'.$Search.'%', 'LIKE']
 			];
 			$aSearchProducts = $this->oApiProductsManager->getProducts(0, 0, $aProductSearchFilters, [
 				'ProductGroupUUID',
-				$this->GetName() . '::ProductName',
+				'Title',
 				$this->GetName() . '::ShareItProductId',
 			]);
 			$aCustomersSearchFilters = ['$OR' => [
@@ -305,7 +301,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if (!empty($Search))
 		{
 			$aSearchFilters = [
-				$this->GetName() . '::ProductName' => ['%'.$Search.'%', 'LIKE']
+				'Title' => ['%'.$Search.'%', 'LIKE']
 			];
 		}
 		$aProducts = $this->oApiProductsManager->getProducts($Limit, $Offset, $aSearchFilters);
@@ -340,14 +336,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 	}
 
-	public function UpdateProduct($ProductId, $Name = null, $ProductGroupUUID = null, $ShareItProductId = null, $PayPalItem = null, $ProductPrice = null, $Homepage = '')
+	public function UpdateProduct($ProductId, $Title = null, $ShareItProductId = null, $IsAutocreated = null, $ProductGroupUUID = null, $Description = null, $Homepage = null, $ProductPrice = null, $Status = 0, $PayPalItem = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$oProduct = $this->oApiProductsManager->getProductById((int) $ProductId);
-		if (isset($Name))
+		if (isset($Title))
 		{
-			$oProduct->{$this->GetName() . '::ProductName'} = $Name;
+			$oProduct->Title = $Title;
 		}
 		if (isset($ProductGroupUUID))
 		{
@@ -361,13 +357,25 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$oProduct->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
 		}
+		if (isset($IsAutocreated))
+		{
+			$oProduct->{$this->GetName() . '::IsAutocreated'} = $IsAutocreated;
+		}
 		if (isset($ProductPrice))
 		{
 			$oProduct->Price = $ProductPrice;
 		}
+		if (isset($Description))
+		{
+			$oProduct->Description = $Description;
+		}
 		if (isset($Homepage))
 		{
 			$oProduct->Homepage = $Homepage;
+		}
+		if (isset($Status))
+		{
+			$oProduct->Status = $Status;
 		}
 		return $this->oApiProductsManager->UpdateProduct($oProduct);
 	}
@@ -492,13 +500,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 	
 	public function ImportDownloads()
 	{
-//		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
-		$sDbHost = "127.0.0.1";
+		$sDbHost = "127.0.0.1:3309";
 		$sDbLogin = "root";
 		$sDbPassword = "12345";
 		$oPdo = @new \PDO('mysql:dbname=sales' . (empty($sDbHost) ? '' : ';host='.$sDbHost), $sDbLogin, $sDbPassword);
-		$sQuery = "SELECT * FROM downloads LIMIT 1000;";
+		$sQuery = "SELECT * FROM downloads LIMIT 10;";
 		$stmt = $oPdo->prepare($sQuery);
 		$stmt->execute();
 		$aResult = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -516,7 +522,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$oCustomer->{$this->GetName() . '::GotSurvey'} = $aDownload['got_survey'];
 				$oCustomer->{$this->GetName() . '::IsSale'} = $aDownload['is_sale'];
 
-				$this->oApiCustomersManager->CreateCustomer($oCustomer);
+				$this->oApiCustomersManager->createCustomer($oCustomer);
 			}			
 			if ($oCustomer)
 			{
@@ -552,6 +558,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	
 	public function CreateProducts()
 	{
+		\Aurora\System\Api::skipCheckUserRole(true);
 		$aProductGroups = $this->oApiProductGroupsManager->getProductGroups();
 		if (is_array($aProductGroups))
 		{
@@ -572,6 +579,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 	
 	public function CreateGroups()
 	 {
+		
+		\Aurora\System\Api::skipCheckUserRole(true);
+		
 	  $aGroups = [
 	   ["Title" => "MailBee Objects","ProductCode" => "1"],
 	   ["Title" => "MailBee POP3 Component","ProductCode" => "2"],
@@ -608,4 +618,61 @@ class Module extends \Aurora\System\Module\AbstractModule
 	   unset($oProductGroup);
 	  }
  }	
+
+	/**
+	 * Creates product.
+	 * @param string $Title Product name.
+	 * @param string $ShareItProductId ShareIt product ID.
+	 * @param boolean $IsAutocreated Is product was created automatically.
+	 * @param string $ProductGroupUUID UUID of product group.
+	 * @param string $Title Title.
+	 * @param string $Description Description.
+	 * @param string $Homepage Homepage.
+	 * @param int $Price Product price.
+	 * @param int  $Status Product status.
+	 *
+	 * @return  int|boolean
+	 */
+	public function CreateProduct($Title, $ShareItProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Description = '', $Homepage = '', $Price = 0, $Status = 0, $PayPalItem = '')
+	{
+		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
+		if (isset($ProductGroupUUID))
+		{
+			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupById($ProductGroupUUID);
+			if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
+			{
+				$oProduct->ProductGroupUUID = $oProductGroup->UUID;
+			}
+		}
+		$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
+		$oProduct->{$this->GetName() . '::IsAutocreated'} = $IsAutocreated;
+		$oProduct->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
+		$oProduct->Title = $Title;
+		$oProduct->Description = $Description;
+		$oProduct->Homepage = $Homepage;
+		$oProduct->Price = $Price;
+		$oProduct->Status = $Status;
+
+		return $this->oApiProductsManager->createProduct($oProduct);
+	}
+
+	/**
+	 * Creates product.
+	 * @param string $Title Title.
+	 * @param string $Description Description.
+	 * @param string $Homepage Homepage.
+	 * @param string $ProductCode Product code.
+	 *
+	 * @return int|boolean
+	 */
+	public function CreateProductGroup($Title, $Description = '', $Homepage = '', $ProductCode = '')
+	{
+		$oProductGroup = new \Aurora\Modules\SaleObjects\Classes\ProductGroup($this->GetName());
+		$oProductGroup->{$this->GetName() . '::ProductCode'} = $ProductCode;
+		$oProductGroup->Title = $Title;
+		$oProductGroup->Description = $Description;
+		$oProductGroup->Homepage = $Homepage;
+
+		return  $this->oApiProductGroupsManager->createProductGroup($oProductGroup);
+	}
 }
