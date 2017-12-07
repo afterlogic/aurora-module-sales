@@ -29,18 +29,19 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 
 	/**
 	 * @param \Aurora\Modules\SaleObjects\Classes\Customer $oCustomer
-	 * @return bool
+	 * @return int|bool
 	 */
 	public function createCustomer(\Aurora\Modules\SaleObjects\Classes\Customer &$oCustomer)
 	{
-		$bResult = false;
+		$mResult = false;
 		try
 		{
 			if ($oCustomer->validate())
 			{
 				if (!$this->isExists($oCustomer))
 				{
-					if (!$this->oEavManager->saveEntity($oCustomer))
+					$mResult = $this->oEavManager->saveEntity($oCustomer);
+					if (!$mResult)
 					{
 						throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::CustomerManager_CustomerCreateFailed);
 					}
@@ -49,17 +50,14 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 				{
 					throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CustomerExists);
 				}
-
-				$bResult = true;
 			}
 		}
 		catch (\Exception $oException)
 		{
-			$bResult = false;
+			$mResult = false;
 			$this->setLastException($oException);
 		}
-
-		return $bResult;
+		return $mResult;
 	}
 
 	/**
@@ -84,19 +82,23 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 		{
 			if (is_string($sEmail))
 			{
-				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
-					[],
-					0,
-					0,
-					[
-						$this->GetModule()->GetName() . '::Email' => $sEmail
-					]
-				);
-
-				if (is_array($aResults) && isset($aResults[0]))
+				$oContact = $this->GetModule()->oApiContactsManager->getContactByEmail($sEmail);
+				if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact && isset($oContact->CustomerUUID))
 				{
-					$mCustomer = $aResults[0];
+					$aResults = $this->oEavManager->getEntities(
+					\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
+						[],
+						0,
+						1,
+						[
+							'UUID' => $oContact->CustomerUUID
+						]
+					);
+
+					if (is_array($aResults) && isset($aResults[0]))
+					{
+						$mCustomer = $aResults[0];
+					}
 				}
 			}
 			else
