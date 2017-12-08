@@ -32,7 +32,7 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 	 * @param \Aurora\Modules\ContactObjects\Classes\Contact $oContact
 	 * @return int|bool
 	 */
-	public function CreateContact(\Aurora\Modules\ContactObjects\Classes\Contact &$oContact)
+	public function createContact(\Aurora\Modules\ContactObjects\Classes\Contact &$oContact)
 	{
 		$mResult = false;
 		try

@@ -151,10 +151,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 					$ProductGroupUUID = $oProductGroup->UUID;
 				}
 			}
-			$iProductId = $this->CreateProduct($ProductTitle, $ShareItProductId, true, $ProductGroupUUID);
+			$iProductId = $this->createProduct($ProductTitle, $ShareItProductId, true, $ProductGroupUUID);
 			if ($iProductId)
 			{
-				$oProduct = $this->oApiProductsManager->getProductById($iProductId);
+				$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($iProductId);
 			}
 			if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
 			{
@@ -168,10 +168,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oCustomer = new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
 			$oCustomer->Title = $CustomerTitle;
 			$oCustomer->{$this->GetName() . '::Language'} = $Language;
-			$iCustomerId = $this->oApiCustomersManager->CreateCustomer($oCustomer);
+			$iCustomerId = $this->oApiCustomersManager->createCustomer($oCustomer);
 			if ($iCustomerId)
 			{
-				$oCustomer = $this->oApiCustomersManager->getCustomerById($iCustomerId);
+				$oCustomer = $this->oApiCustomersManager->getCustomerByIdOrUUID($iCustomerId);
 			}
 			if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
 			{
@@ -190,7 +190,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 					$oCompany = new \Aurora\Modules\ContactObjects\Classes\Company($this->GetName());
 					$oCompany->Title = $Company;
 					$oCompany->CustomerUUID = $oCustomer->UUID;
-					$iCompanyId = $this->oApiCompaniesManager->CreateCompany($oCompany);
+					$iCompanyId = $this->oApiCompaniesManager->createCompany($oCompany);
 					if ($iCompanyId)
 					{
 						$oCompany = $this->oApiCompaniesManager->getCompanyByIdOrUUID($iCompanyId);
@@ -410,7 +410,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		$oProduct = $this->oApiProductsManager->getProductById((int) $ProductId);
+		$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($ProductId);
 		if (isset($Title))
 		{
 			$oProduct->Title = $Title;
@@ -454,7 +454,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		$oProductGroup = $this->oApiProductGroupsManager->getProductGroupById((int) $ProductGroupId);
+		$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($ProductGroupId);
 		if (isset($Title))
 		{
 			$oProductGroup->Title = $Title;
@@ -492,7 +492,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		$oSale = $this->oApiSalesManager->getSaleById((int) $SaleId);
+		$oSale = $this->oApiSalesManager->getSaleByIdOrUUID((int) $SaleId);
 		if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
 		{
 			$oSale->ProductUUID = isset($ProductUUID) ? $ProductUUID : $oSale->ProductUUID;
@@ -626,7 +626,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$ProductUUID = $oProduct->UUID;
 			}
 			
-			$this->CreateDownload(
+			$this->createDownload(
 				$aDownload['download_id'], 
 				$aDownload['product_id'], 
 				$aDownload['download_date'], 
@@ -725,7 +725,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
 		if (isset($ProductGroupUUID))
 		{
-			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupById($ProductGroupUUID);
+			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($ProductGroupUUID);
 			if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 			{
 				$oProduct->ProductGroupUUID = $oProductGroup->UUID;
@@ -766,5 +766,37 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function onGetStorage(&$aStorages)
 	{
 		$aStorages[] = $this->sStorage;
+	}
+
+	/**
+	 * Delete product group.
+	 * @param int|string $mIdOrUUID ID or UUID of product group
+	 *
+	 * @return int|boolean
+	 */
+	public function DeleteProductGroup($mIdOrUUID)
+	{
+		$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($mIdOrUUID);
+		if (!$oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
+		{
+			return false;
+		}
+		return  $this->oApiProductGroupsManager->deleteProductGroup($oProductGroup);
+	}
+
+	/**
+	 * Delete product.
+	 * @param int|string $mIdOrUUID Product ID or UUID
+	 *
+	 * @return int|boolean
+	 */
+	public function DeleteProduct($mIdOrUUID)
+	{
+		$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($mIdOrUUID);
+		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
+		{
+			return false;
+		}
+		return  $this->oApiProductsManager->deleteProduct($oProduct);
 	}
 }

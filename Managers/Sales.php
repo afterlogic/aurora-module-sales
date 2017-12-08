@@ -127,18 +127,18 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 
 	/**
 	 *
-	 * @param int $iSaleId Sale ID
+	 * @param int|string $mIdOrUUID
 	 * @return \Aurora\Modules\SaleObjects\Classes\Sale|bool
 	 * @throws \Aurora\System\Exceptions\BaseException
 	 */
-	public function getSaleById($iSaleId)
+	public function getSaleByIdOrUUID($mIdOrUUID)
 	{
 		$mSale = false;
 		try
 		{
-			if (is_numeric($iSaleId))
+			if ($mIdOrUUID)
 			{
-				$mSale = $this->oEavManager->getEntity((int) $iSaleId);
+				$mSale = $this->oEavManager->getEntity($mIdOrUUID);
 			}
 			else
 			{

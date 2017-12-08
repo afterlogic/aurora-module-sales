@@ -31,7 +31,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	 * @param \Aurora\Modules\SaleObjects\Classes\Product $oProduct
 	 * @return int|bool
 	 */
-	public function CreateProduct(\Aurora\Modules\SaleObjects\Classes\Product &$oProduct)
+	public function createProduct(\Aurora\Modules\SaleObjects\Classes\Product &$oProduct)
 	{
 		$mResult = false;
 		try
@@ -162,18 +162,18 @@ class Products extends \Aurora\System\Managers\AbstractManager
 
 	/**
 	 *
-	 * @param int $iProductId Product ID
+	 * @param int|string $mIdOrUUID
 	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
 	 * @throws \Aurora\System\Exceptions\BaseException
 	 */
-	public function getProductById($iProductId)
+	public function getProductByIdOrUUID($mIdOrUUID)
 	{
 		$mProduct = false;
 		try
 		{
-			if (is_numeric($iProductId))
+			if ($mIdOrUUID)
 			{
-				$mProduct = $this->oEavManager->getEntity((int) $iProductId);
+				$mProduct = $this->oEavManager->getEntity($mIdOrUUID);
 			}
 			else
 			{
@@ -324,5 +324,25 @@ class Products extends \Aurora\System\Managers\AbstractManager
 		}
 
 		return $iResult;
+	}
+
+	/**
+	 * @param \Aurora\Modules\SaleObjects\Classes\Product $oProduct
+	 * @return bool
+	 * @throws \Aurora\System\Exceptions\BaseException
+	 */
+	public function deleteProduct(\Aurora\Modules\SaleObjects\Classes\Product $oProduct)
+	{
+		$bResult = false;
+		try
+		{
+			$bResult = $this->oEavManager->deleteEntity($oProduct->EntityId);
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$this->setLastException($oException);
+		}
+
+		return $bResult;
 	}
 }

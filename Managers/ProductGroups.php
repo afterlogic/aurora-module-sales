@@ -31,7 +31,7 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 	 * @param \Aurora\Modules\SaleObjects\Classes\ProductGroup $oProductGroup
 	 * @return int|bool
 	 */
-	public function CreateProductGroup(\Aurora\Modules\SaleObjects\Classes\ProductGroup &$oProductGroup)
+	public function createProductGroup(\Aurora\Modules\SaleObjects\Classes\ProductGroup &$oProductGroup)
 	{
 		$mResult = false;
 		try
@@ -127,7 +127,7 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 	 * @return \Aurora\Modules\SaleObjects\Classes\ProductGroup|bool
 	 * @throws \Aurora\System\Exceptions\BaseException
 	 */
-	public function getProductGroupById($mIdOrUUID)
+	public function getProductGroupByIdOrUUID($mIdOrUUID)
 	{
 		$mProductGroup = false;
 		try
@@ -202,5 +202,26 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 		}
 
 		return $iResult;
+	}
+
+
+	/**
+	 * @param \Aurora\Modules\SaleObjects\Classes\ProductGroup $oProductGroup
+	 * @return bool
+	 * @throws \Aurora\System\Exceptions\BaseException
+	 */
+	public function deleteProductGroup(\Aurora\Modules\SaleObjects\Classes\ProductGroup $oProductGroup)
+	{
+		$bResult = false;
+		try
+		{
+			$bResult = $this->oEavManager->deleteEntity($oProductGroup->EntityId);
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$this->setLastException($oException);
+		}
+
+		return $bResult;
 	}
 }

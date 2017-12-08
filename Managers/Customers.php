@@ -151,18 +151,18 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 
 	/**
 	 *
-	 * @param int $iCustomerId
+	 * @param int|string $mIdOrUUID
 	 * @return \Aurora\Modules\SaleObjects\Classes\Customer|bool
 	 * @throws \Aurora\System\Exceptions\BaseException
 	 */
-	public function getCustomerById($iCustomerId)
+	public function getCustomerByIdOrUUID($mIdOrUUID)
 	{
 		$mCustomer = false;
 		try
 		{
-			if (is_numeric($iCustomerId))
+			if ($mIdOrUUID)
 			{
-				$mCustomer = $this->oEavManager->getEntity((int) $iCustomerId);
+				$mCustomer = $this->oEavManager->getEntity($mIdOrUUID);
 			}
 			else
 			{

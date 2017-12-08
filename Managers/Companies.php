@@ -32,7 +32,7 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 	 * @param \Aurora\Modules\ContactObjects\Classes\Company $oCompany
 	 * @return int|bool
 	 */
-	public function CreateCompany(\Aurora\Modules\ContactObjects\Classes\Company &$oCompany)
+	public function createCompany(\Aurora\Modules\ContactObjects\Classes\Company &$oCompany)
 	{
 		$mResult = false;
 		try
