@@ -557,63 +557,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		return false;
 	}
-	public function ImportDownloads()
-	{
-		$sDbHost = "127.0.0.1:3309";
-		$sDbLogin = "root";
-		$sDbPassword = "12345";
-		$oPdo = @new \PDO('mysql:dbname=sales' . (empty($sDbHost) ? '' : ';host='.$sDbHost), $sDbLogin, $sDbPassword);
-		$sQuery = "SELECT * FROM downloads LIMIT 10;";
-		$stmt = $oPdo->prepare($sQuery);
-		$stmt->execute();
-		$aResult = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-		foreach ($aResult as $aDownload)
-		{
-			$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($aDownload['email']);
-			if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
-			{
-				$oCustomer = new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
-
-				$oCustomer->{$this->GetName() . '::Email'} = $aDownload['email'];
-				$oCustomer->{$this->GetName() . '::Notify'} = $aDownload['notify'];
-				$oCustomer->{$this->GetName() . '::GotGreeting'} = $aDownload['got_greeting'];
-				$oCustomer->{$this->GetName() . '::GotGreeting2'} = $aDownload['got_greeting2'];
-				$oCustomer->{$this->GetName() . '::GotSurvey'} = $aDownload['got_survey'];
-				$oCustomer->{$this->GetName() . '::IsSale'} = $aDownload['is_sale'];
-
-				$this->oApiCustomersManager->createCustomer($oCustomer);
-			}			
-			if ($oCustomer)
-			{
-				$CustomerUUID = $oCustomer->UUID;
-			}
-			
-			$oProduct = $this->oApiProductsManager->getProductByCode($aDownload['product_id']);
-			if ($oProduct)
-			{
-				$ProductUUID = $oProduct->UUID;
-			}
-			
-			$this->createDownload(
-				$aDownload['download_id'], 
-				$aDownload['product_id'], 
-				$aDownload['download_date'], 
-				$aDownload['referer'], 
-				$aDownload['ip'], 
-				$aDownload['gad'], 
-				$aDownload['product_version'], 
-				$aDownload['trial_key'], 
-				$aDownload['license_type'], 
-				$aDownload['referrer_page'], 
-				$aDownload['is_upgrade'], 
-				$aDownload['platform_type'], 
-				$CustomerUUID, 
-				$ProductUUID
-			);
-		}
-
-		return true;
-	}	
 	
 	public function CreateProducts()
 	{
