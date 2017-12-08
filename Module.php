@@ -165,58 +165,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($Email);
 		if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
 		{
-			$oCustomer = new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
-			$oCustomer->Title = $CustomerTitle;
-			$oCustomer->{$this->GetName() . '::Language'} = $Language;
-			$iCustomerId = $this->oApiCustomersManager->createCustomer($oCustomer);
-			if ($iCustomerId)
-			{
-				$oCustomer = $this->oApiCustomersManager->getCustomerByIdOrUUID($iCustomerId);
-			}
+			$oCustomer = $this->CreateCustomerWithContact(
+				$FullName,
+				$CustomerTitle, '', 0, $Language,
+				$Address, $Phone,  $Email, $FirstName, $LastName, $Fax, $Salutation,
+				$Company
+			);
 			if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
-			{
-				return false;
-			}
-		}
-
-		$oContact = $this->oApiContactsManager->getContactByEmail($Email);
-		if (!$oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
-		{
-			if (isset($Company))
-			{
-				$oCompany = $this->oApiCompaniesManager->getCompanyByTitle($Company);
-				if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
-				{
-					$oCompany = new \Aurora\Modules\ContactObjects\Classes\Company($this->GetName());
-					$oCompany->Title = $Company;
-					$oCompany->CustomerUUID = $oCustomer->UUID;
-					$iCompanyId = $this->oApiCompaniesManager->createCompany($oCompany);
-					if ($iCompanyId)
-					{
-						$oCompany = $this->oApiCompaniesManager->getCompanyByIdOrUUID($iCompanyId);
-					}
-					if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
-					{
-						return false;
-					}
-				}
-			}
-			$oContact = new \Aurora\Modules\ContactObjects\Classes\Contact($this->GetName());
-			$oContact->CustomerUUID = $oCustomer->UUID;
-			if (isset($oCompany->UUID))
-			{
-				$oContact->CompanyUUID = $oCompany->UUID;
-			}
-			$oContact->FullName = $FullName;
-			$oContact->Address = $Address;
-			$oContact->Phone = $Phone;
-			$oContact->Email = $Email;
-			$oContact->{$this->GetName() . '::FirstName'} = $FirstName;
-			$oContact->{$this->GetName() . '::LastName'} = $LastName;
-			$oContact->{$this->GetName() . '::Fax'} = $Fax;
-			$oContact->{$this->GetName() . '::Salutation'} = $Salutation;
-			$iContactId = $this->oApiContactsManager->createContact($oContact);
-			if (!$iContactId)
 			{
 				return false;
 			}
@@ -761,6 +716,143 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oProductGroup->Homepage = $Homepage;
 
 		return  $this->oApiProductGroupsManager->createProductGroup($oProductGroup);
+	}
+
+	/**
+	 * Creates contact.
+	 * @param string $FullName.
+	 * @param string $CustomerUUID
+	 * @param string $CompanyUUID.
+	 * @param string $Address.
+	 * @param string $Phone.
+	 * @param string $Email.
+	 * @param string $FirstName
+	 * @param string $LastName.
+	 * @param string $Fax.
+	 * @param string $Salutation.
+	 *
+	 * @return int|boolean
+	 */
+	public function CreateContact($FullName, $CustomerUUID = '', $CompanyUUID = '', $Address = '', $Phone = '',  $Email = '', $FirstName = '', $LastName = '', $Fax = '', $Salutation = '')
+	{
+		$mResult = false;
+		if (!empty($FullName))
+		{
+			$oContact = new \Aurora\Modules\ContactObjects\Classes\Contact($this->GetName());
+			$oContact->CustomerUUID = $CustomerUUID;
+			$oContact->CompanyUUID = $CompanyUUID;
+			$oContact->FullName = $FullName;
+			$oContact->Address = $Address;
+			$oContact->Phone = $Phone;
+			$oContact->Email = $Email;
+			$oContact->{$this->GetName() . '::FirstName'} = $FirstName;
+			$oContact->{$this->GetName() . '::LastName'} = $LastName;
+			$oContact->{$this->GetName() . '::Fax'} = $Fax;
+			$oContact->{$this->GetName() . '::Salutation'} = $Salutation;
+			$mResult = $this->oApiContactsManager->createContact($oContact);
+		}
+		return $mResult;
+	}
+
+	/**
+	 * Creates customer.
+	 * @param string $Title Title.
+	 * @param string $Description Description.
+	 * @param int $Status Status.
+	 * @param string $Language Language.
+	 *
+	 * @return int|boolean
+	 */
+	public function CreateCustomer($Title = '', $Description = '', $Status = 0, $Language = '')
+	{
+		$oCustomer = new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
+		$oCustomer->Title = $Title;
+		$oCustomer->Description = $Description;
+		$oCustomer->Status = $Status;
+		$oCustomer->{$this->GetName() . '::Language'} = $Language;
+		return $this->oApiCustomersManager->createCustomer($oCustomer);
+	}
+
+	/**
+	 * Creates customer with contact.
+	 * @param string $ContactFullName.
+	 * @param string $CustomerTitle.
+	 * @param string $CustomerDescription.
+	 * @param int $CustomerStatus.
+	 * @param string $CustomerLanguage.
+	 * @param string $Address.
+	 * @param string $Phone.
+	 * @param string $Email.
+	 * @param string $FirstName
+	 * @param string $LastName.
+	 * @param string $Fax.
+	 * @param string $Salutation.
+	 * @param string $Company.
+	 *
+	 * @return \Aurora\Modules\SaleObjects\Classes\Customer|boolean
+	 */
+	public function CreateCustomerWithContact(
+		$ContactFullName,
+		$CustomerTitle, $CustomerDescription = '', $CustomerStatus = 0, $CustomerLanguage = '',
+		$Address = '', $Phone = '',  $Email = '', $FirstName = '', $LastName = '', $Fax = '', $Salutation = '',
+		$Company = ''
+	)
+	{
+		$mResult = false;
+		if (!empty($ContactFullName))
+		{
+			$iCustomerId = $this->CreateCustomer($CustomerTitle, $CustomerDescription, $CustomerStatus, $CustomerLanguage);
+			if ($iCustomerId)
+			{
+				$oCustomer = $this->oApiCustomersManager->getCustomerByIdOrUUID($iCustomerId);
+			}
+			if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
+			{
+				return false;
+			}
+
+			$oContact = $this->oApiContactsManager->getContactByEmail($Email);
+			if (!$oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
+			{
+				if ($Company !== '')
+				{
+					$oCompany = $this->oApiCompaniesManager->getCompanyByTitle($Company);
+					if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
+					{
+						$oCompany = new \Aurora\Modules\ContactObjects\Classes\Company($this->GetName());
+						$oCompany->Title = $Company;
+						$oCompany->CustomerUUID = $oCustomer->UUID;
+						$iCompanyId = $this->oApiCompaniesManager->createCompany($oCompany);
+						if ($iCompanyId)
+						{
+							$oCompany = $this->oApiCompaniesManager->getCompanyByIdOrUUID($iCompanyId);
+						}
+						if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
+						{
+							return false;
+						}
+					}
+				}
+				$iContactId = $this->CreateContact(
+						$ContactFullName,
+						$oCustomer->UUID,
+						isset($oCompany->UUID) ? $oCompany->UUID : '',
+						$Address,
+						$Phone,
+						$Email,
+						$FirstName,
+						$LastName,
+						$Fax,
+						$Salutation
+				);
+				if (!$iContactId)
+				{
+					return false;
+				}
+			}
+			$mResult = $oCustomer;
+		}
+		return $mResult;
 	}
 
 	public function onGetStorage(&$aStorages)
