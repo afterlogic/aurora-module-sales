@@ -185,6 +185,49 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 		}
 
+		$oContact = $this->oApiContactsManager->getContactByEmail($Email);
+		if (!$oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
+		{
+			if (isset($Company))
+			{
+				$oCompany = $this->oApiCompaniesManager->getCompanyByTitle($Company);
+				if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
+				{
+					$oCompany = new \Aurora\Modules\ContactObjects\Classes\Company($this->GetName());
+					$oCompany->Title = $Company;
+					$oCompany->CustomerUUID = $oCustomer->UUID;
+					$iCompanyId = $this->oApiCompaniesManager->createCompany($oCompany);
+					if ($iCompanyId)
+					{
+						$oCompany = $this->oApiCompaniesManager->getCompanyByIdOrUUID($iCompanyId);
+					}
+					if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
+					{
+						return false;
+					}
+				}
+			}
+			$oContact = new \Aurora\Modules\ContactObjects\Classes\Contact($this->GetName());
+			$oContact->CustomerUUID = $oCustomer->UUID;
+			if (isset($oCompany->UUID))
+			{
+				$oContact->CompanyUUID = $oCompany->UUID;
+			}
+			$oContact->FullName = $FullName;
+			$oContact->Address = $Address;
+			$oContact->Phone = $Phone;
+			$oContact->Email = $Email;
+			$oContact->{$this->GetName() . '::FirstName'} = $FirstName;
+			$oContact->{$this->GetName() . '::LastName'} = $LastName;
+			$oContact->{$this->GetName() . '::Fax'} = $Fax;
+			$oContact->{$this->GetName() . '::Salutation'} = $Salutation;
+			$iContactId = $this->oApiContactsManager->createContact($oContact);
+			if (!$iContactId)
+			{
+				return false;
+			}
+		}
+
 		$oSale = new \Aurora\Modules\SaleObjects\Classes\Sale($this->GetName());
 		$oSale->ProductUUID = isset($oProduct->UUID) ? $oProduct->UUID : '';
 		$oSale->CustomerUUID = $oCustomer->UUID;
