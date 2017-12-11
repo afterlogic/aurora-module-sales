@@ -675,12 +675,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param string $ProductGroupUUID UUID of product group.
 	 * @param string $Description Description.
 	 * @param string $Homepage Homepage.
-	 * @param int $Price Product price.
+	 * @param int $ProductPrice Product price.
 	 * @param int  $Status Product status.
 	 *
 	 * @return  int|boolean
 	 */
-	public function CreateProduct($Title, $ShareItProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Description = '', $Homepage = '', $Price = 0, $Status = 0, $PayPalItem = '')
+	public function CreateProduct($Title, $ShareItProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Description = '', $Homepage = '', $ProductPrice = 0, $Status = 0, $PayPalItem = '')
 	{
 		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
 		if (isset($ProductGroupUUID))
@@ -697,7 +697,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oProduct->Title = $Title;
 		$oProduct->Description = $Description;
 		$oProduct->Homepage = $Homepage;
-		$oProduct->Price = $Price;
+		$oProduct->Price = $ProductPrice;
 		$oProduct->Status = $Status;
 
 		return $this->oApiProductsManager->createProduct($oProduct);
