@@ -862,29 +862,37 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 	/**
 	 * Delete product group.
-	 * @param int|string $mIdOrUUID ID or UUID of product group
+	 * @param int|string $IdOrUUID ID or UUID of product group
 	 *
 	 * @return int|boolean
 	 */
-	public function DeleteProductGroup($mIdOrUUID)
+	public function DeleteProductGroup($IdOrUUID)
 	{
-		$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($mIdOrUUID);
-		if (!$oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
+		$mResult = false;
+
+		$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($IdOrUUID);
+
+		if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 		{
-			return false;
+			$aProducts = $this->oApiProductsManager->getProductsByGroupe($oProductGroup->UUID);
+			if (is_array($aProducts) && count($aProducts) > 0)
+			{
+				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::DataIntegrity);
+			}
+			$mResult =  $this->oApiProductGroupsManager->deleteProductGroup($oProductGroup);
 		}
-		return  $this->oApiProductGroupsManager->deleteProductGroup($oProductGroup);
+		return $mResult;
 	}
 
 	/**
 	 * Delete product.
-	 * @param int|string $mIdOrUUID Product ID or UUID
+	 * @param int|string $IdOrUUID Product ID or UUID
 	 *
 	 * @return int|boolean
 	 */
-	public function DeleteProduct($mIdOrUUID)
+	public function DeleteProduct($IdOrUUID)
 	{
-		$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($mIdOrUUID);
+		$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($IdOrUUID);
 		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
 		{
 			return false;
