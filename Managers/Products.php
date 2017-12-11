@@ -122,6 +122,21 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	}
 
 	/**
+	 * @param string $sProductGroupUUID UUID of product group.
+	 * @return array
+	 */
+	public function getProductsByGroupe($sProductGroupUUID)
+	{
+		$aResult = [];
+		if ($sProductGroupUUID)
+		{
+			$aSearchFilters = ['ProductGroupUUID' => $sProductGroupUUID];
+			$aResult = $this->getProducts(0, 0, $aSearchFilters);
+		}
+		return $aResult;
+	}
+
+	/**
 	 * @param int $iProductCode Product code
 	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
 	 */
