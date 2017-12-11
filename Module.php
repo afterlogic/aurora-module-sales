@@ -25,6 +25,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public $oApiCompaniesManager = null;
 	public $sStorage = null;
 
+	protected $aRequireModules = [
+		'ContactObjects',
+		'SaleObjects'
+	];
+
 	/**
 	 * Initializes Sales Module.
 	 *
