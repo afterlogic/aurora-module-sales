@@ -946,4 +946,36 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'ItemsCount' => $this->oApiContactsManager->getContactsCount($aSearchFilters)
 		];
 	}
+
+	/**
+	 * Get sales by contact UUID.
+	 *
+	 * @param string $ContactUUID
+	 * @return array
+	 */
+	public function GetSalesByContactUUID($ContactUUID)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$aResult = [];
+		if (!$ContactUUID)
+		{
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+		}
+		$oContact = $this->oApiContactsManager->getContactByIdOrUUID($ContactUUID);
+		if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact && isset($oContact->CustomerUUID))
+		{
+			$oCustomer = $this->oApiCustomersManager->getCustomerByIdOrUUID($oContact->CustomerUUID);
+			if ($oCustomer  instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
+			{
+				$aSalesFilters = ['CustomerUUID' => $oCustomer->UUID];
+				$aSales = $this->oApiSalesManager->getSales(0, 0, $aSalesFilters);
+
+				$aResult = [
+					'Sales' => is_array($aSales) ? $aSales : [],
+					'SalesCount' =>  $this->oApiSalesManager->getSalesCount($aSalesFilters)
+				];
+			}
+		}
+		return $aResult;
+	}
 }
