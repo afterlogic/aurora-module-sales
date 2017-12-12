@@ -254,7 +254,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aSearchContacts = $this->oApiContactsManager->getContacts(0, 0, $aContactsSearchFilters, ['CustomerUUID']);
 			if (is_array($aSearchContacts) && count($aSearchContacts) > 0)
 			{
-				$aCustomersSearchFilters['UUID'] = [$aSearchContacts, 'IN'];
+				$aCustomerUIDs = [];
+				foreach ($aSearchContacts as $oContact)
+				{
+					$aCustomerUIDs[] = $oContact->CustomerUUID;
+				}
+				$aCustomersSearchFilters['UUID'] = [$aCustomerUIDs, 'IN'];
 				$aSearchCustomers = $this->oApiCustomersManager->getCustomers(0, 0, $aCustomersSearchFilters, [$this->GetName() . '::Email']);
 			}
 
