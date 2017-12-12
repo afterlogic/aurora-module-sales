@@ -682,6 +682,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function CreateProduct($Title, $ShareItProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Description = '', $Homepage = '', $ProductPrice = 0, $Status = 0, $PayPalItem = '')
 	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
 		if (isset($ProductGroupUUID))
 		{
@@ -714,6 +715,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function CreateProductGroup($Title, $Description = '', $Homepage = '', $ProductCode = '')
 	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$oProductGroup = new \Aurora\Modules\SaleObjects\Classes\ProductGroup($this->GetName());
 		$oProductGroup->{$this->GetName() . '::ProductCode'} = $ProductCode;
 		$oProductGroup->Title = $Title;
@@ -740,6 +742,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function CreateContact($FullName, $CustomerUUID = '', $CompanyUUID = '', $Address = '', $Phone = '',  $Email = '', $FirstName = '', $LastName = '', $Fax = '', $Salutation = '')
 	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$mResult = false;
 		if (!empty($FullName))
 		{
@@ -770,6 +773,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function CreateCustomer($Title = '', $Description = '', $Status = 0, $Language = '')
 	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$oCustomer = new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
 		$oCustomer->Title = $Title;
 		$oCustomer->Description = $Description;
@@ -803,6 +807,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$Company = ''
 	)
 	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$mResult = false;
 		if (!empty($ContactFullName))
 		{
@@ -873,6 +878,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function DeleteProductGroup($IdOrUUID)
 	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$mResult = false;
 
 		$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($IdOrUUID);
@@ -897,6 +903,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function DeleteProduct($IdOrUUID)
 	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($IdOrUUID);
 		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
 		{
