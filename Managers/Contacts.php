@@ -216,7 +216,7 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 			if (is_array($aSearchFilters) && count($aSearchFilters) > 0)
 			{
 				$aSearchFilters = ['$AND' => [
-						$aSearchFilters,
+						'$AND' => $aSearchFilters,
 						'Storage' => [$this->GetModule()->sStorage, 'LIKE']
 					]
 				];

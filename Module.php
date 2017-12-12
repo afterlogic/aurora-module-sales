@@ -780,19 +780,19 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 	/**
 	 * Creates customer with contact.
-	 * @param string $ContactFullName.
-	 * @param string $CustomerTitle.
-	 * @param string $CustomerDescription.
-	 * @param int $CustomerStatus.
-	 * @param string $CustomerLanguage.
-	 * @param string $Address.
-	 * @param string $Phone.
-	 * @param string $Email.
+	 * @param string $ContactFullName
+	 * @param string $CustomerTitle
+	 * @param string $CustomerDescription
+	 * @param int $CustomerStatus
+	 * @param string $CustomerLanguage
+	 * @param string $Address
+	 * @param string $Phone
+	 * @param string $Email
 	 * @param string $FirstName
-	 * @param string $LastName.
-	 * @param string $Fax.
-	 * @param string $Salutation.
-	 * @param string $Company.
+	 * @param string $LastName
+	 * @param string $Fax
+	 * @param string $Salutation
+	 * @param string $Company
 	 *
 	 * @return \Aurora\Modules\SaleObjects\Classes\Customer|boolean
 	 */
@@ -903,5 +903,40 @@ class Module extends \Aurora\System\Module\AbstractModule
 			return false;
 		}
 		return  $this->oApiProductsManager->deleteProduct($oProduct);
+	}
+
+	/**
+	 * Get all contacts.
+	 *
+	 * @param int $Limit Limit.
+	 * @param int $Offset Offset.
+	 * @param string $Search Search string.
+	 * @return array
+	 */
+	public function GetContacts($Limit = 0, $Offset = 0, $Search = "")
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$aSearchFilters = [];
+		if (!empty($Search))
+		{
+			$aSearchFilters = ['$OR' => [
+				'FullName'=> ['%'.$Search.'%', 'LIKE'],
+				'Address'=> ['%'.$Search.'%', 'LIKE'],
+				'Phone'=> ['%'.$Search.'%', 'LIKE'],
+				'Email'=> ['%'.$Search.'%', 'LIKE'],
+				'Facebook'=> ['%'.$Search.'%', 'LIKE'],
+				'LinkedIn'=> ['%'.$Search.'%', 'LIKE'],
+				'Instagram'=> ['%'.$Search.'%', 'LIKE'],
+				$this->GetName() . '::Fax' => ['%'.$Search.'%', 'LIKE'],
+				$this->GetName() . '::Salutation' => ['%'.$Search.'%', 'LIKE'],
+				$this->GetName() . '::LastName' => ['%'.$Search.'%', 'LIKE'],
+				$this->GetName() . '::FirstName' =>['%'.$Search.'%', 'LIKE']
+			]];
+		}
+		$aContacts = $this->oApiContactsManager->getContacts($Limit, $Offset, $aSearchFilters);
+		return [
+			'Contacts' => is_array($aContacts) ? $aContacts : [],
+			'ItemsCount' => $this->oApiContactsManager->getContactsCount($aSearchFilters)
+		];
 	}
 }
