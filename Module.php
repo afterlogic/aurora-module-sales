@@ -909,12 +909,20 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function DeleteProduct($IdOrUUID)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$mResult = false;
+
 		$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($IdOrUUID);
-		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
+		if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
 		{
-			return false;
+			$aSearchFilters = ['ProductUUID' => $oProduct->UUID];
+			$aSales = $this->oApiSalesManager->getSales(0, 0, $aSearchFilters, ['UUID']);
+			if (is_array($aSales) && count($aSales) > 0)
+			{
+				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::DataIntegrity);
+			}
+			$mResult =  $this->oApiProductsManager->deleteProduct($oProduct);
 		}
-		return  $this->oApiProductsManager->deleteProduct($oProduct);
+		return $mResult;
 	}
 
 	/**
