@@ -38,6 +38,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 	public function init()
 	{
+		$this->aErrors = [
+			Enums\ErrorCodes::DataIntegrity => $this->i18N('ERROR_DATA_INTEGRITY')
+		];
 		$this->subscribeEvent('Contacts::GetStorage', array($this, 'onGetStorage'));
 
 		$this->oApiSalesManager = new Managers\Sales($this);
@@ -893,7 +896,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aProducts = $this->oApiProductsManager->getProductsByGroupe($oProductGroup->UUID);
 			if (is_array($aProducts) && count($aProducts) > 0)
 			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::DataIntegrity);
+				throw new \Aurora\System\Exceptions\BaseException(Enums\ErrorCodes::DataIntegrity);
 			}
 			$mResult =  $this->oApiProductGroupsManager->deleteProductGroup($oProductGroup);
 		}
@@ -918,7 +921,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aSales = $this->oApiSalesManager->getSales(0, 0, $aSearchFilters, ['UUID']);
 			if (is_array($aSales) && count($aSales) > 0)
 			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::DataIntegrity);
+				throw new \Aurora\System\Exceptions\BaseException(Enums\ErrorCodes::DataIntegrity);
 			}
 			$mResult =  $this->oApiProductsManager->deleteProduct($oProduct);
 		}
