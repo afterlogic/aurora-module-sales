@@ -176,4 +176,32 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 		}
 		return $mCustomer;
 	}
+	
+	/**
+	 * @param \Aurora\Modules\SaleObjects\Classes\Customer $oCustomer
+	 * @return bool
+	 */
+	public function updateCustomer(\Aurora\Modules\SaleObjects\Classes\Customer $oCustomer)
+	{
+		$bResult = false;
+		try
+		{
+			if ($oCustomer->validate())
+			{
+				if (!$this->oEavManager->saveEntity($oCustomer))
+				{
+					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::CustomerManager_CustomerCreateFailed);
+				}
+
+				$bResult = true;
+			}
+		}
+		catch (\Exception $oException)
+		{
+			$bResult = false;
+			$this->setLastException($oException);
+		}
+
+		return $bResult;
+	}	
 }
