@@ -18,6 +18,24 @@ $sSearchStr = $oSalesModule->getConfig('PayPalSearchStr', '');
 const ACCOUNT_CONNECT_TO_MAIL_SERVER_FAILED = 4003;
 const ACCOUNT_LOGIN_FAILED = 4004;
 
+$sParserIsRunning = \Aurora\System\Api::DataPath() . "/parser_is_running_paypal";
+if (file_exists($sParserIsRunning))
+{
+	$bParserIsRunning = (int) @file_get_contents($sParserIsRunning);
+	if ($bParserIsRunning === 1)
+	{
+		echo json_encode(["result" => false, "error_msg" => "Parser already ranned"]);
+		exit();
+	}
+	else
+	{
+		file_put_contents($sParserIsRunning, 1);
+	}
+}
+else
+{
+	file_put_contents($sParserIsRunning, 1);
+}
 $sLastParsedUidPath = \Aurora\System\Api::DataPath() . "/last_parsed_paypal_uid";
 if (file_exists($sLastParsedUidPath))
 {
@@ -38,87 +56,63 @@ try
 	$oImapClient->Connect($sIncomingServer, $iIncomingPort, $bIncomingUseSsl
 			? \MailSo\Net\Enumerations\ConnectionSecurityType::SSL
 			: \MailSo\Net\Enumerations\ConnectionSecurityType::NONE, $bVerifySsl);
+	if ($oImapClient->IsConnected())
+	{
+
+		$oImapClient->Login($sIncomingLogin, $sIncomingPassword, '');
+		if ($oImapClient->IsLoggined())
+		{
+			$oImapClient->FolderExamine($sFolderFullNameRaw);
+
+			$sSearchCriterias = 'OR OR OR FROM "' . $sSearchStr . '" TO "' . $sSearchStr . '" CC "' . $sSearchStr . '" SUBJECT "' . $sSearchStr . '" UID ' . ($iLastParsedUid + 1) . ':*';
+			$aIndexOrUids = $oImapClient->MessageSimpleSearch($sSearchCriterias, true);
+
+			foreach ($aIndexOrUids as $UID)
+			{
+				if ($UID > $iLastParsedUid)
+				{
+					$oMessage = GetMessage($oImapClient, $sFolderFullNameRaw, $UID);
+					$aData = ParseMessage($oMessage['Html'], $oMessage['Subject']);
+
+					if (isset($aData['NetTotal']) && $aData['NetTotal'] !== 0 &&
+						isset($aData['Email']) && $aData['Email'] !== '' &&
+						isset($aData['RegName']) && $aData['RegName'] !== '' &&
+						isset($aData['ProductName']) && $aData['ProductName'] !== '' &&
+						isset($aData['ProductPayPalItem']) && $aData['ProductPayPalItem'] !== ''
+					)
+					{
+						$oSalesModuleDecorator->CreateSale('PayPal', \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal, $aData['NetTotal'],
+							$aData['Email'], $aData['RegName'],
+							$aData['ProductName'], null, null,
+							isset($aData['TransactionId']) ? $aData['TransactionId'] : '',
+							$oMessage['Date'], '', 0, 0, 0, false, true, false, 0, '',
+							'', '', '', '', '', $aData['FullCity'],'', '', '', $aData['ProductPayPalItem'],
+							$oMessage['Html'], \Aurora\Modules\Sales\Enums\RawDataType::Html
+						);
+						if ($UID > (int) @file_get_contents($sLastParsedUidPath))
+						{
+							file_put_contents($sLastParsedUidPath, $UID);
+						}
+					}
+				}
+			}
+			echo json_encode(["result" => true]);
+		}
+		else
+		{
+			echo json_encode(["result" => false, "error_msg" => "Connect to mail server failed"]);
+		}
+	}
+	else
+	{
+		echo json_encode(["result" => false, "error_msg" => "Connect to mail server failed"]);
+	}
 }
 catch (\Exception $oEx)
 {
-	throw new \Aurora\System\Exceptions\Exception(
-		$oEx->getMessage(),
-		ACCOUNT_CONNECT_TO_MAIL_SERVER_FAILED,
-		$oEx
-	);
-
+	echo json_encode(["result" => false, "error_msg" => $oEx->getMessage()]);
 }
-
-if ($oImapClient->IsConnected())
-{
-	try
-	{
-		$oImapClient->Login($sIncomingLogin, $sIncomingPassword, '');
-	}
-	catch (\MailSo\Imap\Exceptions\LoginBadCredentialsException $oEx)
-	{
-		throw new \Aurora\System\Exceptions\Exception(
-			$oEx->getMessage(),
-			ACCOUNT_LOGIN_FAILED,
-			$oEx
-		);
-	}
-}
-else
-{
-	throw new \Aurora\System\Exceptions\Exception(
-		$oEx->getMessage(),
-		ACCOUNT_CONNECT_TO_MAIL_SERVER_FAILED,
-		$oEx
-	);
-}
-
-if ($oImapClient->IsLoggined())
-{
-	$oImapClient->FolderExamine($sFolderFullNameRaw);
-
-	$sSearchCriterias = 'OR OR OR FROM "' . $sSearchStr . '" TO "' . $sSearchStr . '" CC "' . $sSearchStr . '" SUBJECT "' . $sSearchStr . '" UID ' . ($iLastParsedUid + 1) . ':*';
-	$aIndexOrUids = $oImapClient->MessageSimpleSearch($sSearchCriterias, true);
-
-	foreach ($aIndexOrUids as $UID)
-	{
-		if ($UID > $iLastParsedUid)
-		{
-			$oMessage = GetMessage($oImapClient, $sFolderFullNameRaw, $UID);
-			$aData = ParseMessage($oMessage['Html'], $oMessage['Subject']);
-
-			if (isset($aData['NetTotal']) && $aData['NetTotal'] !== 0 &&
-				isset($aData['Email']) && $aData['Email'] !== '' &&
-				isset($aData['RegName']) && $aData['RegName'] !== '' &&
-				isset($aData['ProductName']) && $aData['ProductName'] !== '' &&
-				isset($aData['ProductPayPalItem']) && $aData['ProductPayPalItem'] !== ''
-			)
-			{
-				$oSalesModuleDecorator->CreateSale('PayPal', \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal, $aData['NetTotal'],
-					$aData['Email'], $aData['RegName'],
-					$aData['ProductName'], null, null,
-					isset($aData['TransactionId']) ? $aData['TransactionId'] : '',
-					$oMessage['Date'], '', 0, 0, 0, false, true, false, 0, '',
-					'', '', '', '', '', $aData['FullCity'],'', '', '', $aData['ProductPayPalItem'],
-					$oMessage['Html'], \Aurora\Modules\Sales\Enums\RawDataType::Html
-				);
-				if ($UID > (int) @file_get_contents($sLastParsedUidPath))
-				{
-					file_put_contents($sLastParsedUidPath, $UID);
-				}
-			}
-		}
-	}
-	
-}
-else
-{
-	throw new \Aurora\System\Exceptions\Exception(
-		$oEx->getMessage(),
-		ACCOUNT_CONNECT_TO_MAIL_SERVER_FAILED,
-		$oEx
-	);
-}
+file_put_contents($sParserIsRunning, 0);
 
 function _getFolderInformation($oImapClient, $sFolderFullNameRaw)
 {
