@@ -423,6 +423,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($ProductGroupId);
+		if (!$oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
+		{
+			return false;
+		}
 		if (isset($Title))
 		{
 			$oProductGroup->Title = $Title;
