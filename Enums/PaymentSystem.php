@@ -14,4 +14,5 @@ class PaymentSystem extends \Aurora\System\Enums\AbstractEnumeration
 {
 	const ShareIt = 1;
 	const PayPal = 2;
+	const Download = 3;
 }

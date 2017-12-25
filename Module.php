@@ -20,7 +20,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public $oApiCustomersManager = null;
 	public $oApiProductsManager = null;
 	public $oApiProductGroupsManager = null;
-	public $oApiDownloadsManager = null;
 	public $oApiContactsManager = null;
 	public $oApiCompaniesManager = null;
 	public $sStorage = null;
@@ -47,7 +46,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->oApiCustomersManager = new Managers\Customers($this);
 		$this->oApiProductsManager = new Managers\Products($this);
 		$this->oApiProductGroupsManager = new Managers\ProductGroups($this);
-		$this->oApiDownloadsManager = new Managers\Downloads($this);
 		$this->oApiContactsManager = new Managers\Contacts($this);
 		$this->oApiCompaniesManager = new Managers\Companies($this);
 		$this->sStorage = 'sales';
@@ -71,6 +69,18 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'RawData' => ['text', ''],
 				'RawDataType' => ['int', 0],
 				'PayPalItem' => ['string', ''],
+				
+				// Download section
+				'DownloadId'		=> array('int', 0),
+				'ProductCode'		=> array('int', 0),
+				'Referer'			=> array('text', ''),
+				'Ip'				=> array('string', ''),
+				'Gad'				=> array('string', ''),
+				'ProductVersion'	=> array('string', ''),
+				'LicenseType'		=> array('int', 0),
+				'ReferrerPage'		=> array('int', 0),
+				'IsUpgrade'			=> array('bool', false),
+				'PlatformType'		=> array('int', 0),
 			]
 		);
 
@@ -533,34 +543,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 	}
 
 	/**
-	 * Get all products.
-	 *
-	 * @param int $Limit Limit.
-	 * @param int $Offset Offset.
-	 * @param string $Search Search string.
-	 * @return array
-	 */
-	public function GetDownloads($Limit = 0, $Offset = 0, $Search = "")
-	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$aSearchFilters = [];
-		if (!empty($Search))
-		{
-			$aSearchFilters = []; // TODO
-		}
-		$aDownloads = $this->oApiDownloadsManager->getDownloads($Limit, $Offset, $aSearchFilters);
-		return [
-			'Downloads' => is_array($aDownloads) ? $aDownloads : [],
-			'ItemsCount' => $this->oApiDownloadsManager->getDownloadsCount($aSearchFilters)
-		];
-	}
-
-	/**
 	 */
 	public function CreateDownload(
 		$DownloadId, 
 		$ProductCode, 
 		$Date, 
+		$Email,
 		$Referer, 
 		$Ip, 
 		$Gad, 
@@ -569,33 +557,31 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$LicenseType, 
 		$ReferrerPage, 
 		$IsUpgrade,
-		$PlatformType,
-		$CustomerUUID,
-		$ProductUUID)
+		$PlatformType)
 	{
 //		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		$oDownload = new Classes\Download($this->GetName());
+		$bResult = false;
+		
+		$mSale = $this->CreateSale('Download', Enums\PaymentSystem::Download, 0, $Email, '', '', $ProductCode, null, '', $Date, $TrialKey);
+		if ($mSale)
+		{
+			$mSale->{$this->GetName() . '::DownloadId'} = $DownloadId;
+			$mSale->{$this->GetName() . '::Referer'} = $Referer;
+			$mSale->{$this->GetName() . '::Ip'} = $Ip;
+			$mSale->{$this->GetName() . '::Gad'} = $Gad; 
+			$mSale->{$this->GetName() . '::ProductVersion'} = $ProductVersion; 
+			$mSale->{$this->GetName() . '::LicenseType'} = $LicenseType; 
+			$mSale->{$this->GetName() . '::ReferrerPage'} = $ReferrerPage; 
+			$mSale->{$this->GetName() . '::IsUpgrade'} = $IsUpgrade;
+			$mSale->{$this->GetName() . '::PlatformType'} = $PlatformType;
+			
+			$bResult = $this->oApiSalesManager->updateSale($mSale);
+		}
 
-		$oDownload->DownloadId = $DownloadId; 
-		$oDownload->ProductCode = $ProductCode; 
-		$oDownload->Date = $Date;
-		$oDownload->Referer = $Referer;
-		$oDownload->Ip = $Ip;
-		$oDownload->Gad = $Gad; 
-		$oDownload->ProductVersion = $ProductVersion; 
-		$oDownload->TrialKey = $TrialKey; 
-		$oDownload->LicenseType = $LicenseType; 
-		$oDownload->ReferrerPage = $ReferrerPage; 
-		$oDownload->IsUpgrade = $IsUpgrade;
-		$oDownload->PlatformType = $PlatformType;
-		$oDownload->CustomerUUID = $CustomerUUID;
-		$oDownload->ProductUUID = $ProductUUID;
-
-		$bResult = $this->oApiDownloadsManager->createDownload($oDownload);
 		if ($bResult)
 		{
-			return $oDownload;
+			return $mSale;
 		}
 
 		return false;
