@@ -476,6 +476,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($ProductGroupId);
+		if (!$oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
+		{
+			return false;
+		}
 		if (isset($Title))
 		{
 			$oProductGroup->Title = $Title;
@@ -965,5 +969,38 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 		}
 		return $aResult;
+	}
+
+	/**
+	 * Update contact.
+	 *
+	 * @param int $ContactId
+	 * @param string $FullName Contact name.
+	 * @param string $Email Contact email.
+	 * @param string $Address Contact Address.
+	 * @return bool
+	 */
+	public function UpdateContact($ContactId, $FullName = null, $Email = null, $Address = null)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+		$oContact = $this->oApiContactsManager->getContactByIdOrUUID($ContactId);
+		if (!$oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
+		{
+			return false;
+		}
+		if (isset($FullName))
+		{
+			$oContact->FullName = $FullName;
+		}
+		if (isset($Email))
+		{
+			$oContact->Email = $Email;
+		}
+		if (isset($Address))
+		{
+			$oContact->Address = $Address;
+		}
+		return $this->oApiContactsManager->UpdateContact($oContact);
 	}
 }
