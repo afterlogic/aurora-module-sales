@@ -888,6 +888,27 @@ class Module extends \Aurora\System\Module\AbstractModule
 	}
 
 	/**
+	 * Delete contact.
+	 * @param int|string $IdOrUUID Contact ID or UUID
+	 *
+	 * @return int|boolean
+	 */
+	public function DeleteContact($IdOrUUID)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		
+		$mResult = false;
+
+		$oContact = $this->oApiContactsManager->getContactByIdOrUUID($IdOrUUID);
+		if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
+		{
+			$mResult =  $this->oApiContactsManager->deleteContact($oContact);
+		}
+		
+		return $mResult;
+	}
+
+	/**
 	 * Get all contacts.
 	 *
 	 * @param int $Limit Limit.

@@ -237,4 +237,24 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 
 		return $iResult;
 	}
+	
+	/**
+	 * @param \Aurora\Modules\ContactObjects\Classes\Contact $oContact
+	 * @return bool
+	 * @throws \Aurora\System\Exceptions\BaseException
+	 */
+	public function deleteContact(\Aurora\Modules\ContactObjects\Classes\Contact $oContact)
+	{
+		$bResult = false;
+		try
+		{
+			$bResult = $this->oEavManager->deleteEntity($oContact->EntityId);
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$this->setLastException($oException);
+		}
+
+		return $bResult;
+	}
 }
