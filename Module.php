@@ -230,24 +230,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		return false;
 	}
 
-	/**
-	 * Get all sales.
-	 *
-	 * @param int $Limit Limit.
-	 * @param int $Offset Offset.
-	 * @param string $Search Search string.
-	 * @return array
-	 */
-	public function GetSales($Limit = 20, $Offset = 0, $Search = "")
+	protected function getSalesSearchFilters($Search = '')
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$aCustomersUUID = [];
-		$aProductsUUID = [];
 		$aSalesSearchFilters = [];
-		$aProductSearchFilters = [];
-		$aSearchCustomers = [];
+		
 		if (!empty($Search))
 		{
+			$aSearchCustomers = [];
+			
 			$aProductSearchFilters = [
 				'Title' => ['%'.$Search.'%', 'LIKE']
 			];
@@ -291,6 +281,26 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 			$aSalesSearchFilters = ['$OR' => $aSalesSearchFilters];
 		}
+		
+		return $aSalesSearchFilters;
+	}
+	
+	/**
+	 * Get all sales.
+	 *
+	 * @param int $Limit Limit.
+	 * @param int $Offset Offset.
+	 * @param string $Search Search string.
+	 * @return array
+	 */
+	public function GetSales($Limit = 20, $Offset = 0, $Search = '')
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		
+		$aCustomersUUID = [];
+		$aProductsUUID = [];
+		
+		$aSalesSearchFilters = $this->getSalesSearchFilters($Search);
 		$iSalesCount = $this->oApiSalesManager->getSalesCount($aSalesSearchFilters);
 		$aSales = $this->oApiSalesManager->getSales($Limit, $Offset, $aSalesSearchFilters, [
 			'CustomerUUID',
@@ -339,30 +349,23 @@ class Module extends \Aurora\System\Module\AbstractModule
 		
 		$aFilters = [];
 		
-		if ($FromDate && $TillDate)
-		{
-			$aFilters = [
-				'1@Date' => [
-					(string) $FromDate,
-					'>'
-				],
-				'2@Date' => [
-					(string) $TillDate,
-					'<'
-				]
-			];
-		}
 		if ($Search)
 		{
-			$aFilters['Title'] = ['%'.$Search.'%', 'LIKE'];
-			
-			if (count($aFilters) > 1)
-			{
-				$aFilters = [
-					'$AND' => $aFilters
-				];
-			}
+			$aFilters = $this->getSalesSearchFilters($Search);
 		}
+		
+		if ($FromDate && $TillDate)
+		{
+			$aFilters['1@Date'] = [
+				(string) $FromDate,
+				'>'
+			];
+			$aFilters['2@Date'] = [
+				(string) $TillDate,
+				'<'
+			];
+		}
+		
 		return $this->oApiSalesManager->getSales(0, 0, $aFilters, ['Date']);
 	}
 	
