@@ -333,6 +333,39 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 	}
 
+	public function GetChartSales($FromDate = '', $TillDate = '', $Search = '')
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		
+		$aFilters = [];
+		
+		if ($FromDate && $TillDate)
+		{
+			$aFilters = [
+				'1@Date' => [
+					(string) $FromDate,
+					'>'
+				],
+				'2@Date' => [
+					(string) $TillDate,
+					'<'
+				]
+			];
+		}
+		if ($Search)
+		{
+			$aFilters['Title'] = ['%'.$Search.'%', 'LIKE'];
+			
+			if (count($aFilters) > 1)
+			{
+				$aFilters = [
+					'$AND' => $aFilters
+				];
+			}
+		}
+		return $this->oApiSalesManager->getSales(0, 0, $aFilters, ['Date']);
+	}
+	
 	/**
 	 * Get all products.
 	 *
