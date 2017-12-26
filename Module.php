@@ -87,7 +87,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Customer',
 			[
-				'Company' => ['string', ''],
 				'Language' => ['string', ''],
 				'Notify' => ['bool', true],
 				'GotGreeting' => ['bool', true],
@@ -190,49 +189,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$Company
 			);
 			if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
-			{
-				return false;
-			}
-		}
-
-		$oContact = $this->oApiContactsManager->getContactByEmail($Email);
-		if (!$oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
-		{
-			if (isset($Company))
-			{
-				$oCompany = $this->oApiCompaniesManager->getCompanyByTitle($Company);
-				if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
-				{
-					$oCompany = new \Aurora\Modules\ContactObjects\Classes\Company($this->GetName());
-					$oCompany->Title = $Company;
-					$oCompany->CustomerUUID = $oCustomer->UUID;
-					$iCompanyId = $this->oApiCompaniesManager->createCompany($oCompany);
-					if ($iCompanyId)
-					{
-						$oCompany = $this->oApiCompaniesManager->getCompanyByIdOrUUID($iCompanyId);
-					}
-					if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
-					{
-						return false;
-					}
-				}
-			}
-			$oContact = new \Aurora\Modules\ContactObjects\Classes\Contact($this->GetName());
-			$oContact->CustomerUUID = $oCustomer->UUID;
-			if (isset($oCompany->UUID))
-			{
-				$oContact->CompanyUUID = $oCompany->UUID;
-			}
-			$oContact->FullName = $FullName;
-			$oContact->Address = $Address;
-			$oContact->Phone = $Phone;
-			$oContact->Email = $Email;
-			$oContact->{$this->GetName() . '::FirstName'} = $FirstName;
-			$oContact->{$this->GetName() . '::LastName'} = $LastName;
-			$oContact->{$this->GetName() . '::Fax'} = $Fax;
-			$oContact->{$this->GetName() . '::Salutation'} = $Salutation;
-			$iContactId = $this->oApiContactsManager->createContact($oContact);
-			if (!$iContactId)
 			{
 				return false;
 			}
@@ -561,13 +517,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$LicenseType, 
 		$ReferrerPage, 
 		$IsUpgrade,
-		$PlatformType)
+		$PlatformType,
+		$ProductTitle = ''
+	)
 	{
-//		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$bResult = false;
-		
-		$mSale = $this->CreateSale('Download', Enums\PaymentSystem::Download, 0, $Email, '', '', $ProductCode, null, '', $Date, $TrialKey);
+		$mSale = $this->CreateSale('Download', Enums\PaymentSystem::Download, 0, $Email, '', $ProductTitle, $ProductCode, null, '', $Date, $TrialKey);
 		if ($mSale)
 		{
 			$mSale->{$this->GetName() . '::DownloadId'} = $DownloadId;
@@ -668,7 +625,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
-		if (isset($ProductGroupUUID))
+		if (isset($ProductGroupUUID) && !empty($ProductGroupUUID))
 		{
 			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($ProductGroupUUID);
 			if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
@@ -724,26 +681,21 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 *
 	 * @return int|boolean
 	 */
-	public function CreateContact($FullName, $CustomerUUID = '', $CompanyUUID = '', $Address = '', $Phone = '',  $Email = '', $FirstName = '', $LastName = '', $Fax = '', $Salutation = '')
+	public function CreateContact($FullName = '', $CustomerUUID = '', $CompanyUUID = '', $Address = '', $Phone = '',  $Email = '', $FirstName = '', $LastName = '', $Fax = '', $Salutation = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$mResult = false;
-		if (!empty($FullName))
-		{
-			$oContact = new \Aurora\Modules\ContactObjects\Classes\Contact($this->GetName());
-			$oContact->CustomerUUID = $CustomerUUID;
-			$oContact->CompanyUUID = $CompanyUUID;
-			$oContact->FullName = $FullName;
-			$oContact->Address = $Address;
-			$oContact->Phone = $Phone;
-			$oContact->Email = $Email;
-			$oContact->{$this->GetName() . '::FirstName'} = $FirstName;
-			$oContact->{$this->GetName() . '::LastName'} = $LastName;
-			$oContact->{$this->GetName() . '::Fax'} = $Fax;
-			$oContact->{$this->GetName() . '::Salutation'} = $Salutation;
-			$mResult = $this->oApiContactsManager->createContact($oContact);
-		}
-		return $mResult;
+		$oContact = new \Aurora\Modules\ContactObjects\Classes\Contact($this->GetName());
+		$oContact->CustomerUUID = $CustomerUUID;
+		$oContact->CompanyUUID = $CompanyUUID;
+		$oContact->FullName = $FullName;
+		$oContact->Address = $Address;
+		$oContact->Phone = $Phone;
+		$oContact->Email = $Email;
+		$oContact->{$this->GetName() . '::FirstName'} = $FirstName;
+		$oContact->{$this->GetName() . '::LastName'} = $LastName;
+		$oContact->{$this->GetName() . '::Fax'} = $Fax;
+		$oContact->{$this->GetName() . '::Salutation'} = $Salutation;
+		return $this->oApiContactsManager->createContact($oContact);
 	}
 
 	/**
@@ -792,61 +744,56 @@ class Module extends \Aurora\System\Module\AbstractModule
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$mResult = false;
-		if (!empty($ContactFullName))
+		$iCustomerId = $this->CreateCustomer($CustomerTitle, $CustomerDescription, $CustomerStatus, $CustomerLanguage);
+		if ($iCustomerId)
 		{
-			$iCustomerId = $this->CreateCustomer($CustomerTitle, $CustomerDescription, $CustomerStatus, $CustomerLanguage);
-			if ($iCustomerId)
+			$oCustomer = $this->oApiCustomersManager->getCustomerByIdOrUUID($iCustomerId);
+		}
+		if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
+		{
+			return false;
+		}
+
+		$oContact = $this->oApiContactsManager->getContactByEmail($Email);
+		if (!$oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
+		{
+			if ($Company !== '')
 			{
-				$oCustomer = $this->oApiCustomersManager->getCustomerByIdOrUUID($iCustomerId);
+				$oCompany = $this->oApiCompaniesManager->getCompanyByTitle($Company);
+				if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
+				{
+					$oCompany = new \Aurora\Modules\ContactObjects\Classes\Company($this->GetName());
+					$oCompany->Title = $Company;
+					$oCompany->CustomerUUID = $oCustomer->UUID;
+					$iCompanyId = $this->oApiCompaniesManager->createCompany($oCompany);
+					if ($iCompanyId)
+					{
+						$oCompany = $this->oApiCompaniesManager->getCompanyByIdOrUUID($iCompanyId);
+					}
+					if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
+					{
+						return false;
+					}
+				}
 			}
-			if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
+			$iContactId = $this->CreateContact(
+					$ContactFullName,
+					$oCustomer->UUID,
+					isset($oCompany->UUID) ? $oCompany->UUID : '',
+					$Address,
+					$Phone,
+					$Email,
+					$FirstName,
+					$LastName,
+					$Fax,
+					$Salutation
+			);
+			if (!$iContactId)
 			{
 				return false;
 			}
-
-			$oContact = $this->oApiContactsManager->getContactByEmail($Email);
-			if (!$oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
-			{
-				if ($Company !== '')
-				{
-					$oCompany = $this->oApiCompaniesManager->getCompanyByTitle($Company);
-					if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
-					{
-						$oCompany = new \Aurora\Modules\ContactObjects\Classes\Company($this->GetName());
-						$oCompany->Title = $Company;
-						$oCompany->CustomerUUID = $oCustomer->UUID;
-						$iCompanyId = $this->oApiCompaniesManager->createCompany($oCompany);
-						if ($iCompanyId)
-						{
-							$oCompany = $this->oApiCompaniesManager->getCompanyByIdOrUUID($iCompanyId);
-						}
-						if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
-						{
-							return false;
-						}
-					}
-				}
-				$iContactId = $this->CreateContact(
-						$ContactFullName,
-						$oCustomer->UUID,
-						isset($oCompany->UUID) ? $oCompany->UUID : '',
-						$Address,
-						$Phone,
-						$Email,
-						$FirstName,
-						$LastName,
-						$Fax,
-						$Salutation
-				);
-				if (!$iContactId)
-				{
-					return false;
-				}
-			}
-			$mResult = $oCustomer;
 		}
-		return $mResult;
+		return $oCustomer;
 	}
 
 	public function onGetStorage(&$aStorages)
