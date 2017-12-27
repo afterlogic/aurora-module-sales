@@ -123,7 +123,7 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 		$mContact = false;
 		try
 		{
-			if (is_string($sEmail))
+			if (is_string($sEmail) && !empty($sEmail))
 			{
 				$aResults = $this->oEavManager->getEntities(
 					\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Contact',

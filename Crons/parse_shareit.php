@@ -92,7 +92,7 @@ try
 							$aData['Email'], $aData['RegName'],
 							$aData['ProductName'], null, null,
 							'',
-							$oMessage['Date'], $aData['LicenseKey'], $aData['RefNumber'], $aData['ShareItProductId'], $aData['ShareItPurchaseId'], false, true, false, 0, $aData['VatId'],
+							$oMessage['Date'], $aData['LicenseKey'], $aData['RefNumber'], '', $aData['ShareItProductId'], $aData['ShareItPurchaseId'], false, true, false, 0, $aData['VatId'],
 							$aData['Salutation'], $aData['Title'], $aData['FirstName'], $aData['LastName'], $aData['Company'], $sAddress, $aData['Phone'], $aData['Fax'], $aData['Language'], '',
 							$oMessage['Plain'], \Aurora\Modules\Sales\Enums\RawDataType::PlainText
 						);

@@ -34,23 +34,14 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	public function createProduct(\Aurora\Modules\SaleObjects\Classes\Product &$oProduct)
 	{
 		$mResult = false;
-		try
+		if ($this->validate($oProduct))
 		{
-			if ($oProduct->validate())
+			$mResult = $this->oEavManager->saveEntity($oProduct);
+			if (!$mResult)
 			{
-				$mResult = $this->oEavManager->saveEntity($oProduct);
-				if (!$mResult)
-				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ProductManager_ProductCreateFailed);
-				}
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ProductManager_ProductCreateFailed);
 			}
 		}
-		catch (\Exception $oException)
-		{
-			$mResult = false;
-			$this->setLastException($oException);
-		}
-
 		return $mResult;
 	}
 
@@ -137,15 +128,15 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	}
 
 	/**
-	 * @param int $iProductCode Product code
+	 * @param stirng $sShareItProductId Product ID
 	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
 	 */
-	public function getProductByShareItProductId($iShareItProductId)
+	public function getProductByShareItProductId($sShareItProductId)
 	{
 		$oProduct = false;
 		try
 		{
-			if (is_numeric($iShareItProductId))
+			if (!empty($sShareItProductId))
 			{
 				$aResults = $this->oEavManager->getEntities(
 				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
@@ -153,7 +144,46 @@ class Products extends \Aurora\System\Managers\AbstractManager
 					0,
 					0,
 					[
-						$this->GetModule()->GetName() . '::ShareItProductId' => $iShareItProductId
+						$this->GetModule()->GetName() . '::ShareItProductId' => $sShareItProductId
+					]
+				);
+
+				if (is_array($aResults) && isset($aResults[0]))
+				{
+					$oProduct = $aResults[0];
+				}
+			}
+			else
+			{
+				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+			}
+		}
+		catch (\Aurora\System\Exceptions\BaseException $oException)
+		{
+			$oProduct = false;
+			$this->setLastException($oException);
+		}
+		return $oProduct;
+	}
+
+	/**
+	 * @param string $sCrmProductId Product ID in CRM
+	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
+	 */
+	public function getProductByCrmProductId($sCrmProductId)
+	{
+		$oProduct = false;
+		try
+		{
+			if (!empty($sCrmProductId))
+			{
+				$aResults = $this->oEavManager->getEntities(
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+					[],
+					0,
+					0,
+					[
+						$this->GetModule()->GetName() . '::CrmProductId' => $sCrmProductId
 					]
 				);
 
@@ -359,5 +389,26 @@ class Products extends \Aurora\System\Managers\AbstractManager
 		}
 
 		return $bResult;
+	}
+
+	public function validate(\Aurora\Modules\SaleObjects\Classes\Product $oProduct)
+	{
+		if (!\Aurora\System\Utils\Validate::IsEmpty($oProduct->{$this->GetModule()->GetName() . '::ShareItProductId'}))
+		{
+			$mResult = $this->getProductByShareItProductId($oProduct->{$this->GetModule()->GetName() . '::ShareItProductId'});
+			if (!!$mResult)
+			{
+				throw new \Aurora\System\Exceptions\ValidationException('Validation - Invalid parameters', \Aurora\System\Exceptions\ErrorCodes::Validation_InvalidParameters);
+			}
+		}
+		if (!\Aurora\System\Utils\Validate::IsEmpty($oProduct->{$this->GetModule()->GetName() . '::CrmProductId'}))
+		{
+			$mResult = $this->getProductByShareItProductId($oProduct->{$this->GetModule()->GetName() . '::CrmProductId'});
+			if (!!$mResult)
+			{
+				throw new \Aurora\System\Exceptions\ValidationException('Validation - Invalid parameters', \Aurora\System\Exceptions\ErrorCodes::Validation_InvalidParameters);
+			}
+		}
+		return true;
 	}
 }

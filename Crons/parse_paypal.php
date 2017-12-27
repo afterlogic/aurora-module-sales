@@ -85,7 +85,7 @@ try
 							$aData['Email'], $aData['RegName'],
 							$aData['ProductName'], null, null,
 							isset($aData['TransactionId']) ? $aData['TransactionId'] : '',
-							$oMessage['Date'], '', 0, 0, 0, false, true, false, 0, '',
+							$oMessage['Date'], '', 0,  '', '', 0, false, true, false, 0, '',
 							'', '', '', '', '', $aData['FullCity'],'', '', '', $aData['ProductPayPalItem'],
 							$oMessage['Html'], \Aurora\Modules\Sales\Enums\RawDataType::Html
 						);

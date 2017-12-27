@@ -57,8 +57,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'Payment' => ['string', ''],
 				'LicenseKey' => ['string', ''],
 				'RefNumber' => ['int', 0],
-				'ShareItProductId' => ['int', 0],
-				'ShareItPurchaseId' => ['int', 0],
+				'ShareItPurchaseId' => ['string', ''],
 				'IsNotified' => ['bool', false],
 				'MaintenanceExpirationDate' => ['datetime', date('Y-m-d H:i:s', 0)],
 				'RecurrentMaintenance' => ['bool', true],
@@ -99,8 +98,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Product',
 			[
-				'ShareItProductId' => ['int', 0],
+				'ShareItProductId' => ['string', ''],
 				'PayPalItem' => ['string', ''],
+				'CrmProductId' => ['string', ''],
 				'IsAutocreated' => ['bool', true],
 			]
 		);
@@ -141,16 +141,20 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$Email, $FullName,
 		$ProductTitle, $ProductCode = null, $MaintenanceExpirationDate = null,
 		$TransactionId = '',
-		$Date = null, $LicenseKey ='', $RefNumber = 0, $ShareItProductId = 0, $ShareItPurchaseId = 0, $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
+		$Date = null, $LicenseKey ='', $RefNumber = 0, $CrmProductId = '', $ShareItProductId = '', $ShareItPurchaseId = '', $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
 		$Salutation = '', $CustomerTitle = '', $FirstName = '', $LastName = '', $Company = '', $Address = '', $Phone = '', $Fax = '', $Language = '',
 		$PayPalItem = '', $RawData = '', $RawDataType = 0
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		if ($ShareItProductId > 0)
+		if (!empty($ShareItProductId))
 		{
 			$oProduct = $this->oApiProductsManager->getProductByShareItProductId($ShareItProductId);
+		}
+		elseif (!empty($CrmProductId))
+		{
+			$oProduct = $this->oApiProductsManager->getProductByCrmProductId($CrmProductId);
 		}
 		else
 		{
@@ -168,7 +172,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 					$ProductGroupUUID = $oProductGroup->UUID;
 				}
 			}
-			$iProductId = $this->createProduct($ProductTitle, $ShareItProductId, true, $ProductGroupUUID);
+			$iProductId = $this->createProduct($ProductTitle, $ShareItProductId, $CrmProductId, true, $ProductGroupUUID);
 			if ($iProductId)
 			{
 				$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($iProductId);
@@ -425,7 +429,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 	}
 
-	public function UpdateProduct($ProductId, $Title = null, $ShareItProductId = null, $IsAutocreated = null, $ProductGroupUUID = null, $Description = null, $Homepage = null, $ProductPrice = null, $Status = 0, $PayPalItem = null)
+	public function UpdateProduct($ProductId, $Title = null, $CrmProductId = null, $ShareItProductId = null, $IsAutocreated = null, $ProductGroupUUID = null, $Description = null, $Homepage = null, $ProductPrice = null, $Status = 0, $PayPalItem = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
@@ -441,6 +445,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if (isset($ShareItProductId))
 		{
 			$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
+		}
+		if (isset($CrmProductId))
+		{
+			$oProduct->{$this->GetName() . '::CrmProductId'} = $CrmProductId;
 		}
 		if (isset($PayPalItem))
 		{
@@ -501,7 +509,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$CustomerUUID = null,
 		$LicenseKey = null,
 		$RefNumber = null,
-		$ShareItProductId = null,
 		$Price = null,
 		$ShareItPurchaseId = null,
 		$IsNotified = null,
@@ -525,7 +532,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oSale->CustomerUUID = isset($CustomerUUID) ? $CustomerUUID : $oSale->CustomerUUID;
 			$oSale->{$this->GetName() . '::LicenseKey'} = isset($LicenseKey) ? $LicenseKey : $oSale->{$this->GetName() . '::LicenseKey'};
 			$oSale->{$this->GetName() . '::RefNumber'} = isset($RefNumber) ? $RefNumber : $oSale->{$this->GetName() . '::RefNumber'};
-			$oSale->{$this->GetName() . '::ShareItProductId'} = isset($ShareItProductId) ? $ShareItProductId : $oSale->{$this->GetName() . '::ShareItProductId'};
 			$oSale->Price = isset($Price) ? $Price : $oSale->Price;
 			$oSale->{$this->GetName() . '::ShareItPurchaseId'} = isset($ShareItPurchaseId) ? $ShareItPurchaseId : $oSale->{$this->GetName() . '::ShareItPurchaseId'};
 			$oSale->{$this->GetName() . '::IsNotified'} = isset($IsNotified) ? $IsNotified : $oSale->{$this->GetName() . '::IsNotified'};
@@ -560,13 +566,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$ReferrerPage, 
 		$IsUpgrade,
 		$PlatformType,
-		$ProductTitle = ''
+		$ProductTitle = '',
+		$CrmProductId = ''
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$bResult = false;
-		$mSale = $this->CreateSale('Download', Enums\PaymentSystem::Download, 0, $Email, '', $ProductTitle, $ProductCode, null, '', $Date, $TrialKey);
+		$mSale = $this->CreateSale('Download', Enums\PaymentSystem::Download, 0, $Email, '', $ProductTitle, $ProductCode, null, '', $Date, $TrialKey, 0, $CrmProductId);
 		if ($mSale)
 		{
 			$mSale->{$this->GetName() . '::DownloadId'} = $DownloadId;
@@ -578,6 +585,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$mSale->{$this->GetName() . '::ReferrerPage'} = $ReferrerPage; 
 			$mSale->{$this->GetName() . '::IsUpgrade'} = $IsUpgrade;
 			$mSale->{$this->GetName() . '::PlatformType'} = $PlatformType;
+			$mSale->{$this->GetName() . '::CrmProductId'} = $CrmProductId;
 			
 			$bResult = $this->oApiSalesManager->updateSale($mSale);
 		}
@@ -663,7 +671,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 *
 	 * @return  int|boolean
 	 */
-	public function CreateProduct($Title, $ShareItProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Description = '', $Homepage = '', $ProductPrice = 0, $Status = 0, $PayPalItem = '')
+	public function CreateProduct($Title, $ShareItProductId = '', $CrmProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Description = '', $Homepage = '', $ProductPrice = 0, $Status = 0, $PayPalItem = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
@@ -676,6 +684,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 		}
 		$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
+		$oProduct->{$this->GetName() . '::CrmProductId'} = $CrmProductId;
 		$oProduct->{$this->GetName() . '::IsAutocreated'} = $IsAutocreated;
 		$oProduct->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
 		$oProduct->Title = $Title;
