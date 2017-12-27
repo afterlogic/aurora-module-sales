@@ -366,7 +366,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 			];
 		}
 		
-		return $this->oApiSalesManager->getSales(0, 0, $aFilters, ['Date']);
+		$aSales = $this->oApiSalesManager->getSales(0, 0, $aFilters, ['Date']);
+		
+		$fGetOnlyDate = function($value) {
+			return ['Date' => $value->Date];
+		};
+
+		return array_map($fGetOnlyDate, $aSales);
 	}
 	
 	/**
