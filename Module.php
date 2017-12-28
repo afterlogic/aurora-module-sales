@@ -341,7 +341,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		return [
 			'ItemsCount' => $iSalesCount,
-			'Sales' => is_array($aSales) ? array_reverse($aSales) : [],
+			'Sales' => is_array($aSales) ? $aSales : [],
 			'Customers' => is_array($aCustomers) ? $aCustomers : [],
 			'Products' => is_array($aProducts) ? $aProducts : []
 		];
