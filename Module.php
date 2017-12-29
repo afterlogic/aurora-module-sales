@@ -312,7 +312,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'Date',
 			$this->GetName() . '::LicenseKey',
 			'Price',
-			$this->GetName() . '::MaintenanceExpirationDate'
+			$this->GetName() . '::MaintenanceExpirationDate',
+			$this->GetName() . '::Payment',
+			$this->GetName() . '::PayPalItem'
 		]);
 
 		foreach ($aSales as $oSale)
