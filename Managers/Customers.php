@@ -34,28 +34,20 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 	public function createCustomer(\Aurora\Modules\SaleObjects\Classes\Customer &$oCustomer)
 	{
 		$mResult = false;
-		try
+		if ($oCustomer->validate())
 		{
-			if ($oCustomer->validate())
+			if (!$this->isExists($oCustomer))
 			{
-				if (!$this->isExists($oCustomer))
+				$mResult = $this->oEavManager->saveEntity($oCustomer);
+				if (!$mResult)
 				{
-					$mResult = $this->oEavManager->saveEntity($oCustomer);
-					if (!$mResult)
-					{
-						throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::CustomerManager_CustomerCreateFailed);
-					}
-				}
-				else
-				{
-					throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::CustomerExists);
+					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::CustomerCreateFailed);
 				}
 			}
-		}
-		catch (\Exception $oException)
-		{
-			$mResult = false;
-			$this->setLastException($oException);
+			else
+			{
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::CustomerExists);
+			}
 		}
 		return $mResult;
 	}
@@ -78,38 +70,30 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 	public function getCustomerByEmail($sEmail)
 	{
 		$mCustomer = false;
-		try
+		if (is_string($sEmail))
 		{
-			if (is_string($sEmail))
+			$oContact = $this->GetModule()->oApiContactsManager->getContactByEmail($sEmail);
+			if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact && isset($oContact->CustomerUUID))
 			{
-				$oContact = $this->GetModule()->oApiContactsManager->getContactByEmail($sEmail);
-				if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact && isset($oContact->CustomerUUID))
-				{
-					$aResults = $this->oEavManager->getEntities(
-					\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
-						[],
-						0,
-						1,
-						[
-							'UUID' => $oContact->CustomerUUID
-						]
-					);
+				$aResults = $this->oEavManager->getEntities(
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
+					[],
+					0,
+					1,
+					[
+						'UUID' => $oContact->CustomerUUID
+					]
+				);
 
-					if (is_array($aResults) && isset($aResults[0]))
-					{
-						$mCustomer = $aResults[0];
-					}
+				if (is_array($aResults) && isset($aResults[0]))
+				{
+					$mCustomer = $aResults[0];
 				}
 			}
-			else
-			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
-			}
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$mCustomer = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $mCustomer;
 	}
@@ -122,29 +106,22 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 	public function getCustomers($iLimit = 0, $iOffset = 0,  $aSearchFilters = [], $aViewAttributes = [])
 	{
 		$aCustomers = [];
-		try
-		{
-			$aResults = $this->oEavManager->getEntities(
-			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
-				$aViewAttributes,
-				0,
-				0,
-				$aSearchFilters,
-				[],
-				\Aurora\System\Enums\SortOrder::ASC
-			);
+		$aResults = $this->oEavManager->getEntities(
+		\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
+			$aViewAttributes,
+			0,
+			0,
+			$aSearchFilters,
+			[],
+			\Aurora\System\Enums\SortOrder::ASC
+		);
 
-			if (is_array($aResults))
-			{
-				foreach ($aResults as $oCustomer)
-				{
-					$aCustomers[$oCustomer->UUID] = $oCustomer;
-				}
-			}
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		if (is_array($aResults))
 		{
-			$this->setLastException($oException);
+			foreach ($aResults as $oCustomer)
+			{
+				$aCustomers[$oCustomer->UUID] = $oCustomer;
+			}
 		}
 		return $aCustomers;
 	}
@@ -158,21 +135,13 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 	public function getCustomerByIdOrUUID($mIdOrUUID)
 	{
 		$mCustomer = false;
-		try
+		if ($mIdOrUUID)
 		{
-			if ($mIdOrUUID)
-			{
-				$mCustomer = $this->oEavManager->getEntity($mIdOrUUID);
-			}
-			else
-			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
-			}
+			$mCustomer = $this->oEavManager->getEntity($mIdOrUUID);
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$mCustomer = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $mCustomer;
 	}
@@ -184,24 +153,14 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 	public function updateCustomer(\Aurora\Modules\SaleObjects\Classes\Customer $oCustomer)
 	{
 		$bResult = false;
-		try
+		if ($oCustomer->validate())
 		{
-			if ($oCustomer->validate())
+			if (!$this->oEavManager->saveEntity($oCustomer))
 			{
-				if (!$this->oEavManager->saveEntity($oCustomer))
-				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::CustomerManager_CustomerCreateFailed);
-				}
-
-				$bResult = true;
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::CustomerCreateFailed);
 			}
+			$bResult = true;
 		}
-		catch (\Exception $oException)
-		{
-			$bResult = false;
-			$this->setLastException($oException);
-		}
-
 		return $bResult;
 	}	
 }

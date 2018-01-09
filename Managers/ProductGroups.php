@@ -34,23 +34,14 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 	public function createProductGroup(\Aurora\Modules\SaleObjects\Classes\ProductGroup &$oProductGroup)
 	{
 		$mResult = false;
-		try
+		if ($oProductGroup->validate())
 		{
-			if ($oProductGroup->validate())
+			$mResult = $this->oEavManager->saveEntity($oProductGroup);
+			if (!$mResult)
 			{
-				$mResult = $this->oEavManager->saveEntity($oProductGroup);
-				if (!$mResult)
-				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ProductGroupManager_ProductGroupCreateFailed);
-				}
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::ProductGroupCreateFailed);
 			}
 		}
-		catch (\Exception $oException)
-		{
-			$mResult = false;
-			$this->setLastException($oException);
-		}
-
 		return $mResult;
 	}
 
@@ -61,24 +52,14 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 	public function updateProductGroup(\Aurora\Modules\SaleObjects\Classes\ProductGroup $oProductGroup)
 	{
 		$bResult = false;
-		try
+		if ($oProductGroup->validate())
 		{
-			if ($oProductGroup->validate())
+			if (!$this->oEavManager->saveEntity($oProductGroup))
 			{
-				if (!$this->oEavManager->saveEntity($oProductGroup))
-				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ProductGroupManager_ProductGroupUpdateFailed);
-				}
-
-				$bResult = true;
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::ProductGroupUpdateFailed);
 			}
+			$bResult = true;
 		}
-		catch (\Exception $oException)
-		{
-			$bResult = false;
-			$this->setLastException($oException);
-		}
-
 		return $bResult;
 	}
 
@@ -89,34 +70,26 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 	public function getProductGroupByCode($iProductCode)
 	{
 		$oProductGroup = false;
-		try
+		if (is_numeric($iProductCode))
 		{
-			if (is_numeric($iProductCode))
-			{
-				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\ProductGroup',
-					[],
-					0,
-					0,
-					[
-						$this->GetModule()->GetName() . '::ProductCode' => $iProductCode
-					]
-				);
+			$aResults = $this->oEavManager->getEntities(
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\ProductGroup',
+				[],
+				0,
+				0,
+				[
+					$this->GetModule()->GetName() . '::ProductCode' => $iProductCode
+				]
+			);
 
-				if (is_array($aResults) && isset($aResults[0]))
-				{
-					$oProductGroup = $aResults[0];
-				}
-			}
-			else
+			if (is_array($aResults) && isset($aResults[0]))
 			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+				$oProductGroup = $aResults[0];
 			}
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$oProductGroup = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $oProductGroup;
 	}
@@ -130,21 +103,13 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 	public function getProductGroupByIdOrUUID($mIdOrUUID)
 	{
 		$mProductGroup = false;
-		try
+		if ($mIdOrUUID)
 		{
-			if ($mIdOrUUID)
-			{
-				$mProductGroup = $this->oEavManager->getEntity($mIdOrUUID);
-			}
-			else
-			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
-			}
+			$mProductGroup = $this->oEavManager->getEntity($mIdOrUUID);
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$mProductGroup = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $mProductGroup;
 	}
@@ -159,25 +124,18 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 	public function getProductGroups($iLimit = 0, $iOffset = 0, $aSearchFilters = [], $aViewAttributes = [])
 	{
 		$aProductGroups = [];
-		try
-		{
-			$aResults = $this->oEavManager->getEntities(
-			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\ProductGroup',
-				$aViewAttributes,
-				$iOffset,
-				$iLimit,
-				$aSearchFilters,
-				'Title'
-			);
+		$aResults = $this->oEavManager->getEntities(
+		\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\ProductGroup',
+			$aViewAttributes,
+			$iOffset,
+			$iLimit,
+			$aSearchFilters,
+			'Title'
+		);
 
-			if (is_array($aResults) && count($aResults) > 0)
-			{
-				$aProductGroups = $aResults;
-			}
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		if (is_array($aResults) && count($aResults) > 0)
 		{
-			$this->setLastException($oException);
+			$aProductGroups = $aResults;
 		}
 		return $aProductGroups;
 	}
@@ -188,19 +146,10 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function getProductGroupsCount($aSearchFilters = [])
 	{
-		$iResult = 0;
-		try
-		{
-			$iResult = $this->oEavManager->getEntitiesCount(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\ProductGroup',
-				$aSearchFilters
-			);
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
-
+		$iResult = $this->oEavManager->getEntitiesCount(
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\ProductGroup',
+			$aSearchFilters
+		);
 		return $iResult;
 	}
 
@@ -212,16 +161,7 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function deleteProductGroup(\Aurora\Modules\SaleObjects\Classes\ProductGroup $oProductGroup)
 	{
-		$bResult = false;
-		try
-		{
-			$bResult = $this->oEavManager->deleteEntity($oProductGroup->EntityId);
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
-
+		$bResult = $this->oEavManager->deleteEntity($oProductGroup->EntityId);
 		return $bResult;
 	}
 }

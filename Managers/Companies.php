@@ -35,23 +35,14 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 	public function createCompany(\Aurora\Modules\ContactObjects\Classes\Company &$oCompany)
 	{
 		$mResult = false;
-		try
+		if ($oCompany->validate())
 		{
-			if ($oCompany->validate())
+			$mResult = $this->oEavManager->saveEntity($oCompany);
+			if (!$mResult)
 			{
-				$mResult = $this->oEavManager->saveEntity($oCompany);
-				if (!$mResult)
-				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::CompanyManager_CompanyCreateFailed);
-				}
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::CompanyCreateFailed);
 			}
 		}
-		catch (\Exception $oException)
-		{
-			$mResult = false;
-			$this->setLastException($oException);
-		}
-
 		return $mResult;
 	}
 
@@ -62,24 +53,15 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 	public function updateCompany(\Aurora\Modules\ContactObjects\Classes\Company $oCompany)
 	{
 		$bResult = false;
-		try
+		if ($oCompany->validate())
 		{
-			if ($oCompany->validate())
+			if (!$this->oEavManager->saveEntity($oCompany))
 			{
-				if (!$this->oEavManager->saveEntity($oCompany))
-				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::CompanyManager_CompanyUpdateFailed);
-				}
-
-				$bResult = true;
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::CompanyUpdateFailed);
 			}
-		}
-		catch (\Exception $oException)
-		{
-			$bResult = false;
-			$this->setLastException($oException);
-		}
 
+			$bResult = true;
+		}
 		return $bResult;
 	}
 
@@ -92,21 +74,13 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 	public function getCompanyByIdOrUUID($mIdOrUUID)
 	{
 		$mCompany = false;
-		try
+		if ($mIdOrUUID)
 		{
-			if ($mIdOrUUID)
-			{
-				$mCompany = $this->oEavManager->getEntity($mIdOrUUID);
-			}
-			else
-			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
-			}
+			$mCompany = $this->oEavManager->getEntity($mIdOrUUID);
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$mCompany = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $mCompany;
 	}
@@ -121,41 +95,34 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 	public function getCompanies($iLimit = 0, $iOffset = 0, $aSearchFilters = [], $aViewAttributes = [])
 	{
 		$aCompanies = [];
-		try
+		if (is_array($aSearchFilters) && count($aSearchFilters) > 0)
 		{
-			if (is_array($aSearchFilters) && count($aSearchFilters) > 0)
-			{
-				$aSearchFilters = ['$AND' => [
-						'$AND' => $aSearchFilters,
-						'Storage' => [$this->GetModule()->sStorage, 'LIKE']
-					]
-				];
-			}
-			else
-			{
-				$aSearchFilters = ['Storage' => [$this->GetModule()->sStorage, 'LIKE']];
-			}
-
-			$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Company',
-				$aViewAttributes,
-				$iOffset,
-				$iLimit,
-				$aSearchFilters,
-				'FullName'
-			);
-
-			if (is_array($aResults) && count($aResults) > 0)
-			{
-				foreach ($aResults as $oCompany)
-				{
-					$aCompanies[$oCompany->UUID] = $oCompany;
-				}
-			}
+			$aSearchFilters = ['$AND' => [
+					'$AND' => $aSearchFilters,
+					'Storage' => [$this->GetModule()->sStorage, 'LIKE']
+				]
+			];
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$this->setLastException($oException);
+			$aSearchFilters = ['Storage' => [$this->GetModule()->sStorage, 'LIKE']];
+		}
+
+		$aResults = $this->oEavManager->getEntities(
+			\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Company',
+			$aViewAttributes,
+			$iOffset,
+			$iLimit,
+			$aSearchFilters,
+			'FullName'
+		);
+
+		if (is_array($aResults) && count($aResults) > 0)
+		{
+			foreach ($aResults as $oCompany)
+			{
+				$aCompanies[$oCompany->UUID] = $oCompany;
+			}
 		}
 		return $aCompanies;
 	}
@@ -167,18 +134,10 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 	public function getCompaniesCount($aSearchFilters = [])
 	{
 		$iResult = 0;
-		try
-		{
-			$iResult = $this->oEavManager->getEntitiesCount(
-				\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Company',
-				$aSearchFilters
-			);
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
-
+		$iResult = $this->oEavManager->getEntitiesCount(
+			\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Company',
+			$aSearchFilters
+		);
 		return $iResult;
 	}
 
@@ -191,33 +150,25 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 	public function getCompanyByTitle($sTitle)
 	{
 		$mCompany = false;
-		try
+		if (is_string($sTitle))
 		{
-			if (is_string($sTitle))
+			$aResults = $this->oEavManager->getEntities(
+				\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Company',
+				[],
+				0,
+				1,
+				[
+					'Title' => [$sTitle, 'LIKE']
+				]
+			);
+			if (is_array($aResults) && isset($aResults[0]))
 			{
-				$aResults = $this->oEavManager->getEntities(
-					\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Company',
-					[],
-					0,
-					1,
-					[
-						'Title' => [$sTitle, 'LIKE']
-					]
-				);
-				if (is_array($aResults) && isset($aResults[0]))
-				{
-					$mCompany = $aResults[0];
-				}
-			}
-			else
-			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+				$mCompany = $aResults[0];
 			}
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$mCompany = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $mCompany;
 	}

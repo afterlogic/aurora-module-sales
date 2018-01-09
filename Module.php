@@ -38,7 +38,20 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function init()
 	{
 		$this->aErrors = [
-			Enums\ErrorCodes::DataIntegrity => $this->i18N('ERROR_DATA_INTEGRITY')
+			Enums\ErrorCodes::DataIntegrity				=> $this->i18N('ERROR_DATA_INTEGRITY'),
+			Enums\ErrorCodes::SaleCreateFailed				=> $this->i18N('ERROR_SALE_CREATE_FAILED'),
+			Enums\ErrorCodes::Validation_InvalidParameters	=> $this->i18N('ERROR_INVALID_PARAMETERS'),
+			Enums\ErrorCodes::SaleUpdateFailed			=> $this->i18N('ERROR_SALE_UPDATE_FAILED'),
+			Enums\ErrorCodes::ProductCreateFailed			=> $this->i18N('ERROR_PRODUCT_CREATE_FAILED'),
+			Enums\ErrorCodes::ProductUpdateFailed			=> $this->i18N('ERROR_PRODUCT_UPDATE_FAILED'),
+			Enums\ErrorCodes::ProductGroupCreateFailed		=> $this->i18N('ERROR_PRODUCT_GROUP_CREATE_FAILED'),
+			Enums\ErrorCodes::ProductGroupUpdateFailed		=> $this->i18N('ERROR_PRODUCT_GROUP_UPDATE_FAILED'),
+			Enums\ErrorCodes::CustomerCreateFailed			=> $this->i18N('ERROR_CUSTOMER_CREATE_FAILED'),
+			Enums\ErrorCodes::CustomerExists				=> $this->i18N('ERROR_CUSTOMER_EXISTS'),
+			Enums\ErrorCodes::ContactCreateFailed			=> $this->i18N('ERROR_CONTACT_CREATE_FAILED'),
+			Enums\ErrorCodes::ContactUpdateFailed			=> $this->i18N('ERROR_CONTACT_UPDATE_FAILED'),
+			Enums\ErrorCodes::CompanyCreateFailed			=> $this->i18N('ERROR_COMPANY_CREATE_FAILED'),
+			Enums\ErrorCodes::CompanyUpdateFailed			=> $this->i18N('ERROR_COMPANY_UPDATE_FAILED')
 		];
 		$this->subscribeEvent('Contacts::GetStorage', array($this, 'onGetStorage'));
 
@@ -53,21 +66,21 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Sale',
 			[
-				'VatId' => ['string', ''],
-				'Payment' => ['string', ''],
-				'LicenseKey' => ['string', ''],
-				'RefNumber' => ['int', 0],
-				'ShareItPurchaseId' => ['string', ''],
-				'IsNotified' => ['bool', false],
-				'MaintenanceExpirationDate' => ['datetime', date('Y-m-d H:i:s', 0)],
-				'RecurrentMaintenance' => ['bool', true],
-				'TwoMonthsEmailSent' => ['bool', false],
-				'ParentSaleId' => ['int', 0],
-				'PaymentSystem' => ['int', 0],
-				'NumberOfLicenses' => ['int', 0],
-				'RawData' => ['text', ''],
-				'RawDataType' => ['int', 0],
-				'PayPalItem' => ['string', ''],
+				'VatId'					=> ['string', ''],
+				'Payment'					=> ['string', ''],
+				'LicenseKey'				=> ['string', ''],
+				'RefNumber'				=> ['int', 0],
+				'ShareItPurchaseId'			=> ['string', ''],
+				'IsNotified'					=> ['bool', false],
+				'MaintenanceExpirationDate'	=> ['datetime', date('Y-m-d H:i:s', 0)],
+				'RecurrentMaintenance'		=> ['bool', true],
+				'TwoMonthsEmailSent'		=> ['bool', false],
+				'ParentSaleId'				=> ['int', 0],
+				'PaymentSystem'			=> ['int', 0],
+				'NumberOfLicenses'			=> ['int', 0],
+				'RawData'					=> ['text', ''],
+				'RawDataType'				=> ['int', 0],
+				'PayPalItem'				=> ['string', ''],
 				
 				// Download section
 				'DownloadId'		=> array('int', 0),
@@ -75,10 +88,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'Referer'			=> array('text', ''),
 				'Ip'				=> array('string', ''),
 				'Gad'				=> array('string', ''),
-				'ProductVersion'	=> array('string', ''),
+				'ProductVersion'		=> array('string', ''),
 				'LicenseType'		=> array('int', 0),
 				'ReferrerPage'		=> array('int', 0),
-				'IsUpgrade'			=> array('bool', false),
+				'IsUpgrade'		=> array('bool', false),
 				'PlatformType'		=> array('int', 0),
 			]
 		);
@@ -86,39 +99,39 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Customer',
 			[
-				'Language' => ['string', ''],
-				'Notify' => ['bool', true],
-				'GotGreeting' => ['bool', true],
-				'GotGreeting2' => ['bool', true],
-				'GotSurvey' => ['bool', true],
-				'IsSale' => ['bool', true],
+				'Language'		=> ['string', ''],
+				'Notify'		=> ['bool', true],
+				'GotGreeting'	=> ['bool', true],
+				'GotGreeting2'	=> ['bool', true],
+				'GotSurvey'	=> ['bool', true],
+				'IsSale'		=> ['bool', true],
 			]
 		);
 
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Product',
 			[
-				'ShareItProductId' => ['string', ''],
-				'PayPalItem' => ['string', ''],
-				'CrmProductId' => ['string', ''],
-				'IsAutocreated' => ['bool', true],
+				'ShareItProductId'	=> ['string', ''],
+				'PayPalItem'		=> ['string', ''],
+				'CrmProductId'		=> ['string', ''],
+				'IsAutocreated'		=> ['bool', true],
 			]
 		);
 
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\ProductGroup',
 			[
-				'ProductCode' => ['string', ''],
+				'ProductCode'	=> ['string', ''],
 			]
 		);
 
 		$this->extendObject(
 			'Aurora\Modules\ContactObjects\Classes\Contact',
 			[
-				'Fax' => ['string', ''],
-				'Salutation' => ['string', ''],
-				'LastName' => ['string', ''],
-				'FirstName' => ['string', ''],
+				'Fax'			=> ['string', ''],
+				'Salutation'		=> ['string', ''],
+				'LastName'		=> ['string', ''],
+				'FirstName'	=> ['string', ''],
 			]
 		);
 	}

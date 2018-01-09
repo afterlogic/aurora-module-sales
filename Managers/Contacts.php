@@ -35,24 +35,15 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 	public function createContact(\Aurora\Modules\ContactObjects\Classes\Contact &$oContact)
 	{
 		$mResult = false;
-		try
+		if ($oContact->validate())
 		{
-			if ($oContact->validate())
+			$oContact->Storage = $this->GetModule()->sStorage;
+			$mResult = $this->oEavManager->saveEntity($oContact);
+			if (!$mResult)
 			{
-				$oContact->Storage = $this->GetModule()->sStorage;
-				$mResult = $this->oEavManager->saveEntity($oContact);
-				if (!$mResult)
-				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ContactManager_ContactCreateFailed);
-				}
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::ContactCreateFailed);
 			}
 		}
-		catch (\Exception $oException)
-		{
-			$mResult = false;
-			$this->setLastException($oException);
-		}
-
 		return $mResult;
 	}
 
@@ -63,24 +54,15 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 	public function updateContact(\Aurora\Modules\ContactObjects\Classes\Contact $oContact)
 	{
 		$bResult = false;
-		try
+		if ($oContact->validate())
 		{
-			if ($oContact->validate())
+			if (!$this->oEavManager->saveEntity($oContact))
 			{
-				if (!$this->oEavManager->saveEntity($oContact))
-				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ContactManager_ContactUpdateFailed);
-				}
-
-				$bResult = true;
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::ContactUpdateFailed);
 			}
-		}
-		catch (\Exception $oException)
-		{
-			$bResult = false;
-			$this->setLastException($oException);
-		}
 
+			$bResult = true;
+		}
 		return $bResult;
 	}
 
@@ -93,21 +75,13 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 	public function getContactByIdOrUUID($mIdOrUUID)
 	{
 		$mContact = false;
-		try
+		if ($mIdOrUUID)
 		{
-			if ($mIdOrUUID)
-			{
-				$mContact = $this->oEavManager->getEntity($mIdOrUUID);
-			}
-			else
-			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
-			}
+			$mContact = $this->oEavManager->getEntity($mIdOrUUID);
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$mContact = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $mContact;
 	}
@@ -121,36 +95,28 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 	public function getContactByEmail($sEmail)
 	{
 		$mContact = false;
-		try
+		if (is_string($sEmail) && !empty($sEmail))
 		{
-			if (is_string($sEmail) && !empty($sEmail))
-			{
-				$aResults = $this->oEavManager->getEntities(
-					\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Contact',
-					[],
-					0,
-					1,
-					[
-						'$AND' => [
-							'Email' => [$sEmail, 'LIKE'],
-							'Storage' => [$this->GetModule()->sStorage, 'LIKE']
-						]
+			$aResults = $this->oEavManager->getEntities(
+				\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Contact',
+				[],
+				0,
+				1,
+				[
+					'$AND' => [
+						'Email' => [$sEmail, 'LIKE'],
+						'Storage' => [$this->GetModule()->sStorage, 'LIKE']
 					]
-				);
-				if (is_array($aResults) && isset($aResults[0]))
-				{
-					$mContact = $aResults[0];
-				}
-			}
-			else
+				]
+			);
+			if (is_array($aResults) && isset($aResults[0]))
 			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+				$mContact = $aResults[0];
 			}
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$mContact = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $mContact;
 	}
@@ -165,41 +131,34 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 	public function getContacts($iLimit = 0, $iOffset = 0, $aSearchFilters = [], $aViewAttributes = [])
 	{
 		$aContacts = [];
-		try
+		if (is_array($aSearchFilters) && count($aSearchFilters) > 0)
 		{
-			if (is_array($aSearchFilters) && count($aSearchFilters) > 0)
-			{
-				$aSearchFilters = ['$AND' => [
-						'$AND' => $aSearchFilters,
-						'Storage' => [$this->GetModule()->sStorage, 'LIKE']
-					]
-				];
-			}
-			else
-			{
-				$aSearchFilters = ['Storage' => [$this->GetModule()->sStorage, 'LIKE']];
-			}
-
-			$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Contact',
-				$aViewAttributes,
-				$iOffset,
-				$iLimit,
-				$aSearchFilters,
-				'FullName'
-			);
-
-			if (is_array($aResults) && count($aResults) > 0)
-			{
-				foreach ($aResults as $oContact)
-				{
-					$aContacts[$oContact->UUID] = $oContact;
-				}
-			}
+			$aSearchFilters = ['$AND' => [
+					'$AND' => $aSearchFilters,
+					'Storage' => [$this->GetModule()->sStorage, 'LIKE']
+				]
+			];
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$this->setLastException($oException);
+			$aSearchFilters = ['Storage' => [$this->GetModule()->sStorage, 'LIKE']];
+		}
+
+		$aResults = $this->oEavManager->getEntities(
+			\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Contact',
+			$aViewAttributes,
+			$iOffset,
+			$iLimit,
+			$aSearchFilters,
+			'FullName'
+		);
+
+		if (is_array($aResults) && count($aResults) > 0)
+		{
+			foreach ($aResults as $oContact)
+			{
+				$aContacts[$oContact->UUID] = $oContact;
+			}
 		}
 		return $aContacts;
 	}
@@ -211,30 +170,22 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 	public function getContactsCount($aSearchFilters = [])
 	{
 		$iResult = 0;
-		try
+		if (is_array($aSearchFilters) && count($aSearchFilters) > 0)
 		{
-			if (is_array($aSearchFilters) && count($aSearchFilters) > 0)
-			{
-				$aSearchFilters = ['$AND' => [
-						'$AND' => $aSearchFilters,
-						'Storage' => [$this->GetModule()->sStorage, 'LIKE']
-					]
-				];
-			}
-			else
-			{
-				$aSearchFilters = ['Storage' => [$this->GetModule()->sStorage, 'LIKE']];
-			}
-			$iResult = $this->oEavManager->getEntitiesCount(
-				\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Contact',
-				$aSearchFilters
-			);
+			$aSearchFilters = ['$AND' => [
+					'$AND' => $aSearchFilters,
+					'Storage' => [$this->GetModule()->sStorage, 'LIKE']
+				]
+			];
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$this->setLastException($oException);
+			$aSearchFilters = ['Storage' => [$this->GetModule()->sStorage, 'LIKE']];
 		}
-
+		$iResult = $this->oEavManager->getEntitiesCount(
+			\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Contact',
+			$aSearchFilters
+		);
 		return $iResult;
 	}
 	
@@ -245,16 +196,7 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function deleteContact(\Aurora\Modules\ContactObjects\Classes\Contact $oContact)
 	{
-		$bResult = false;
-		try
-		{
-			$bResult = $this->oEavManager->deleteEntity($oContact->EntityId);
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
-
+		$bResult = $this->oEavManager->deleteEntity($oContact->EntityId);
 		return $bResult;
 	}
 }

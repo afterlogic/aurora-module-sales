@@ -39,7 +39,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 			$mResult = $this->oEavManager->saveEntity($oProduct);
 			if (!$mResult)
 			{
-				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ProductManager_ProductCreateFailed);
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::ProductCreateFailed);
 			}
 		}
 		return $mResult;
@@ -52,24 +52,15 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	public function updateProduct(\Aurora\Modules\SaleObjects\Classes\Product $oProduct)
 	{
 		$bResult = false;
-		try
+		if ($oProduct->validate())
 		{
-			if ($oProduct->validate())
+			if (!$this->oEavManager->saveEntity($oProduct))
 			{
-				if (!$this->oEavManager->saveEntity($oProduct))
-				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::ProductManager_ProductUpdateFailed);
-				}
-
-				$bResult = true;
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::ProductUpdateFailed);
 			}
-		}
-		catch (\Exception $oException)
-		{
-			$bResult = false;
-			$this->setLastException($oException);
-		}
 
+			$bResult = true;
+		}
 		return $bResult;
 	}
 
@@ -80,34 +71,26 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	public function getProductByCode($iProductCode)
 	{
 		$oProduct = false;
-		try
+		if (is_numeric($iProductCode))
 		{
-			if (is_numeric($iProductCode))
-			{
-				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
-					[],
-					0,
-					0,
-					[
-						$this->GetModule()->GetName() . '::ProductCode' => $iProductCode
-					]
-				);
+			$aResults = $this->oEavManager->getEntities(
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+				[],
+				0,
+				0,
+				[
+					$this->GetModule()->GetName() . '::ProductCode' => $iProductCode
+				]
+			);
 
-				if (is_array($aResults) && isset($aResults[0]))
-				{
-					$oProduct = $aResults[0];
-				}
-			}
-			else
+			if (is_array($aResults) && isset($aResults[0]))
 			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+				$oProduct = $aResults[0];
 			}
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$oProduct = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $oProduct;
 	}
@@ -134,34 +117,26 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	public function getProductByShareItProductId($sShareItProductId)
 	{
 		$oProduct = false;
-		try
+		if (!empty($sShareItProductId))
 		{
-			if (!empty($sShareItProductId))
-			{
-				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
-					[],
-					0,
-					0,
-					[
-						$this->GetModule()->GetName() . '::ShareItProductId' => $sShareItProductId
-					]
-				);
+			$aResults = $this->oEavManager->getEntities(
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+				[],
+				0,
+				0,
+				[
+					$this->GetModule()->GetName() . '::ShareItProductId' => $sShareItProductId
+				]
+			);
 
-				if (is_array($aResults) && isset($aResults[0]))
-				{
-					$oProduct = $aResults[0];
-				}
-			}
-			else
+			if (is_array($aResults) && isset($aResults[0]))
 			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+				$oProduct = $aResults[0];
 			}
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$oProduct = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $oProduct;
 	}
@@ -173,34 +148,26 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	public function getProductByCrmProductId($sCrmProductId)
 	{
 		$oProduct = false;
-		try
+		if (!empty($sCrmProductId))
 		{
-			if (!empty($sCrmProductId))
-			{
-				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
-					[],
-					0,
-					0,
-					[
-						$this->GetModule()->GetName() . '::CrmProductId' => $sCrmProductId
-					]
-				);
+			$aResults = $this->oEavManager->getEntities(
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+				[],
+				0,
+				0,
+				[
+					$this->GetModule()->GetName() . '::CrmProductId' => $sCrmProductId
+				]
+			);
 
-				if (is_array($aResults) && isset($aResults[0]))
-				{
-					$oProduct = $aResults[0];
-				}
-			}
-			else
+			if (is_array($aResults) && isset($aResults[0]))
 			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+				$oProduct = $aResults[0];
 			}
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$oProduct = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $oProduct;
 	}
@@ -214,21 +181,13 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	public function getProductByIdOrUUID($mIdOrUUID)
 	{
 		$mProduct = false;
-		try
+		if ($mIdOrUUID)
 		{
-			if ($mIdOrUUID)
-			{
-				$mProduct = $this->oEavManager->getEntity($mIdOrUUID);
-			}
-			else
-			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
-			}
+			$mProduct = $this->oEavManager->getEntity($mIdOrUUID);
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$mProduct = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $mProduct;
 	}
@@ -240,34 +199,26 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	public function getProductByName($sName)
 	{
 		$oProduct = false;
-		try
+		if ($sName !== "")
 		{
-			if ($sName !== "")
-			{
-				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
-					[],
-					0,
-					0,
-					[
-						'Title' => $sName
-					]
-				);
+			$aResults = $this->oEavManager->getEntities(
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+				[],
+				0,
+				0,
+				[
+					'Title' => $sName
+				]
+			);
 
-				if (is_array($aResults) && isset($aResults[0]))
-				{
-					$oProduct = $aResults[0];
-				}
-			}
-			else
+			if (is_array($aResults) && isset($aResults[0]))
 			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
+				$oProduct = $aResults[0];
 			}
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$oProduct = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $oProduct;
 	}
@@ -281,37 +232,29 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	public function getPayPalProducts($sPayPalItem = '')
 	{
 		$oProducts = false;
-		try
+		if ($sPayPalItem === '')
 		{
-			if ($sPayPalItem === '')
-			{
-				$aFilters = [
-					$this->GetModule()->GetName() . '::PayPalItem' => ['NULL', 'IS NOT']
-				];
-			}
-			else
-			{
-				$aFilters = [
-					$this->GetModule()->GetName() . '::PayPalItem' => $sPayPalItem
-				];
-			}
-			$aResults = $this->oEavManager->getEntities(
-			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
-				[],
-				0,
-				0,
-				$aFilters
-			);
-
-			if (is_array($aResults))
-			{
-				$oProducts = $aResults;
-			}
+			$aFilters = [
+				$this->GetModule()->GetName() . '::PayPalItem' => ['NULL', 'IS NOT']
+			];
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$oProducts = false;
-			$this->setLastException($oException);
+			$aFilters = [
+				$this->GetModule()->GetName() . '::PayPalItem' => $sPayPalItem
+			];
+		}
+		$aResults = $this->oEavManager->getEntities(
+		\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+			[],
+			0,
+			0,
+			$aFilters
+		);
+
+		if (is_array($aResults))
+		{
+			$oProducts = $aResults;
 		}
 		return $oProducts;
 	}
@@ -326,25 +269,18 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	public function getProducts($iLimit = 0, $iOffset = 0, $aSearchFilters = [], $aViewAttributes = [])
 	{
 		$aProducts = [];
-		try
-		{
-			$aResults = $this->oEavManager->getEntities(
-			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
-				$aViewAttributes,
-				$iOffset,
-				$iLimit,
-				$aSearchFilters,
-				'Title'
-			);
+		$aResults = $this->oEavManager->getEntities(
+		\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+			$aViewAttributes,
+			$iOffset,
+			$iLimit,
+			$aSearchFilters,
+			'Title'
+		);
 
-			foreach ($aResults as $oProduct)
-			{
-				$aProducts[$oProduct->UUID] = $oProduct;
-			}
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		foreach ($aResults as $oProduct)
 		{
-			$this->setLastException($oException);
+			$aProducts[$oProduct->UUID] = $oProduct;
 		}
 		return $aProducts;
 	}
@@ -356,18 +292,10 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	public function getProductsCount($aSearchFilters = [])
 	{
 		$iResult = 0;
-		try
-		{
-			$iResult = $this->oEavManager->getEntitiesCount(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
-				$aSearchFilters
-			);
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
-
+		$iResult = $this->oEavManager->getEntitiesCount(
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+			$aSearchFilters
+		);
 		return $iResult;
 	}
 
@@ -379,15 +307,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	public function deleteProduct(\Aurora\Modules\SaleObjects\Classes\Product $oProduct)
 	{
 		$bResult = false;
-		try
-		{
-			$bResult = $this->oEavManager->deleteEntity($oProduct->EntityId);
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
-
+		$bResult = $this->oEavManager->deleteEntity($oProduct->EntityId);
 		return $bResult;
 	}
 
@@ -398,7 +318,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 			$mResult = $this->getProductByShareItProductId($oProduct->{$this->GetModule()->GetName() . '::ShareItProductId'});
 			if (!!$mResult)
 			{
-				throw new \Aurora\System\Exceptions\ValidationException('Validation - Invalid parameters', \Aurora\System\Exceptions\ErrorCodes::Validation_InvalidParameters);
+				throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 			}
 		}
 		if (!\Aurora\System\Utils\Validate::IsEmpty($oProduct->{$this->GetModule()->GetName() . '::CrmProductId'}))
@@ -406,7 +326,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 			$mResult = $this->getProductByShareItProductId($oProduct->{$this->GetModule()->GetName() . '::CrmProductId'});
 			if (!!$mResult)
 			{
-				throw new \Aurora\System\Exceptions\ValidationException('Validation - Invalid parameters', \Aurora\System\Exceptions\ErrorCodes::Validation_InvalidParameters);
+				throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 			}
 		}
 		return true;

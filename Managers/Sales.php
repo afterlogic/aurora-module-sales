@@ -34,24 +34,15 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 	public function createSale(\Aurora\Modules\SaleObjects\Classes\Sale &$oSale)
 	{
 		$bResult = false;
-		try
+		if ($oSale->validate())
 		{
-			if ($oSale->validate())
+			if (!$this->oEavManager->saveEntity($oSale))
 			{
-				if (!$this->oEavManager->saveEntity($oSale))
-				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::SaleManager_SaleCreateFailed);
-				}
-
-				$bResult = true;
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::SaleCreateFailed);
 			}
-		}
-		catch (\Exception $oException)
-		{
-			$bResult = false;
-			$this->setLastException($oException);
-		}
 
+			$bResult = true;
+		}
 		return $bResult;
 	}
 
@@ -62,16 +53,7 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function deleteSale(\Aurora\Modules\SaleObjects\Classes\Sale $oSale)
 	{
-		$bResult = false;
-		try
-		{
-			$bResult = $this->oEavManager->deleteEntity($oSale->EntityId);
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
-
+		$bResult = $this->oEavManager->deleteEntity($oSale->EntityId);
 		return $bResult;
 	}
 
@@ -83,23 +65,15 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 	public function getSales($iLimit = 0, $iOffset = 0, $aSearchFilters = [], $aViewAttributes = [])
 	{
 		$mResult = false;
-		try
-		{
-			$mResult = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Sale',
-				$aViewAttributes,
-				$iOffset,
-				$iLimit,
-				$aSearchFilters,
-				['Date'],
-				\Aurora\System\Enums\SortOrder::DESC
-			);
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
-
+		$mResult = $this->oEavManager->getEntities(
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Sale',
+			$aViewAttributes,
+			$iOffset,
+			$iLimit,
+			$aSearchFilters,
+			['Date'],
+			\Aurora\System\Enums\SortOrder::DESC
+		);
 		return $mResult;
 	}
 
@@ -109,19 +83,10 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function getSalesCount($aSearchFilters = [])
 	{
-		$iResult = 0;
-		try
-		{
-			$iResult = $this->oEavManager->getEntitiesCount(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Sale',
-				$aSearchFilters
-			);
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
-
+		$iResult = $this->oEavManager->getEntitiesCount(
+			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Sale',
+			$aSearchFilters
+		);
 		return $iResult;
 	}
 
@@ -134,21 +99,13 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 	public function getSaleByIdOrUUID($mIdOrUUID)
 	{
 		$mSale = false;
-		try
+		if ($mIdOrUUID)
 		{
-			if ($mIdOrUUID)
-			{
-				$mSale = $this->oEavManager->getEntity($mIdOrUUID);
-			}
-			else
-			{
-				throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
-			}
+			$mSale = $this->oEavManager->getEntity($mIdOrUUID);
 		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
+		else
 		{
-			$mSale = false;
-			$this->setLastException($oException);
+			throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 		}
 		return $mSale;
 	}
@@ -160,24 +117,15 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 	public function updateSale(\Aurora\Modules\SaleObjects\Classes\Sale $oSale)
 	{
 		$bResult = false;
-		try
+		if ($oSale->validate())
 		{
-			if ($oSale->validate())
+			if (!$this->oEavManager->saveEntity($oSale))
 			{
-				if (!$this->oEavManager->saveEntity($oSale))
-				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\System\Exceptions\Errs::SaleManager_SaleUpdateFailed);
-				}
-
-				$bResult = true;
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::SaleUpdateFailed);
 			}
-		}
-		catch (\Exception $oException)
-		{
-			$bResult = false;
-			$this->setLastException($oException);
-		}
 
+			$bResult = true;
+		}
 		return $bResult;
 	}
 }
