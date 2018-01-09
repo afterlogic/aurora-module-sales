@@ -1014,7 +1014,19 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param string $Address Contact Address.
 	 * @return bool
 	 */
-	public function UpdateContact($ContactId, $FullName = null, $Email = null, $Address = null)
+	public function UpdateContact($ContactId,
+		$FullName = null,
+		$Email = null,
+		$Address = null,
+		$Phone = null,
+		$Fax = null,
+		$Facebook = null,
+		$LinkedIn = null,
+		$Instagram = null,
+		$Salutation = null,
+		$LastName = null,
+		$FirstName = null
+	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
@@ -1034,6 +1046,38 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if (isset($Address))
 		{
 			$oContact->Address = $Address;
+		}
+		if (isset($Phone))
+		{
+			$oContact->Phone = $Phone;
+		}
+		if (isset($Fax))
+		{
+			$oContact->{$this->GetName() . '::Fax'} = $Fax;
+		}
+		if (isset($Facebook))
+		{
+			$oContact->Facebook = $Facebook;
+		}
+		if (isset($LinkedIn))
+		{
+			$oContact->LinkedIn = $LinkedIn;
+		}
+		if (isset($Instagram))
+		{
+			$oContact->Instagram = $Instagram;
+		}
+		if (isset($Salutation))
+		{
+			$oContact->{$this->GetName() . '::Salutation'} = $Salutation;
+		}
+		if (isset($LastName))
+		{
+			$oContact->{$this->GetName() . '::LastName'} = $LastName;
+		}
+		if (isset($FirstName))
+		{
+			$oContact->{$this->GetName() . '::FirstName'} = $FirstName;
 		}
 		return $this->oApiContactsManager->UpdateContact($oContact);
 	}
