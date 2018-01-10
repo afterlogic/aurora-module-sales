@@ -535,7 +535,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	}
 
 	public function UpdateSale($SaleId,
-		$ProductUUID = null,
+		$ProductIdOrUUID = null,
 		$Date = null,
 		$VatId = null,
 		$Payment = null,
@@ -558,7 +558,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale = $this->oApiSalesManager->getSaleByIdOrUUID((int) $SaleId);
 		if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
 		{
-			$oSale->ProductUUID = isset($ProductUUID) ? $ProductUUID : $oSale->ProductUUID;
+			if (isset($ProductIdOrUUID))
+			{
+				$Product =  $this->oApiProductsManager->getProductByIdOrUUID($ProductIdOrUUID);
+			}
+			$oSale->ProductUUID = isset($Product, $Product->UUID) ? $Product->UUID : $oSale->ProductUUID;
 			$oSale->Date = isset($Date) ? $Date : $oSale->Date;
 			$oSale->{$this->GetName() . '::VatId'} = isset($VatId) ? $VatId : $oSale->{$this->GetName() . '::VatId'};
 			$oSale->{$this->GetName() . '::Payment'} = isset($Payment) ? $Payment : $oSale->{$this->GetName() . '::Payment'};
