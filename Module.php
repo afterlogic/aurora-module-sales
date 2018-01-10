@@ -81,10 +81,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'RawData'					=> ['text', ''],
 				'RawDataType'				=> ['int', 0],
 				'PayPalItem'				=> ['string', ''],
-				
+
 				// Download section
 				'DownloadId'		=> array('int', 0),
-				'ProductCode'		=> array('int', 0),
 				'Referer'			=> array('text', ''),
 				'Ip'				=> array('string', ''),
 				'Gad'				=> array('string', ''),
@@ -323,11 +322,30 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'CustomerUUID',
 			'ProductUUID',
 			'Date',
-			$this->GetName() . '::LicenseKey',
 			'Price',
+			$this->GetName() . '::LicenseKey',
 			$this->GetName() . '::MaintenanceExpirationDate',
 			$this->GetName() . '::Payment',
-			$this->GetName() . '::PayPalItem'
+			$this->GetName() . '::PayPalItem',
+			$this->GetName() . '::VatId',
+			$this->GetName() . '::RefNumber',
+			$this->GetName() . '::ShareItPurchaseId',
+			$this->GetName() . '::IsNotified',
+			$this->GetName() . '::RecurrentMaintenance',
+			$this->GetName() . '::TwoMonthsEmailSent',
+			$this->GetName() . '::ParentSaleId',
+			$this->GetName() . '::PaymentSystem',
+			$this->GetName() . '::NumberOfLicenses',
+			// Download section
+			$this->GetName() . '::DownloadId',
+			$this->GetName() . '::Referer',
+			$this->GetName() . '::Ip',
+			$this->GetName() . '::Gad',
+			$this->GetName() . '::ProductVersion',
+			$this->GetName() . '::LicenseType',
+			$this->GetName() . '::ReferrerPage',
+			$this->GetName() . '::IsUpgrade',
+			$this->GetName() . '::PlatformType'
 		]);
 
 		foreach ($aSales as $oSale)

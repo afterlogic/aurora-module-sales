@@ -109,8 +109,8 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 		$aResults = $this->oEavManager->getEntities(
 		\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
 			$aViewAttributes,
-			0,
-			0,
+			$iOffset,
+			$iLimit,
 			$aSearchFilters,
 			[],
 			\Aurora\System\Enums\SortOrder::ASC
