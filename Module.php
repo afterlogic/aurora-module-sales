@@ -368,6 +368,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Email'} = $oContact->Email;
 					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Address'} = $oContact->Address;
 					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Phone'} = $oContact->Phone;
+					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Facebook'} = $oContact->Facebook;
+					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::LinkedIn'} = $oContact->LinkedIn;
+					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Instagram'} = $oContact->Instagram;
+					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Fax'} = $oContact->{$this->GetName() . '::Fax'};
+					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Salutation'} = $oContact->{$this->GetName() . '::Salutation'};
+					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::LastName'	} = $oContact->{$this->GetName() . '::LastName'};
+					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::FirstName'} = $oContact->{$this->GetName() . '::FirstName'};
 				}
 			}
 		}
