@@ -2,5 +2,29 @@
     "Disabled": [
 		false,
 		"bool"
+	],
+    "IncomingServer": [
+		"",
+		"string"
+	],
+	"IncomingLogin": [
+		"",
+		"string"
+	],
+	"IncomingPassword": [
+		"",
+		"string"
+	],
+	"FolderFullNameRaw": [
+		"",
+		"string"
+	],
+	"PayPalSearchStr": [
+		"",
+		"string"
+	],
+	"ShareItSearchStr": [
+		"",
+		"string"
 	]
 }
