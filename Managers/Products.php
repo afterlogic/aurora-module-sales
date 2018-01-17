@@ -65,27 +65,34 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	}
 
 	/**
-	 * @param int $iProductCode Product code
+	 * @param int $iProductGroupCode Product group code
 	 * @return \Aurora\Modules\SaleObjects\Classes\Product|bool
 	 */
-	public function getProductByCode($iProductCode)
+	public function getDefaultProductByGroupCode($iProductGroupCode)
 	{
 		$oProduct = false;
-		if (is_numeric($iProductCode))
+		if (is_numeric($iProductGroupCode))
 		{
-			$aResults = $this->oEavManager->getEntities(
-			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
-				[],
-				0,
-				0,
-				[
-					$this->GetModule()->GetName() . '::ProductCode' => $iProductCode
-				]
-			);
-
-			if (is_array($aResults) && isset($aResults[0]))
+			$oProductGroup = $this->GetModule()->oApiProductGroupsManager->getProductGroupByCode($iProductGroupCode);
+			if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 			{
-				$oProduct = $aResults[0];
+				$aResults = $this->oEavManager->getEntities(
+				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+					[],
+					0,
+					1,
+					[
+						'$AND' => [
+							'ProductGroupUUID' => $oProductGroup->UUID,
+							$this->GetModule()->GetName() . '::IsDefault' => true
+						]
+					]
+				);
+
+				if (is_array($aResults) && isset($aResults[0]))
+				{
+					$oProduct = $aResults[0];
+				}
 			}
 		}
 		else
@@ -99,7 +106,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	 * @param string $sProductGroupUUID UUID of product group.
 	 * @return array
 	 */
-	public function getProductsByGroupe($sProductGroupUUID)
+	public function getProductsByGroup($sProductGroupUUID)
 	{
 		$aResult = [];
 		if ($sProductGroupUUID)

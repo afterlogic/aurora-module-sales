@@ -114,6 +114,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'PayPalItem'		=> ['string', ''],
 				'CrmProductId'		=> ['string', ''],
 				'IsAutocreated'		=> ['bool', true],
+				'IsDefault'			=> ['bool', false]
 			]
 		);
 
@@ -149,9 +150,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * 
 	 * @return \Aurora\Modules\SaleObjects\Classes\Sale|boolean
 	 */
-	public function CreateSale($Payment, $PaymentSystem, $Price,
-		$Email, $FullName,
-		$ProductTitle, $ProductCode = null, $MaintenanceExpirationDate = null,
+	public function CreateSale($Payment, $PaymentSystem, $Price = null,
+		$Email = null, $FullName = null,
+		$ProductTitle = null, $ProductCode = null, $MaintenanceExpirationDate = null,
 		$TransactionId = '',
 		$Date = null, $LicenseKey ='', $RefNumber = 0, $CrmProductId = '', $ShareItProductId = '', $ShareItPurchaseId = '', $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
 		$Salutation = '', $CustomerTitle = '', $FirstName = '', $LastName = '', $Company = '', $Address = '', $Phone = '', $Fax = '', $Language = '',
@@ -195,8 +196,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 		}
 
-		$oCustomer = $this->oApiCustomersManager->getCustomerByEmail($Email);
-		if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
+		$oCustomer = $Email ? $this->oApiCustomersManager->getCustomerByEmail($Email) : null;
+		if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer &&
+			(!empty($FullName) || !empty($CustomerTitle) || !empty($Email) || !empty($FirstName) || !empty($LastName) || !empty($Company))
+		)
 		{
 			$oCustomer = $this->CreateCustomerWithContact(
 				$FullName,
@@ -204,15 +207,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$Address, $Phone,  $Email, $FirstName, $LastName, $Fax, $Salutation,
 				$Company
 			);
-			if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
-			{
-				return false;
-			}
 		}
 
 		$oSale = new \Aurora\Modules\SaleObjects\Classes\Sale($this->GetName());
 		$oSale->ProductUUID = isset($oProduct->UUID) ? $oProduct->UUID : '';
-		$oSale->CustomerUUID = $oCustomer->UUID;
+		$oSale->CustomerUUID = ($oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer) ? $oCustomer->UUID : '';
 		$oSale->{$this->GetName() . '::Payment'} = $Payment;
 		$oSale->{$this->GetName() . '::LicenseKey'} = $LicenseKey;
 		$oSale->Price = $Price;
@@ -617,6 +616,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$bResult = false;
+		if ($ProductCode !== 0 && !$CrmProductId)
+		{
+			$oProduct = $this->oApiProductsManager->getDefaultProductByGroupCode($ProductCode);
+			if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
+			{
+				$CrmProductId = $oProduct->{$this->GetName() . '::CrmProductId'};
+			}
+		}
 		$mSale = $this->CreateSale('Download', Enums\PaymentSystem::Download, 0, $Email, '', $ProductTitle, $ProductCode, null, '', $Date, $TrialKey, 0, $CrmProductId);
 		if ($mSale)
 		{
@@ -630,7 +637,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$mSale->{$this->GetName() . '::IsUpgrade'} = $IsUpgrade;
 			$mSale->{$this->GetName() . '::PlatformType'} = $PlatformType;
 			$mSale->{$this->GetName() . '::CrmProductId'} = $CrmProductId;
-			
+
 			$bResult = $this->oApiSalesManager->updateSale($mSale);
 		}
 
@@ -641,7 +648,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		return false;
 	}
-	
+
 	public function CreateProducts()
 	{
 		\Aurora\System\Api::skipCheckUserRole(true);
@@ -666,31 +673,52 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::skipCheckUserRole(true);
 		$aGroups = [
-		["Title" => "MailBee Objects","ProductCode" => "1"],
-		["Title" => "MailBee POP3 Component","ProductCode" => "2"],
-		["Title" => "MailBee SMTP Component","ProductCode" => "3"],
-		["Title" => "MailBee IMAP4 Component","ProductCode" => "4"],
-		["Title" => "MailBee Message Queue","ProductCode" => "5"],
-		["Title" => "MailBee S\/MIME Component","ProductCode" => "6"],
-		["Title" => "AfterLogic WebMail Pro ASP.NET","ProductCode" => "17"],
-		["Title" => "AfterLogic WebMail Pro PHP","ProductCode" => "22"],
-		["Title" => "MailBee.NET Objects","ProductCode" => "32"],
-		["Title" => "MailBee.NET POP3 Component","ProductCode" => "33"],
-		["Title" => "MailBee.NET SMTP Component","ProductCode" => "34"],
-		["Title" => "MailBee.NET IMAP Component","ProductCode" => "35"],
-		["Title" => "MailBee.NET Security Component","ProductCode" => "36"],
-		["Title" => "MailBee.NET AntiSpam Component","ProductCode" => "37"],
-		["Title" => "MailBee.NET Outlook Converter","ProductCode" => "38"],
-		["Title" => "PRODUCT_XMAIL_SERVER_PRO_WIN","ProductCode" => "41"],
-		["Title" => "PRODUCT_XMAIL_SERVER_PRO_LINUX","ProductCode" => "42"],
-		["Title" => "AfterLogic MailSuite Pro","ProductCode" => "44"],
-		["Title" => "MailBee.NET IMAP Bundle","ProductCode" => "48"],
-		["Title" => "MailBee.NET POP3 Bundle","ProductCode" => "49"],
-		["Title" => "Undefined 95","ProductCode" => "95"],
-		["Title" => "Undefined 96","ProductCode" => "96"],
-		["Title" => "Undefined 97","ProductCode" => "97"],
-		["Title" => "Undefined 98","ProductCode" => "98"],
-		["Title" => "Undefined 99","ProductCode" => "99"]
+			["Title" => "MailBee Objects","ProductCode" => "1"],
+			["Title" => "MailBee POP3 Component","ProductCode" => "2"],
+			["Title" => "MailBee SMTP Component","ProductCode" => "3"],
+			["Title" => "MailBee IMAP4 Component","ProductCode" => "4"],
+			["Title" => "MailBee Message Queue","ProductCode" => "5"],
+			["Title" => "MailBee S\/MIME Component","ProductCode" => "6"],
+			["Title" => "Undefined 7","ProductCode" => "7"],
+			["Title" => "Undefined 11","ProductCode" => "11"],
+			["Title" => "Undefined 16","ProductCode" => "16"],
+			["Title" => "AfterLogic WebMail Pro ASP.NET","ProductCode" => "17"],
+			["Title" => "Undefined 18","ProductCode" => "18"],
+			["Title" => "Undefined 19","ProductCode" => "19"],
+			["Title" => "Undefined 20","ProductCode" => "20"],
+			["Title" => "Undefined 21","ProductCode" => "21"],
+			["Title" => "AfterLogic WebMail Pro PHP","ProductCode" => "22"],
+			["Title" => "Undefined 24","ProductCode" => "24"],
+			["Title" => "Undefined 30","ProductCode" => "30"],
+			["Title" => "Undefined 31","ProductCode" => "31"],
+			["Title" => "MailBee.NET Objects","ProductCode" => "32"],
+			["Title" => "MailBee.NET POP3 Component","ProductCode" => "33"],
+			["Title" => "MailBee.NET SMTP Component","ProductCode" => "34"],
+			["Title" => "MailBee.NET IMAP Component","ProductCode" => "35"],
+			["Title" => "MailBee.NET Security Component","ProductCode" => "36"],
+			["Title" => "MailBee.NET AntiSpam Component","ProductCode" => "37"],
+			["Title" => "MailBee.NET Outlook Converter","ProductCode" => "38"],
+			["Title" => "Undefined 39","ProductCode" => "39"],
+			["Title" => "Undefined 40","ProductCode" => "40"],
+			["Title" => "PRODUCT_XMAIL_SERVER_PRO_WIN","ProductCode" => "41"],
+			["Title" => "PRODUCT_XMAIL_SERVER_PRO_LINUX","ProductCode" => "42"],
+			["Title" => "Undefined 43","ProductCode" => "43"],
+			["Title" => "AfterLogic MailSuite Pro","ProductCode" => "44"],
+			["Title" => "Undefined 45","ProductCode" => "45"],
+			["Title" => "Undefined 46","ProductCode" => "46"],
+			["Title" => "MailBee.NET IMAP Bundle","ProductCode" => "48"],
+			["Title" => "MailBee.NET POP3 Bundle","ProductCode" => "49"],
+			["Title" => "Undefined 50","ProductCode" => "50"],
+			["Title" => "Undefined 51","ProductCode" => "51"],
+			["Title" => "Undefined 52","ProductCode" => "52"],
+			["Title" => "Undefined 53","ProductCode" => "53"],
+			["Title" => "Undefined 54","ProductCode" => "54"],
+			["Title" => "Undefined 55","ProductCode" => "55"],
+			["Title" => "Undefined 95","ProductCode" => "95"],
+			["Title" => "Undefined 96","ProductCode" => "96"],
+			["Title" => "Undefined 97","ProductCode" => "97"],
+			["Title" => "Undefined 98","ProductCode" => "98"],
+			["Title" => "Undefined 99","ProductCode" => "99"]
 		];
 		foreach ($aGroups as $aGroup)
 		{
@@ -699,7 +727,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oProductGroup->{$this->GetName() . '::ProductCode'} = (int) $aGroup['ProductCode'];
 			$iProductGroupId = $this->oApiProductGroupsManager->createProductGroup($oProductGroup);
 			unset($oProductGroup);
+
+			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($iProductGroupId);
+			$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
+			$oProduct->ProductGroupUUID = $oProductGroup->UUID;
+			$oProduct->{$this->GetName() . '::IsAutocreated'} = true;
+			$oProduct->Title = $aGroup['Title'] . " free license";
+			$oProduct->{$this->GetName() . '::IsDefault'} = true;
+			$oProduct->{$this->GetName() . '::CrmProductId'} = (int) $aGroup['ProductCode'];
+			$this->oApiProductsManager->createProduct($oProduct);
 		}
+		return true;
 	}
 
 	/**
@@ -832,8 +870,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @return \Aurora\Modules\SaleObjects\Classes\Customer|boolean
 	 */
 	public function CreateCustomerWithContact(
-		$ContactFullName,
-		$CustomerTitle, $CustomerDescription = '', $CustomerStatus = 0, $CustomerLanguage = '',
+		$ContactFullName = '',
+		$CustomerTitle = '', $CustomerDescription = '', $CustomerStatus = 0, $CustomerLanguage = '',
 		$Address = '', $Phone = '',  $Email = '', $FirstName = '', $LastName = '', $Fax = '', $Salutation = '',
 		$Company = ''
 	)
@@ -871,21 +909,24 @@ class Module extends \Aurora\System\Module\AbstractModule
 					}
 				}
 			}
-			$iContactId = $this->CreateContact(
-					$ContactFullName,
-					$oCustomer->UUID,
-					isset($oCompany->UUID) ? $oCompany->UUID : '',
-					$Address,
-					$Phone,
-					$Email,
-					$FirstName,
-					$LastName,
-					$Fax,
-					$Salutation
-			);
-			if (!$iContactId)
+			if (!empty($ContactFullName) || !empty($Email) || !empty($Address) || !empty($Phone) || !empty($FirstName) || !empty($LastName))
 			{
-				return false;
+				$iContactId = $this->CreateContact(
+						$ContactFullName,
+						$oCustomer->UUID,
+						isset($oCompany->UUID) ? $oCompany->UUID : '',
+						$Address,
+						$Phone,
+						$Email,
+						$FirstName,
+						$LastName,
+						$Fax,
+						$Salutation
+				);
+				if (!$iContactId)
+				{
+					return false;
+				}
 			}
 		}
 		return $oCustomer;
@@ -911,7 +952,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 		{
-			$aProducts = $this->oApiProductsManager->getProductsByGroupe($oProductGroup->UUID);
+			$aProducts = $this->oApiProductsManager->getProductsByGroup($oProductGroup->UUID);
 			if (is_array($aProducts) && count($aProducts) > 0)
 			{
 				throw new \Aurora\System\Exceptions\BaseException(Enums\ErrorCodes::DataIntegrity);
@@ -982,13 +1023,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if (!empty($Search))
 		{
 			$aSearchFilters = ['$OR' => [
-				'FullName'=> ['%'.$Search.'%', 'LIKE'],
-				'Address'=> ['%'.$Search.'%', 'LIKE'],
-				'Phone'=> ['%'.$Search.'%', 'LIKE'],
-				'Email'=> ['%'.$Search.'%', 'LIKE'],
-				'Facebook'=> ['%'.$Search.'%', 'LIKE'],
-				'LinkedIn'=> ['%'.$Search.'%', 'LIKE'],
-				'Instagram'=> ['%'.$Search.'%', 'LIKE'],
+				'FullName' => ['%'.$Search.'%', 'LIKE'],
+				'Address' => ['%'.$Search.'%', 'LIKE'],
+				'Phone' => ['%'.$Search.'%', 'LIKE'],
+				'Email' => ['%'.$Search.'%', 'LIKE'],
+				'Facebook' => ['%'.$Search.'%', 'LIKE'],
+				'LinkedIn' => ['%'.$Search.'%', 'LIKE'],
+				'Instagram' => ['%'.$Search.'%', 'LIKE'],
 				$this->GetName() . '::Fax' => ['%'.$Search.'%', 'LIKE'],
 				$this->GetName() . '::Salutation' => ['%'.$Search.'%', 'LIKE'],
 				$this->GetName() . '::LastName' => ['%'.$Search.'%', 'LIKE'],

@@ -36,30 +36,13 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 		$mResult = false;
 		if ($oCustomer->validate())
 		{
-			if (!$this->isExists($oCustomer))
+			$mResult = $this->oEavManager->saveEntity($oCustomer);
+			if (!$mResult)
 			{
-				$mResult = $this->oEavManager->saveEntity($oCustomer);
-				if (!$mResult)
-				{
-					throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::CustomerCreateFailed);
-				}
-			}
-			else
-			{
-				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::CustomerExists);
+				throw new \Aurora\System\Exceptions\ManagerException(\Aurora\Modules\Sales\Enums\ErrorCodes::CustomerCreateFailed);
 			}
 		}
 		return $mResult;
-	}
-
-	/**
-	 * @param \Aurora\Modules\SaleObjects\Classes\Customer $oCustomer
-	 * @return bool
-	 * @throws \Aurora\System\Exceptions\BaseException
-	 */
-	public function isExists(\Aurora\Modules\SaleObjects\Classes\Customer &$oCustomer)
-	{
-		return !!$this->getCustomerByEmail($oCustomer->{$this->GetModule()->GetName() . '::Email'});
 	}
 
 	/**
@@ -70,7 +53,7 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 	public function getCustomerByEmail($sEmail)
 	{
 		$mCustomer = false;
-		if (is_string($sEmail))
+		if (is_string($sEmail) && !empty($sEmail))
 		{
 			$oContact = $this->GetModule()->oApiContactsManager->getContactByEmail($sEmail);
 			if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact && isset($oContact->CustomerUUID))
