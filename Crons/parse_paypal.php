@@ -4,7 +4,7 @@ use Sunra\PhpSimple\HtmlDomParser;
 
 require_once __DIR__ . "/../../../system/autoload.php";
 \Aurora\System\Api::Init(true);
-
+set_time_limit(0);
 $oSalesModule = \Aurora\System\Api::GetModule('Sales');
 $sIncomingServer =  $oSalesModule->getConfig('IncomingServer', '');
 $iIncomingPort = 993;
@@ -19,12 +19,12 @@ const ACCOUNT_CONNECT_TO_MAIL_SERVER_FAILED = 4003;
 const ACCOUNT_LOGIN_FAILED = 4004;
 
 $sParserIsRunning = \Aurora\System\Api::DataPath() . "/parser_is_running_paypal";
-if (file_exists($sParserIsRunning))
+if (file_exists($sParserIsRunning) && !isset($_GET['forced']))
 {
 	$bParserIsRunning = (int) @file_get_contents($sParserIsRunning);
 	if ($bParserIsRunning === 1)
 	{
-		echo json_encode(["result" => false, "error_msg" => "Parser already ranned"]);
+		echo json_encode(["result" => false, "error_msg" => "Parser already running"]);
 		exit();
 	}
 	else
@@ -64,7 +64,7 @@ try
 		{
 			$oImapClient->FolderExamine($sFolderFullNameRaw);
 
-			$sSearchCriterias = 'OR OR OR FROM "' . $sSearchStr . '" TO "' . $sSearchStr . '" CC "' . $sSearchStr . '" SUBJECT "' . $sSearchStr . '" UID ' . ($iLastParsedUid + 1) . ':*';
+			$sSearchCriterias = 'OR FROM "' . $sSearchStr . '"  SUBJECT "' . $sSearchStr . '" UID ' . ($iLastParsedUid + 1) . ':*';
 			$aIndexOrUids = $oImapClient->MessageSimpleSearch($sSearchCriterias, true);
 
 			foreach ($aIndexOrUids as $UID)
@@ -381,28 +381,37 @@ function ParseMessage($sMessageHtml, $sSubject)
 	$aResult['TransactionId'] = trim($oTransactionId->plaintext);
 
 	$oData = $dom->find('td.ppsans div div table', 0);
-	$oBuyer = $oData->find('tr', 0)->find('td span', 1);
-	$aResult['RegName'] = trim($oBuyer->plaintext);
-	$oEmail = $oData->find('tr', 0)->find('td span', 2);
-	$aResult['Email'] = trim($oEmail->plaintext);
+	if ($oData)
+	{
+		$oBuyer = $oData->find('tr', 0)->find('td span', 1);
+		$aResult['RegName'] = $oBuyer ? trim($oBuyer->plaintext) : '';
+		$oEmail = $oData->find('tr', 0)->find('td span', 2);
+		$aResult['Email'] = $oEmail ? trim($oEmail->plaintext) : '';
 
-	$oShipping = $oData->find('tr', 1)->find('td span', 0);
-	$aShipping = explode("\r\n", trim($oShipping->plaintext));
-	unset($aShipping[0]);
-	$aResult['FullCity'] = preg_replace('/ {2,}/', ' ', trim(implode("; ", $aShipping)));
+		$oShipping = $oData->find('tr', 1)->find('td span', 0);
+		$aShipping = $oShipping ? explode("\r\n", trim($oShipping->plaintext)) : [];
+		unset($aShipping[0]);
+		$aResult['FullCity'] = preg_replace('/ {2,}/', ' ', trim(implode("; ", $aShipping)));
 
-	$oData = $dom->find('td.ppsans div div table', 1)->find('tr', 1);
-	$oDescription = $oData->find('td', 0);
-	$aDescription = explode("\r\n", trim($oDescription->plaintext));
-	$aResult['ProductName'] = trim($aDescription[0]);
-	$aResult['ProductPayPalItem'] = trim(str_replace("Item# ", "", $aDescription[1]));
-//	$oUnitPrice = $oData->find('td', 1);
-//	$oQty = $oData->find('td', 2);
-//	$oAmount = $oData->find('td', 3);
+		$oData = $dom->find('td.ppsans div div table', 1)->find('tr', 1);
+		if ($oData)
+		{
+			$oDescription = $oData->find('td', 0);
+			$aDescription = $oDescription ? explode("\r\n", trim($oDescription->plaintext)) : [];
+			$aResult['ProductName'] = isset($aDescription[0]) ? trim($aDescription[0]) : '';
+			$aResult['ProductPayPalItem'] = isset($aDescription[1]) ? trim(str_replace("Item# ", "", $aDescription[1])) : '';
+		//	$oUnitPrice = $oData->find('td', 1);
+		//	$oQty = $oData->find('td', 2);
+		//	$oAmount = $oData->find('td', 3);
 
-	$oData = $dom->find('td.ppsans div div table', 2);
-	$oPaymentAmount = $oData->find('table tr', 2)->find('td', 1);
-	$aResult['NetTotal'] = (int) preg_replace('/[^.0-9]/', ' ', $oPaymentAmount->plaintext);
+			$oData = $dom->find('td.ppsans div div table', 2);
+			if ($oData)
+			{
+				$oPaymentAmount = $oData->find('table tr', 2)->find('td', 1);
+				$aResult['NetTotal'] = $oPaymentAmount ? (int) preg_replace('/[^.0-9]/', ' ', $oPaymentAmount->plaintext) : '';
+			}
+		}
+	}
 
 	$dom->clear();
 	unset($dom);

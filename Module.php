@@ -890,6 +890,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oContact = $this->oApiContactsManager->getContactByEmail($Email);
 		if (!$oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
 		{
+			$Company = \trim($Company);
 			if ($Company !== '')
 			{
 				$oCompany = $this->oApiCompaniesManager->getCompanyByTitle($Company);

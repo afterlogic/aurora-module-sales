@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . "/../../../system/autoload.php";
 \Aurora\System\Api::Init(true);
-
+set_time_limit(0);
 $oSalesModule = \Aurora\System\Api::GetModule('Sales');
 $sIncomingServer =  $oSalesModule->getConfig('IncomingServer', '');
 $iIncomingPort = 993;
@@ -16,12 +16,12 @@ const ACCOUNT_CONNECT_TO_MAIL_SERVER_FAILED = 4003;
 const ACCOUNT_LOGIN_FAILED = 4004;
 
 $sParserIsRunning = \Aurora\System\Api::DataPath() . "/parser_is_running_shareit";
-if (file_exists($sParserIsRunning))
+if (file_exists($sParserIsRunning) && !isset($_GET['forced']))
 {
 	$bParserIsRunning = (int) @file_get_contents($sParserIsRunning);
 	if ($bParserIsRunning === 1)
 	{
-		echo json_encode(["result" => false, "error_msg" => "Parser already ranned"]);
+		echo json_encode(["result" => false, "error_msg" => "Parser already running"]);
 		exit();
 	}
 	else
@@ -60,9 +60,9 @@ try
 		{
 			$oImapClient->FolderExamine($sFolderFullNameRaw);
 
-			$sSearchCriterias = 'OR OR OR FROM "' . $sSearchStr . '" TO "' . $sSearchStr . '" CC "' . $sSearchStr . '" SUBJECT "' . $sSearchStr . '" UID ' . ($iLastParsedUid + 1) . ':*';
+			$sSearchCriterias = 'OR FROM "' . $sSearchStr . '"  SUBJECT "' . $sSearchStr . '" UID ' . ($iLastParsedUid + 1) . ':*';
 			$aIndexOrUids = $oImapClient->MessageSimpleSearch($sSearchCriterias, true);
-
+			sort($aIndexOrUids);
 			foreach ($aIndexOrUids as $UID)
 			{
 				if ($UID > $iLastParsedUid)
@@ -381,60 +381,76 @@ function GetMessage($oImapClient, $Folder, $Uid, $Rfc822MimeIndex = '')
 
 function ParseMessage($sMessagePlainText, $sSubject)
 {
-	$aParams = [
-		'ShareItProductId'	=> [8, 'int'],
-		'NumberOfLicenses'	=> [10, 'int'],
-		'ShareItPurchaseId'	=> [11, 'int'],
-		'Salutation'			=> [25, 'string'],
-		'Title'				=> [26, 'string'],
-		'LastName'			=> [27, 'string'],
-		'FirstName'		=> [28, 'string'],
-		'Company'			=> [29, 'string'],
-		'Street'			=> [30, 'string'],
-		'Zip'				=> [31, 'string'],
-		'City'				=> [32, 'string'],
-		'FullCity'			=> [33, 'string'],
-		'Country'			=> [34, 'string'],
-		'State'			=> [35, 'string'],
-		'Phone'			=> [36, 'string'],
-		'Fax'				=> [37, 'string'],
-		'Email'			=> [38, 'string'],
-		'VatId'			=> [39, 'string'],
-		'Payment'			=> [40, 'string'],
-		'RegName'			=> [41, 'string'],
-		'Language'			=> [42, 'string']
+	$aParamTypes = [
+		'Program'				=> ['ShareItProductId', 'int'],
+		'Number of licenses'	=> ['NumberOfLicenses', 'int'],
+		'ShareIt Ref #'			=> ['ShareItPurchaseId', 'int'],
+		'Salutation'			=> ['Salutation', 'string'],
+		'Title'					=> ['Title', 'string'],
+		'Last Name'				=> ['LastName', 'string'],
+		'First Name'			=> ['FirstName', 'string'],
+		'Company'				=> ['Company', 'string'],
+		'Street'				=> ['Street', 'string'],
+		'ZIP'					=> ['Zip', 'string'],
+		'City'					=> ['City', 'string'],
+		'FullCity'				=> ['FullCity', 'string'],
+		'Country'				=> ['Country', 'string'],
+		'State / Province'		=> ['State', 'string'],
+		'Phone'					=> ['Phone', 'string'],
+		'Fax'					=> ['Fax', 'string'],
+		'E-Mail'				=> ['Email', 'string'],
+		'VAT ID'				=> ['VatId', 'string'],
+		'Payment'				=> ['Payment', 'string'],
+		'Registration name'		=> ['RegName', 'string'],
+		'Language'				=> ['Language', 'string'],
+		'Total'					=> ['NetTotal', 'double'],
 	];
 	$aResult = [];
-	$aStrings = explode("\r\n", $sMessagePlainText);
+	$aParams = [];
+	preg_match_all('/^(?:.+)=(?:.+)/m', $sMessagePlainText, $aParams);
 
-	foreach ($aParams as $sParamName => $aParamProperties)
+	if (isset($aParams[0]) && is_array($aParams[0]))
 	{
-		$aParts = explode("=", $aStrings[$aParamProperties[0]]);
-		if (is_array($aParts) && isset($aParts[1]))
+		foreach ($aParams[0] as $sParamString)
 		{
-			//Type casting
-			if(settype( $aParts[1], $aParamProperties[1]))
+			$aParts = explode("=", $sParamString);
+			if (is_array($aParts) && isset($aParts[0]) && isset($aParts[1]))
 			{
-				$aResult[$sParamName] = $aParts[1];
+				$sParamName = trim($aParts[0]);
+				$sParamValue = trim($aParts[1]);
+				if (isset($aParamTypes[$sParamName]))
+				{
+					switch ($sParamName)
+					{
+						case "Total":
+							$aNetTotalParts = explode(" ", $sParamValue);
+							if (is_array($aNetTotalParts) && isset($aNetTotalParts[count($aNetTotalParts) - 1]))
+							{
+								if(settype($sParamValue, $aParamTypes[$sParamName][1]))
+								{
+									$aResult[$aParamTypes[$sParamName][0]] = (double) filter_var($aNetTotalParts[count($aNetTotalParts) - 1], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+								}
+							}
+							break;
+						default:
+							//Type casting
+							if(settype($sParamValue, $aParamTypes[$sParamName][1]))
+							{
+								$aResult[$aParamTypes[$sParamName][0]] = $sParamValue;
+							}
+					}
+				}
 			}
 		}
 	}
 	//Name
-	$aMatches = [];
-	preg_match('/\"([\s\S]*)\"/', $aStrings[2], $aMatches);
-	$aResult['ProductName'] = isset($aMatches[1]) ? $aMatches[1] : '';
-	//Total
-	$aNetTotalParts = explode("=", $aStrings[21]);
-	if (is_array($aNetTotalParts) && isset($aNetTotalParts[1]))
-	{
-		$aNetTotalParts = explode(" ", trim($aNetTotalParts[1]));
-		if (is_array($aNetTotalParts) && isset($aNetTotalParts[count($aNetTotalParts) - 1]))
-		{
-			$aResult['NetTotal'] = (float) $aNetTotalParts[count($aNetTotalParts) - 1];
-		}
-	}
+	$aNameMatches = [];
+	preg_match('/for "(.+)"/', $sSubject, $aNameMatches);
+	$aResult['ProductName'] = isset($aNameMatches[1]) ? trim($aNameMatches[1]) : '';
 	//LicenseKey
-	$aResult['LicenseKey'] = trim($aStrings[48]);
+	$aLicenseKeyMatches = [];
+	preg_match("/[A-Z0-9]{5,6}-(?:[A-Z0-9-]*[\n\r])+/", $sMessagePlainText, $aLicenseKeyMatches);
+	$aResult['LicenseKey'] =isset($aLicenseKeyMatches[0]) ? trim($aLicenseKeyMatches[0]) : '';
 	//RefNumber
 	$aSubjectMatches = [];
 	preg_match('/Order No\.[\s]*([0-9]*)[\s]for/', $sSubject, $aSubjectMatches);
