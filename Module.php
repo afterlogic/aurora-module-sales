@@ -156,7 +156,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$TransactionId = '',
 		$Date = null, $LicenseKey ='', $RefNumber = 0, $CrmProductId = '', $ShareItProductId = '', $ShareItPurchaseId = '', $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
 		$Salutation = '', $CustomerTitle = '', $FirstName = '', $LastName = '', $Company = '', $Address = '', $Phone = '', $Fax = '', $Language = '',
-		$PayPalItem = '', $RawData = '', $RawDataType = 0
+		$PayPalItem = '', $RawData = '', $RawDataType = 0, $NumberOfLicenses = 0
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
@@ -228,6 +228,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale->{$this->GetName() . '::RawData'} = $RawData;
 		$oSale->{$this->GetName() . '::RawDataType'} = $RawDataType;
 		$oSale->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
+		$oSale->{$this->GetName() . '::NumberOfLicenses'} = $NumberOfLicenses;
 		if (isset($Date))
 		{
 			$oSale->Date = $Date;

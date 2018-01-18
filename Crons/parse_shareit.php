@@ -94,7 +94,7 @@ try
 							'',
 							$oMessage['Date'], $aData['LicenseKey'], $aData['RefNumber'], '', $aData['ShareItProductId'], $aData['ShareItPurchaseId'], false, true, false, 0, $aData['VatId'],
 							$aData['Salutation'], $aData['Title'], $aData['FirstName'], $aData['LastName'], $aData['Company'], $sAddress, $aData['Phone'], $aData['Fax'], $aData['Language'], '',
-							$oMessage['Plain'], \Aurora\Modules\Sales\Enums\RawDataType::PlainText
+							$oMessage['Plain'], \Aurora\Modules\Sales\Enums\RawDataType::PlainText, $aData['NumberOfLicenses']
 						);
 						if ($UID > (int) @file_get_contents($sLastParsedUidPath))
 						{
@@ -405,6 +405,8 @@ function ParseMessage($sMessagePlainText, $sSubject)
 		'Language'				=> ['Language', 'string'],
 		'Total'					=> ['NetTotal', 'double'],
 	];
+
+	$LicenseKeysHeaders = ['WM700', 'MN110', 'MBC900', 'AU700'];
 	$aResult = [];
 	$aParams = [];
 	preg_match_all('/^(?:.+)=(?:.+)/m', $sMessagePlainText, $aParams);
@@ -449,7 +451,7 @@ function ParseMessage($sMessagePlainText, $sSubject)
 	$aResult['ProductName'] = isset($aNameMatches[1]) ? trim($aNameMatches[1]) : '';
 	//LicenseKey
 	$aLicenseKeyMatches = [];
-	preg_match("/[A-Z0-9]{5,6}-(?:[A-Z0-9-]*[\n\r])+/", $sMessagePlainText, $aLicenseKeyMatches);
+	preg_match("/(?:" . implode("|", $LicenseKeysHeaders) . ")-(?:[A-Z0-9-]*[\n\r])+/", $sMessagePlainText, $aLicenseKeyMatches);
 	$aResult['LicenseKey'] =isset($aLicenseKeyMatches[0]) ? trim($aLicenseKeyMatches[0]) : '';
 	//RefNumber
 	$aSubjectMatches = [];
