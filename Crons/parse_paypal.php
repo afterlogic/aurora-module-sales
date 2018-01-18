@@ -110,7 +110,7 @@ try
 }
 catch (\Exception $oEx)
 {
-	echo json_encode(["result" => false, "error_msg" => $oEx->getMessage()]);
+	echo json_encode(["result" => false, "error_msg" => (isset($oSalesModuleDecorator->aErrors[$oEx->getCode()]) ? $oSalesModuleDecorator->aErrors[$oEx->getCode()] : 'Unknown error')]);
 }
 file_put_contents($sParserIsRunning, 0);
 
