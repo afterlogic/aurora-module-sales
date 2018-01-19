@@ -418,8 +418,8 @@ function ParseMessage($sMessagePlainText, $sSubject)
 			$aParts = explode("=", $sParamString);
 			if (is_array($aParts) && isset($aParts[0]) && isset($aParts[1]))
 			{
-				$sParamName = trim($aParts[0]);
-				$sParamValue = trim($aParts[1]);
+				$sParamName = trim(array_shift($aParts));
+				$sParamValue = trim(implode('=', $aParts));	// if value contains "=" - return them back
 				if (isset($aParamTypes[$sParamName]))
 				{
 					switch ($sParamName)
