@@ -13,7 +13,8 @@ $bVerifySsl = false;
 $sIncomingLogin = $oSalesModule->getConfig('IncomingLogin', '');
 $sIncomingPassword = $oSalesModule->getConfig('IncomingPassword', '');
 $sFolderFullNameRaw = $oSalesModule->getConfig('FolderFullNameRaw', '');
-$sSearchStr = $oSalesModule->getConfig('PayPalSearchStr', '');
+$sSearchFrom = $oSalesModule->getConfig('PayPalSearchFrom', '');
+$sSearchSubject = $oSalesModule->getConfig('PayPalSearchSubject', '');
 
 const ACCOUNT_CONNECT_TO_MAIL_SERVER_FAILED = 4003;
 const ACCOUNT_LOGIN_FAILED = 4004;
@@ -64,7 +65,7 @@ try
 		{
 			$oImapClient->FolderExamine($sFolderFullNameRaw);
 
-			$sSearchCriterias = 'OR FROM "' . $sSearchStr . '"  SUBJECT "' . $sSearchStr . '" UID ' . ($iLastParsedUid + 1) . ':*';
+			$sSearchCriterias = 'OR FROM "' . $sSearchFrom . '"  SUBJECT "' . $sSearchSubject . '" UID ' . ($iLastParsedUid + 1) . ':*';
 			$aIndexOrUids = $oImapClient->MessageSimpleSearch($sSearchCriterias, true);
 
 			foreach ($aIndexOrUids as $UID)
@@ -374,45 +375,48 @@ function GetMessage($oImapClient, $Folder, $Uid, $Rfc822MimeIndex = '')
 function ParseMessage($sMessageHtml, $sSubject)
 {
 	$aResult = [];
-	$dom = HtmlDomParser::str_get_html($sMessageHtml);
+	$oDom = HtmlDomParser::str_get_html($sMessageHtml);
 
-	$oTransactionId = $dom->find('table table a', 0);
-	$aResult['TransactionId'] = trim($oTransactionId->plaintext);
-
-	$oData = $dom->find('td.ppsans div div table', 0);
-	if ($oData)
+	if ($oDom)
 	{
-		$oBuyer = $oData->find('tr', 0)->find('td span', 1);
-		$aResult['RegName'] = $oBuyer ? trim($oBuyer->plaintext) : '';
-		$oEmail = $oData->find('tr', 0)->find('td span', 2);
-		$aResult['Email'] = $oEmail ? trim($oEmail->plaintext) : '';
+		$oTransactionId = $oDom->find('table table a', 0);
+		$aResult['TransactionId'] = $oTransactionId ? trim($oTransactionId->plaintext) : '';
 
-		$oShipping = $oData->find('tr', 1)->find('td span', 0);
-		$aShipping = $oShipping ? explode("\r\n", trim($oShipping->plaintext)) : [];
-		unset($aShipping[0]);
-		$aResult['FullCity'] = preg_replace('/ {2,}/', ' ', trim(implode("; ", $aShipping)));
-
-		$oData = $dom->find('td.ppsans div div table', 1)->find('tr', 1);
+		$oData = $oDom->find('td.ppsans div div table', 0);
 		if ($oData)
 		{
-			$oDescription = $oData->find('td', 0);
-			$aDescription = $oDescription ? explode("\r\n", trim($oDescription->plaintext)) : [];
-			$aResult['ProductName'] = isset($aDescription[0]) ? trim($aDescription[0]) : '';
-			$aResult['ProductPayPalItem'] = isset($aDescription[1]) ? trim(str_replace("Item# ", "", $aDescription[1])) : '';
-		//	$oUnitPrice = $oData->find('td', 1);
-		//	$oQty = $oData->find('td', 2);
-		//	$oAmount = $oData->find('td', 3);
+			$oBuyer = $oData->find('tr', 0)->find('td span', 1);
+			$aResult['RegName'] = $oBuyer ? trim($oBuyer->plaintext) : '';
+			$oEmail = $oData->find('tr', 0)->find('td span', 2);
+			$aResult['Email'] = $oEmail ? trim($oEmail->plaintext) : '';
 
-			$oData = $dom->find('td.ppsans div div table', 2);
+			$oShipping = $oData->find('tr', 1)->find('td span', 0);
+			$aShipping = $oShipping ? explode("\r\n", trim($oShipping->plaintext)) : [];
+			unset($aShipping[0]);
+			$aResult['FullCity'] = preg_replace('/ {2,}/', ' ', trim(implode("; ", $aShipping)));
+
+			$oData = $oDom->find('td.ppsans div div table', 1)->find('tr', 1);
 			if ($oData)
 			{
-				$oPaymentAmount = $oData->find('table tr', 2)->find('td', 1);
-				$aResult['NetTotal'] = $oPaymentAmount ? (int) preg_replace('/[^.0-9]/', ' ', $oPaymentAmount->plaintext) : '';
+				$oDescription = $oData->find('td', 0);
+				$aDescription = $oDescription ? explode("\r\n", trim($oDescription->plaintext)) : [];
+				$aResult['ProductName'] = isset($aDescription[0]) ? trim($aDescription[0]) : '';
+				$aResult['ProductPayPalItem'] = isset($aDescription[1]) ? trim(str_replace("Item# ", "", $aDescription[1])) : '';
+			//	$oUnitPrice = $oData->find('td', 1);
+			//	$oQty = $oData->find('td', 2);
+			//	$oAmount = $oData->find('td', 3);
+
+				$oData = $oDom->find('td.ppsans div div table', 2);
+				if ($oData)
+				{
+					$oPaymentAmount = $oData->find('table tr', 2)->find('td', 1);
+					$aResult['NetTotal'] = $oPaymentAmount ? (int) preg_replace('/[^.0-9]/', ' ', $oPaymentAmount->plaintext) : '';
+				}
 			}
 		}
-	}
 
-	$dom->clear();
-	unset($dom);
+		$oDom->clear();
+		unset($oDom);
+	}
 	return $aResult;
 }

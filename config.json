@@ -19,11 +19,19 @@
 		"",
 		"string"
 	],
-	"PayPalSearchStr": [
+	"PayPalSearchFrom": [
 		"",
 		"string"
 	],
-	"ShareItSearchStr": [
+	"ShareItSearchFrom": [
+		"",
+		"string"
+	],
+	"PayPalSearchSubject": [
+		"",
+		"string"
+	],
+	"ShareItSearchSubject": [
 		"",
 		"string"
 	]

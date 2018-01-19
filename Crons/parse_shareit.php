@@ -10,7 +10,8 @@ $bVerifySsl = false;
 $sIncomingLogin = $oSalesModule->getConfig('IncomingLogin', '');
 $sIncomingPassword = $oSalesModule->getConfig('IncomingPassword', '');
 $sFolderFullNameRaw = $oSalesModule->getConfig('FolderFullNameRaw', '');
-$sSearchStr = $oSalesModule->getConfig('ShareItSearchStr', '');
+$sSearchFrom = $oSalesModule->getConfig('ShareItSearchFrom', '');
+$sSearchSubject = $oSalesModule->getConfig('ShareItSearchSubject', '');
 
 const ACCOUNT_CONNECT_TO_MAIL_SERVER_FAILED = 4003;
 const ACCOUNT_LOGIN_FAILED = 4004;
@@ -60,7 +61,7 @@ try
 		{
 			$oImapClient->FolderExamine($sFolderFullNameRaw);
 
-			$sSearchCriterias = 'OR FROM "' . $sSearchStr . '"  SUBJECT "' . $sSearchStr . '" UID ' . ($iLastParsedUid + 1) . ':*';
+			$sSearchCriterias = 'OR FROM "' . $sSearchFrom . '"  SUBJECT "' . $sSearchSubject . '" UID ' . ($iLastParsedUid + 1) . ':*';
 			$aIndexOrUids = $oImapClient->MessageSimpleSearch($sSearchCriterias, true);
 			sort($aIndexOrUids);
 			foreach ($aIndexOrUids as $UID)
