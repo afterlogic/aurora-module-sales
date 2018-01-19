@@ -69,37 +69,51 @@ try
 				{
 					$oMessage = GetMessage($oImapClient, $sFolderFullNameRaw, $UID);
 					$aData = ParseMessage($oMessage['Plain'], $oMessage['Subject']);
-					if (isset($aData['Payment']) && $aData['Payment'] !== '' &&
-						isset($aData['NetTotal']) && $aData['NetTotal'] !== 0 &&
-						isset($aData['Email']) && $aData['Email'] !== '' &&
-						isset($aData['RegName']) && $aData['RegName'] !== '' &&
-						isset($aData['ProductName']) && $aData['ProductName'] !== ''
-					)
+
+					$aAdressParts = [$aData['Street'], $aData['City'], $aData['State'], $aData['Zip'], $aData['Country']];
+					$aAdressPartsClear = [];
+					foreach ($aAdressParts as $sPart)
 					{
-						$aAdressParts = [$aData['Street'], $aData['City'], $aData['State'], $aData['Zip'], $aData['Country']];
-						$aAdressPartsClear = [];
-						foreach ($aAdressParts as $sPart)
-						{
 
-							if (trim($sPart) !== '')
-							{
-								array_push($aAdressPartsClear, trim($sPart));
-							}
-						}
-
-						$sAddress = implode(', ', $aAdressPartsClear);
-						$oSalesModuleDecorator->CreateSale($aData['Payment'], \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt, $aData['NetTotal'],
-							$aData['Email'], $aData['RegName'],
-							$aData['ProductName'], null, null,
-							'',
-							$oMessage['Date'], $aData['LicenseKey'], $aData['RefNumber'], '', $aData['ShareItProductId'], $aData['ShareItPurchaseId'], false, true, false, 0, $aData['VatId'],
-							$aData['Salutation'], $aData['Title'], $aData['FirstName'], $aData['LastName'], $aData['Company'], $sAddress, $aData['Phone'], $aData['Fax'], $aData['Language'], '',
-							$oMessage['Plain'], \Aurora\Modules\Sales\Enums\RawDataType::PlainText, $aData['NumberOfLicenses']
-						);
-						if ($UID > (int) @file_get_contents($sLastParsedUidPath))
+						if (trim($sPart) !== '')
 						{
-							file_put_contents($sLastParsedUidPath, $UID);
+							array_push($aAdressPartsClear, trim($sPart));
 						}
+					}
+
+					$sAddress = implode(', ', $aAdressPartsClear);
+					$oSalesModuleDecorator->CreateSale(
+						isset($aData['Payment']) ? $aData['Payment'] : null,
+						\Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt,
+						isset($aData['NetTotal']) ? $aData['NetTotal'] : null,
+						isset($aData['Email']) ? $aData['Email'] : null,
+						isset($aData['RegName']) ? $aData['RegName'] : null,
+						isset($aData['ProductName']) ? $aData['ProductName'] : null,
+						null, null,'',
+						$oMessage['Date'],
+						isset($aData['LicenseKey']) ? $aData['LicenseKey'] : null,
+						isset($aData['RefNumber']) ? $aData['RefNumber'] : null,
+						'',
+						isset($aData['ShareItProductId']) ? $aData['ShareItProductId'] : null,
+						isset($aData['ShareItPurchaseId']) ? $aData['ShareItPurchaseId'] : null,
+						false, true, false, 0,
+						isset($aData['VatId']) ? $aData['VatId'] : null,
+						isset($aData['Salutation']) ? $aData['Salutation'] : null,
+						isset($aData['Title']) ? $aData['Title'] : null,
+						isset($aData['FirstName']) ? $aData['FirstName'] : null,
+						isset($aData['LastName']) ? $aData['LastName'] : null,
+						isset($aData['Company']) ? $aData['Company'] : null,
+						$sAddress,
+						isset($aData['Phone']) ? $aData['Phone'] : null,
+						isset($aData['Fax']) ? $aData['Fax'] : null,
+						isset($aData['Language']) ? $aData['Language'] : null, '',
+						$oMessage['Plain'],
+						\Aurora\Modules\Sales\Enums\RawDataType::PlainText,
+						isset($aData['NumberOfLicenses']) ? $aData['NumberOfLicenses'] : null
+					);
+					if ($UID > (int) @file_get_contents($sLastParsedUidPath))
+					{
+						file_put_contents($sLastParsedUidPath, $UID);
 					}
 				}
 			}

@@ -150,7 +150,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * 
 	 * @return \Aurora\Modules\SaleObjects\Classes\Sale|boolean
 	 */
-	public function CreateSale($Payment, $PaymentSystem, $Price = null,
+	public function CreateSale($Payment = '', $PaymentSystem = '', $Price = null,
 		$Email = null, $FullName = null,
 		$ProductTitle = null, $ProductCode = null, $MaintenanceExpirationDate = null,
 		$TransactionId = '',

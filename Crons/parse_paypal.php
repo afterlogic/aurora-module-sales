@@ -74,25 +74,24 @@ try
 					$oMessage = GetMessage($oImapClient, $sFolderFullNameRaw, $UID);
 					$aData = ParseMessage($oMessage['Html'], $oMessage['Subject']);
 
-					if (isset($aData['NetTotal']) && $aData['NetTotal'] !== 0 &&
-						isset($aData['Email']) && $aData['Email'] !== '' &&
-						isset($aData['RegName']) && $aData['RegName'] !== '' &&
-						isset($aData['ProductName']) && $aData['ProductName'] !== '' &&
-						isset($aData['ProductPayPalItem']) && $aData['ProductPayPalItem'] !== ''
-					)
+					$oSalesModuleDecorator->CreateSale('PayPal', \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal,
+						isset($aData['NetTotal']) ? $aData['NetTotal'] : null,
+						isset($aData['Email']) ? $aData['Email'] : null,
+						isset($aData['RegName']) ? $aData['RegName'] : null,
+						isset($aData['ProductName']) ? $aData['ProductName'] : null,
+						null, null,
+						isset($aData['TransactionId']) ? $aData['TransactionId'] : '',
+						$oMessage['Date'],
+						'', 0,  '', '', 0, false, true, false, 0, '', '', '', '', '', '',
+						isset($aData['FullCity']) ? $aData['FullCity'] : null,
+						'', '', '',
+						isset($aData['ProductPayPalItem']) ? $aData['ProductPayPalItem'] : null,
+						$oMessage['Html'],
+						\Aurora\Modules\Sales\Enums\RawDataType::Html
+					);
+					if ($UID > (int) @file_get_contents($sLastParsedUidPath))
 					{
-						$oSalesModuleDecorator->CreateSale('PayPal', \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal, $aData['NetTotal'],
-							$aData['Email'], $aData['RegName'],
-							$aData['ProductName'], null, null,
-							isset($aData['TransactionId']) ? $aData['TransactionId'] : '',
-							$oMessage['Date'], '', 0,  '', '', 0, false, true, false, 0, '',
-							'', '', '', '', '', $aData['FullCity'],'', '', '', $aData['ProductPayPalItem'],
-							$oMessage['Html'], \Aurora\Modules\Sales\Enums\RawDataType::Html
-						);
-						if ($UID > (int) @file_get_contents($sLastParsedUidPath))
-						{
-							file_put_contents($sLastParsedUidPath, $UID);
-						}
+						file_put_contents($sLastParsedUidPath, $UID);
 					}
 				}
 			}
