@@ -2,6 +2,7 @@
 require_once __DIR__ . "/../../../system/autoload.php";
 \Aurora\System\Api::Init(true);
 set_time_limit(0);
+\Aurora\System\Api::Log("Parser for ShareIt is started", \Aurora\System\Enums\LogLevel::Full, 'sales-parsing-');
 $oSalesModule = \Aurora\System\Api::GetModule('Sales');
 $sIncomingServer =  $oSalesModule->getConfig('IncomingServer', '');
 $iIncomingPort = 993;
@@ -22,6 +23,7 @@ if (file_exists($sParserIsRunning) && !isset($_GET['forced']))
 	$bParserIsRunning = (int) @file_get_contents($sParserIsRunning);
 	if ($bParserIsRunning === 1)
 	{
+		\Aurora\System\Api::Log("Error: ShareIt-parser already running", \Aurora\System\Enums\LogLevel::Full, 'sales-parsing-');
 		echo json_encode(["result" => false, "error_msg" => "Parser already running"]);
 		exit();
 	}
@@ -70,7 +72,7 @@ try
 				{
 					$oMessage = GetMessage($oImapClient, $sFolderFullNameRaw, $UID);
 					$aData = ParseMessage($oMessage['Plain'], $oMessage['Subject']);
-
+					\Aurora\System\Api::Log("Message {$UID} was parsed successfully." , \Aurora\System\Enums\LogLevel::Full, 'sales-parsing-');
 					$aAdressParts = [$aData['Street'], $aData['City'], $aData['State'], $aData['Zip'], $aData['Country']];
 					$aAdressPartsClear = [];
 					foreach ($aAdressParts as $sPart)
@@ -118,21 +120,26 @@ try
 					}
 				}
 			}
+			\Aurora\System\Api::Log("Parser for ShareIt is stoped", \Aurora\System\Enums\LogLevel::Full, 'sales-parsing-');
 			echo json_encode(["result" => true]);
 		}
 		else
 		{
+			\Aurora\System\Api::Log("Error. Connect to mail server failed.", \Aurora\System\Enums\LogLevel::Full, 'sales-parsing-');
 			echo json_encode(["result" => false, "error_msg" => "Connect to mail server failed"]);
 		}
 	}
 	else
 	{
+		\Aurora\System\Api::Log("Error. Connect to mail server failed.", \Aurora\System\Enums\LogLevel::Full, 'sales-parsing-');
 		echo json_encode(["result" => false, "error_msg" => "Connect to mail server failed"]);
 	}
 }
 catch (\Exception $oEx)
 {
-	echo json_encode(["result" => false, "error_msg" => (isset($oSalesModuleDecorator->aErrors[$oEx->getCode()]) ? $oSalesModuleDecorator->aErrors[$oEx->getCode()] : 'Unknown error')]);
+	$sErrorMsg = (isset($oSalesModuleDecorator->aErrors[$oEx->getCode()]) ? $oSalesModuleDecorator->aErrors[$oEx->getCode()] : 'Unknown error');
+	\Aurora\System\Api::Log("Error. " . $sErrorMsg, \Aurora\System\Enums\LogLevel::Full, 'sales-parsing-');
+	echo json_encode(["result" => false, "error_msg" => $sErrorMsg]);
 }
 file_put_contents($sParserIsRunning, 0);
 
