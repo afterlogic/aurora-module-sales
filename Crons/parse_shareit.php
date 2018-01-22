@@ -63,7 +63,7 @@ try
 		{
 			$oImapClient->FolderExamine($sFolderFullNameRaw);
 
-			$sSearchCriterias = 'OR FROM "' . $sSearchFrom . '"  SUBJECT "' . $sSearchSubject . '" UID ' . ($iLastParsedUid + 1) . ':*';
+			$sSearchCriterias = 'FROM "' . $sSearchFrom . '"  SUBJECT "' . $sSearchSubject . '" UID ' . ($iLastParsedUid + 1) . ':*';
 			$aIndexOrUids = $oImapClient->MessageSimpleSearch($sSearchCriterias, true);
 			sort($aIndexOrUids);
 			foreach ($aIndexOrUids as $UID)
