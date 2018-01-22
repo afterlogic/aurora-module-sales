@@ -67,7 +67,7 @@ try
 
 			$sSearchCriterias = 'OR FROM "' . $sSearchFrom . '"  SUBJECT "' . $sSearchSubject . '" UID ' . ($iLastParsedUid + 1) . ':*';
 			$aIndexOrUids = $oImapClient->MessageSimpleSearch($sSearchCriterias, true);
-
+			sort($aIndexOrUids);
 			foreach ($aIndexOrUids as $UID)
 			{
 				if ($UID > $iLastParsedUid)
