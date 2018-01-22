@@ -110,7 +110,8 @@ try
 }
 catch (\Exception $oEx)
 {
-	echo json_encode(["result" => false, "error_msg" => (isset($oSalesModuleDecorator->aErrors[$oEx->getCode()]) ? $oSalesModuleDecorator->aErrors[$oEx->getCode()] : 'Unknown error')]);
+	$oSalesModule = \Aurora\System\Api::GetModule('Sales');
+	echo json_encode(["result" => false, "error_msg" => (isset($oSalesModule->aErrors[$oEx->getCode()]) ? $oSalesModule->aErrors[$oEx->getCode()] : 'Unknown error')]);
 }
 file_put_contents($sParserIsRunning, 0);
 

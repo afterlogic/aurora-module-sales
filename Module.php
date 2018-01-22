@@ -888,7 +888,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			return false;
 		}
 
-		$oContact = $this->oApiContactsManager->getContactByEmail($Email);
+		$oContact = $Email ? $this->oApiContactsManager->getContactByEmail($Email) : null;
 		if (!$oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
 		{
 			$Company = \trim($Company);
@@ -914,16 +914,16 @@ class Module extends \Aurora\System\Module\AbstractModule
 			if (!empty($ContactFullName) || !empty($Email) || !empty($Address) || !empty($Phone) || !empty($FirstName) || !empty($LastName))
 			{
 				$iContactId = $this->CreateContact(
-						$ContactFullName,
-						$oCustomer->UUID,
-						isset($oCompany->UUID) ? $oCompany->UUID : '',
-						$Address,
-						$Phone,
-						$Email,
-						$FirstName,
-						$LastName,
-						$Fax,
-						$Salutation
+					$ContactFullName,
+					$oCustomer->UUID,
+					isset($oCompany->UUID) ? $oCompany->UUID : '',
+					$Address,
+					$Phone,
+					$Email,
+					$FirstName,
+					$LastName,
+					$Fax,
+					$Salutation
 				);
 				if (!$iContactId)
 				{

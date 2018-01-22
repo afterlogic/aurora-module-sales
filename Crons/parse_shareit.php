@@ -137,7 +137,8 @@ try
 }
 catch (\Exception $oEx)
 {
-	$sErrorMsg = (isset($oSalesModuleDecorator->aErrors[$oEx->getCode()]) ? $oSalesModuleDecorator->aErrors[$oEx->getCode()] : 'Unknown error');
+	$oSalesModule = \Aurora\System\Api::GetModule('Sales');
+	$sErrorMsg = (isset($oSalesModule->aErrors[$oEx->getCode()]) ? $oSalesModule->aErrors[$oEx->getCode()] : 'Unknown error');
 	\Aurora\System\Api::Log("Error. " . $sErrorMsg, \Aurora\System\Enums\LogLevel::Full, 'sales-parsing-');
 	echo json_encode(["result" => false, "error_msg" => $sErrorMsg]);
 }
