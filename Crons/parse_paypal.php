@@ -384,33 +384,36 @@ function ParseMessage($sMessageHtml, $sSubject)
 		$aResult['TransactionId'] = $oTransactionId ? trim($oTransactionId->plaintext) : '';
 
 		$oData = $oDom->find('td.ppsans div div table', 0);
+		$oData = $oData ? $oData : $oDom->find('td.ppsans div table', 1);
 		if ($oData)
 		{
-			$oBuyer = $oData->find('tr', 0)->find('td span', 1);
+			$oSubData =  $oData->find('tr', 0);
+			$oBuyer = $oSubData ? $oSubData->find('td span', 1) : null;
 			$aResult['RegName'] = $oBuyer ? trim($oBuyer->plaintext) : '';
-			$oEmail = $oData->find('tr', 0)->find('td span', 2);
+			$oEmail =  $oSubData ? $oSubData->find('td span', 2) : null;
 			$aResult['Email'] = $oEmail ? trim($oEmail->plaintext) : '';
-
-			$oShipping = $oData->find('tr', 1)->find('td span', 0);
+			$oSubData = $oData->find('tr', 1);
+			$oShipping =  $oSubData ? $oSubData->find('td span', 0) : null;
 			$aShipping = $oShipping ? explode("\r\n", trim($oShipping->plaintext)) : [];
 			unset($aShipping[0]);
 			$aResult['FullCity'] = preg_replace('/ {2,}/', ' ', trim(implode("; ", $aShipping)));
 
-			$oData = $oDom->find('td.ppsans div div table', 1)->find('tr', 1);
+			$oData = $oDom->find('td.ppsans div div table', 1);
+			$oData = $oData ? $oData : $oDom->find('td.ppsans div table', 2);
+			$oData = $oData ? $oData->find('tr', 1) : null;
 			if ($oData)
 			{
 				$oDescription = $oData->find('td', 0);
 				$aDescription = $oDescription ? explode("\r\n", trim($oDescription->plaintext)) : [];
 				$aResult['ProductName'] = isset($aDescription[0]) ? trim($aDescription[0]) : '';
 				$aResult['ProductPayPalItem'] = isset($aDescription[1]) ? trim(str_replace("Item# ", "", $aDescription[1])) : '';
-			//	$oUnitPrice = $oData->find('td', 1);
-			//	$oQty = $oData->find('td', 2);
-			//	$oAmount = $oData->find('td', 3);
 
 				$oData = $oDom->find('td.ppsans div div table', 2);
+				$oData = $oData ? $oData : $oDom->find('td.ppsans div table', 3);
 				if ($oData)
 				{
-					$oPaymentAmount = $oData->find('table tr', 2)->find('td', 1);
+					$oSubData = $oData->find('table tr', 2);
+					$oPaymentAmount =  $oSubData ? $oSubData->find('td', 1) : null;
 					$aResult['NetTotal'] = $oPaymentAmount ? (int) preg_replace('/[^.0-9]/', ' ', $oPaymentAmount->plaintext) : '';
 				}
 			}
