@@ -112,7 +112,8 @@ try
 						isset($aData['Language']) ? $aData['Language'] : null, '',
 						$oMessage['Plain'],
 						\Aurora\Modules\Sales\Enums\RawDataType::PlainText,
-						isset($aData['NumberOfLicenses']) ? $aData['NumberOfLicenses'] : null
+						isset($aData['NumberOfLicenses']) ? $aData['NumberOfLicenses'] : null,
+						$oMessage['Subject']
 					);
 					if ($UID > (int) @file_get_contents($sLastParsedUidPath))
 					{

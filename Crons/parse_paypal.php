@@ -88,7 +88,9 @@ try
 						'', '', '',
 						isset($aData['ProductPayPalItem']) ? $aData['ProductPayPalItem'] : null,
 						$oMessage['Html'],
-						\Aurora\Modules\Sales\Enums\RawDataType::Html
+						\Aurora\Modules\Sales\Enums\RawDataType::Html,
+						null,
+						$oMessage['Subject']
 					);
 					if ($UID > (int) @file_get_contents($sLastParsedUidPath))
 					{
