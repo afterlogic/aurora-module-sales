@@ -470,7 +470,7 @@ function ParseMessage($sMessagePlainText, $sSubject)
 	}
 	//Name
 	$aNameMatches = [];
-	preg_match('/for "(.+)"/', $sSubject, $aNameMatches);
+	preg_match('/for +"(.+)"/', $sSubject, $aNameMatches);
 	$aResult['ProductName'] = isset($aNameMatches[1]) ? trim($aNameMatches[1]) : '';
 	//LicenseKey
 	$aLicenseKeyMatches = [];
