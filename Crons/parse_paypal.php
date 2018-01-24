@@ -381,7 +381,8 @@ function GetMessage($oImapClient, $Folder, $Uid, $Rfc822MimeIndex = '')
 			}
 		}, $Folder, $Uid
 	);
-
+	$sCharset = isset($sTextCharset) ? $sTextCharset : $sCharset;
+	$sEml = \Aurora\System\Utils::ConvertEncoding($sEml, $sCharset, \MailSo\Base\Enumerations\Charset::UTF_8);
 	return ['Html' => $sHtml, 'Plain' => $sPlain, 'Subject' => $sSubject, 'Date' => $sDate, 'Eml' => $sEml];
 }
 
