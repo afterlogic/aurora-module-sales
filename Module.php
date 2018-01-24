@@ -78,8 +78,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'ParentSaleId'				=> ['int', 0],
 				'PaymentSystem'			=> ['int', 0],
 				'NumberOfLicenses'			=> ['int', 0],
-				'RawData'					=> ['text', ''],
-				'RawDataType'				=> ['int', 0],
+				'RawEmlData'				=> ['text', ''],
 				'PayPalItem'				=> ['string', ''],
 				'MessageSubject'			=> ['string', ''],
 
@@ -157,7 +156,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$TransactionId = '',
 		$Date = null, $LicenseKey ='', $RefNumber = 0, $CrmProductId = '', $ShareItProductId = '', $ShareItPurchaseId = '', $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
 		$Salutation = '', $CustomerTitle = '', $FirstName = '', $LastName = '', $Company = '', $Address = '', $Phone = '', $Fax = '', $Language = '',
-		$PayPalItem = '', $RawData = '', $RawDataType = 0, $NumberOfLicenses = 0, $MessageSubject = ''
+		$PayPalItem = '', $RawEmlData = '', $NumberOfLicenses = 0, $MessageSubject = ''
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
@@ -226,8 +225,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale->{$this->GetName() . '::VatId'} = $VatId;
 		$oSale->{$this->GetName() . '::PaymentSystem'} = $PaymentSystem;
 		$oSale->{$this->GetName() . '::TransactionId'} = $TransactionId;
-		$oSale->{$this->GetName() . '::RawData'} = $RawData;
-		$oSale->{$this->GetName() . '::RawDataType'} = $RawDataType;
+		$oSale->{$this->GetName() . '::RawEmlData'} = $RawEmlData;
 		$oSale->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
 		$oSale->{$this->GetName() . '::NumberOfLicenses'} = $NumberOfLicenses;
 		$oSale->{$this->GetName() . '::MessageSubject'} = substr($MessageSubject, 0, 255);
@@ -338,6 +336,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$this->GetName() . '::ParentSaleId',
 			$this->GetName() . '::PaymentSystem',
 			$this->GetName() . '::NumberOfLicenses',
+			$this->GetName() . '::MessageSubject',
 			// Download section
 			$this->GetName() . '::DownloadId',
 			$this->GetName() . '::Referer',
@@ -347,8 +346,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$this->GetName() . '::LicenseType',
 			$this->GetName() . '::ReferrerPage',
 			$this->GetName() . '::IsUpgrade',
-			$this->GetName() . '::PlatformType',
-			$this->GetName() . '::MessageSubject'
+			$this->GetName() . '::PlatformType'
 		]);
 
 		foreach ($aSales as $oSale)

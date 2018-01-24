@@ -110,8 +110,7 @@ try
 						isset($aData['Phone']) ? $aData['Phone'] : null,
 						isset($aData['Fax']) ? $aData['Fax'] : null,
 						isset($aData['Language']) ? $aData['Language'] : null, '',
-						$oMessage['Plain'],
-						\Aurora\Modules\Sales\Enums\RawDataType::PlainText,
+						$oMessage['Eml'],
 						isset($aData['NumberOfLicenses']) ? $aData['NumberOfLicenses'] : null,
 						$oMessage['Subject']
 					);
@@ -399,8 +398,19 @@ function GetMessage($oImapClient, $Folder, $Uid, $Rfc822MimeIndex = '')
 		}
 
 	}
+	$sMimeType = 'message/rfc822';
+	$sEml = '';
+	directMessageToStream($oImapClient,
+		function ($rResource, $sContentType, $sFileName) use (&$sMimeType, &$sEml) {
+			if (is_resource($rResource))
+			{
+				$sMimeType = $sContentType;
+				$sEml = @\stream_get_contents($rResource);
+			}
+		}, $Folder, $Uid
+	);
 
-	return ['Html' => $sHtml, 'Plain' => $sPlain, 'Subject' => $sSubject, 'Date' => $sDate];
+	return ['Html' => $sHtml, 'Plain' => $sPlain, 'Subject' => $sSubject, 'Date' => $sDate, 'Eml' => $sEml];
 }
 
 function ParseMessage($sMessagePlainText, $sSubject)
@@ -483,4 +493,88 @@ function ParseMessage($sMessagePlainText, $sSubject)
 	$aResult['RefNumber'] = isset($aSubjectMatches[1]) ? (int) $aSubjectMatches[1] : '';
 
 	return $aResult;
+}
+
+function directMessageToStream($oImapClient, $mCallback, $sFolderName, $iUid, $sMimeIndex = '')
+{
+	if (!is_callable($mCallback))
+	{
+		throw new \MailSo\Base\Exceptions\InvalidArgumentException();
+	}
+
+	$oImapClient->FolderExamine($sFolderName);
+
+	$sFileName = '';
+	$sContentType = '';
+	$sMailEncodingName = '';
+
+	$sMimeIndex = trim($sMimeIndex);
+	$aFetchResponse = $oImapClient->Fetch(array(
+		0 === strlen($sMimeIndex)
+			? \MailSo\Imap\Enumerations\FetchType::BODY_HEADER_PEEK
+			: \MailSo\Imap\Enumerations\FetchType::BODY_PEEK.'['.$sMimeIndex.'.MIME]'
+	), $iUid, true);
+
+	if (0 < count($aFetchResponse))
+	{
+		$sMime = $aFetchResponse[0]->GetFetchValue(
+			0 === strlen($sMimeIndex)
+				? \MailSo\Imap\Enumerations\FetchType::BODY_HEADER
+				: \MailSo\Imap\Enumerations\FetchType::BODY.'['.$sMimeIndex.'.MIME]'
+		);
+
+		if (!empty($sMime))
+		{
+			$oHeaders = \MailSo\Mime\HeaderCollection::NewInstance()->Parse($sMime);
+
+			if (!empty($sMimeIndex))
+			{
+				$sFileName = $oHeaders->ParameterValue(
+					\MailSo\Mime\Enumerations\Header::CONTENT_DISPOSITION,
+					\MailSo\Mime\Enumerations\Parameter::FILENAME);
+
+				if (empty($sFileName))
+				{
+					$sFileName = $oHeaders->ParameterValue(
+						\MailSo\Mime\Enumerations\Header::CONTENT_TYPE,
+						\MailSo\Mime\Enumerations\Parameter::NAME);
+				}
+
+				$sMailEncodingName = $oHeaders->ValueByName(
+					\MailSo\Mime\Enumerations\Header::CONTENT_TRANSFER_ENCODING);
+
+				$sContentType = $oHeaders->ValueByName(
+					\MailSo\Mime\Enumerations\Header::CONTENT_TYPE);
+			}
+			else
+			{
+				$sSubject = trim($oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::SUBJECT));
+				$sFileName = (empty($sSubject) ? 'message-'.$iUid : trim($sSubject)).'.eml';
+				$sFileName = '.eml' === $sFileName ? 'message.eml' : $sFileName;
+				$sContentType = 'message/rfc822';
+			}
+		}
+	}
+
+	$aFetchResponse = $oImapClient->Fetch(array(
+		array(\MailSo\Imap\Enumerations\FetchType::BODY_PEEK.'['.$sMimeIndex.']',
+			function ($sParent, $sLiteralAtomUpperCase, $rImapLiteralStream) use ($mCallback, $sMimeIndex, $sMailEncodingName, $sContentType, $sFileName)
+			{
+				if (!empty($sLiteralAtomUpperCase))
+				{
+					if (is_resource($rImapLiteralStream) && 'FETCH' === $sParent)
+					{
+						$rMessageMimeIndexStream = (empty($sMailEncodingName))
+							? $rImapLiteralStream
+							: \MailSo\Base\StreamWrappers\Binary::CreateStream($rImapLiteralStream,
+								\MailSo\Base\StreamWrappers\Binary::GetInlineDecodeOrEncodeFunctionName(
+									$sMailEncodingName, true));
+
+						call_user_func($mCallback, $rMessageMimeIndexStream, $sContentType, $sFileName, $sMimeIndex);
+					}
+				}
+			}
+		)), $iUid, true);
+
+	return ($aFetchResponse && 1 === count($aFetchResponse));
 }
