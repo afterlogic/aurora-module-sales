@@ -78,7 +78,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'ParentSaleId'				=> ['int', 0],
 				'PaymentSystem'			=> ['int', 0],
 				'NumberOfLicenses'			=> ['int', 0],
-				'RawEmlData'				=> ['text', ''],
+				'RawEmlData'				=> ['mediumblob', ''],
 				'PayPalItem'				=> ['string', ''],
 				'MessageSubject'			=> ['string', ''],
 

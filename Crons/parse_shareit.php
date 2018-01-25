@@ -63,7 +63,7 @@ try
 		{
 			$oImapClient->FolderExamine($sFolderFullNameRaw);
 
-			$sSearchCriterias = 'FROM "' . $sSearchFrom . '"  SUBJECT "' . $sSearchSubject . '" UID ' . ($iLastParsedUid + 1) . ':*';
+			$sSearchCriterias = 'FROM "' . $sSearchFrom . '" SUBJECT "' . $sSearchSubject . '" UID ' . ($iLastParsedUid + 1) . ':*';
 			$aIndexOrUids = $oImapClient->MessageSimpleSearch($sSearchCriterias, true);
 			sort($aIndexOrUids);
 			foreach ($aIndexOrUids as $UID)
@@ -72,7 +72,13 @@ try
 				{
 					$oMessage = GetMessage($oImapClient, $sFolderFullNameRaw, $UID);
 					$aData = ParseMessage($oMessage['Plain'], $oMessage['Subject']);
-					$aAdressParts = [$aData['Street'], $aData['City'], $aData['State'], $aData['Zip'], $aData['Country']];
+					$aAdressParts = [
+						isset($aData['Street']) ? $aData['Street'] : '',
+						isset($aData['City']) ? $aData['City'] : '',
+						isset($aData['State']) ? $aData['State'] : '',
+						isset($aData['Zip']) ? $aData['Zip'] : '',
+						isset($aData['Country']) ? $aData['Country'] : ''
+					];
 					$aAdressPartsClear = [];
 					foreach ($aAdressParts as $sPart)
 					{
@@ -409,8 +415,7 @@ function GetMessage($oImapClient, $Folder, $Uid, $Rfc822MimeIndex = '')
 			}
 		}, $Folder, $Uid
 	);
-	$sCharset = isset($sTextCharset) ? $sTextCharset : $sCharset;
-	$sEml = \Aurora\System\Utils::ConvertEncoding($sEml, $sCharset, \MailSo\Base\Enumerations\Charset::UTF_8);
+
 	return ['Html' => $sHtml, 'Plain' => $sPlain, 'Subject' => $sSubject, 'Date' => $sDate, 'Eml' => $sEml];
 }
 
