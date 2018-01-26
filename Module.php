@@ -55,6 +55,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 		$this->subscribeEvent('Contacts::GetStorage', array($this, 'onGetStorage'));
 
+		$this->AddEntries(
+			array(
+				'download-sale-eml' => 'EntryDownloadEmlFile'
+			)
+		);
+
 		$this->oApiSalesManager = new Managers\Sales($this);
 		$this->oApiCustomersManager = new Managers\Customers($this);
 		$this->oApiProductsManager = new Managers\Products($this);
@@ -1153,5 +1159,24 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oContact->{$this->GetName() . '::FirstName'} = $FirstName;
 		}
 		return $this->oApiContactsManager->UpdateContact($oContact);
+	}
+
+	public function EntryDownloadEmlFile()
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+		$UUID = (string) \Aurora\System\Application::GetPathItemByIndex(1, '');
+		if (!empty($UUID))
+		{
+			$oSale = $this->oApiSalesManager->getSaleByIdOrUUID($UUID);
+			if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
+			{
+				$sFileName = $oSale->{$this->GetName() . '::MessageSubject'} . '.eml';
+				\header('Content-Type: message/rfc822', true);
+				\header('Content-Disposition: attachment; '.
+					\trim(\MailSo\Base\Utils::EncodeHeaderUtf8AttributeValue('filename', $sFileName)), true);
+				echo $oSale->{$this->GetName() . '::RawEmlData'};
+			}
+		}
 	}
 }
