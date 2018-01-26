@@ -180,8 +180,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oProduct = null;
 		}
 
-		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product && 
-			(!empty($ProductTitle) || !empty($ShareItProductId) || !empty($CrmProductId)))
+		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product && (!empty($ShareItProductId) || !empty($CrmProductId)))
 		{
 			$ProductGroupUUID = '';
 			if (isset($ProductCode))
