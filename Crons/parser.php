@@ -475,7 +475,7 @@ class CrmParser
 	public function ParseMessage($aMessage, $UID)
 	{
 		$aData = [];
-		$sLogMessage = "Message {$UID} wasn't parsed.";
+		$sLogMessage = "Message {$UID} saved without parsing.";
 		if (isset($aMessage['From']))
 		{
 			if (strpos($aMessage['From'], $this->sFromPaypal) !== false)
@@ -649,4 +649,4 @@ class CrmParser
 }
 $oCrmParser = new CrmParser();
 $oCrmParser->Start();
-exit("Done");
+exit();

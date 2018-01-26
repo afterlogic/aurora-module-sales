@@ -180,7 +180,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oProduct = null;
 		}
 
-		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product && $PaymentSystem !== \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal)
+		if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product && 
+			(!empty($ProductTitle) || !empty($ShareItProductId) || !empty($CrmProductId)))
 		{
 			$ProductGroupUUID = '';
 			if (isset($ProductCode))
