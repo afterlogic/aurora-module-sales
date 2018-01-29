@@ -87,6 +87,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'RawEmlData'				=> ['mediumblob', ''],
 				'PayPalItem'				=> ['string', ''],
 				'MessageSubject'			=> ['string', ''],
+				'Deleted'					=> ['bool', false, true],
 
 				// Download section
 				'DownloadId'		=> array('int', 0),
@@ -1178,5 +1179,24 @@ class Module extends \Aurora\System\Module\AbstractModule
 				echo $oSale->{$this->GetName() . '::RawEmlData'};
 			}
 		}
+	}
+
+	/**
+	 * Delete sale.
+	 * @param string $UUID Sale UUID
+	 *
+	 * @return int|boolean
+	 */
+	public function DeleteSale($UUID)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+		$mResult = false;
+		$oSale = $this->oApiSalesManager->getSaleByIdOrUUID($UUID);
+		if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
+		{
+			$mResult =  $this->oApiSalesManager->deleteSale($oSale);
+		}
+		return $mResult;
 	}
 }
