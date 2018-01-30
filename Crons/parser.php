@@ -26,7 +26,7 @@ class CrmParser
 		$this->oSalesModule = \Aurora\System\Api::GetModule('Sales');
 		$this->sIncomingServer =  $this->oSalesModule->getConfig('IncomingServer', '');
 		$this->sIncomingLogin = $this->oSalesModule->getConfig('IncomingLogin', '');
-		$this->sIncomingPassword = $this->oSalesModule->getConfig('IncomingPassword', '');
+		$this->sIncomingPassword = \Aurora\System\Utils::DecryptValue($this->oSalesModule->getConfig('IncomingPassword', ''));
 		$this->sFolderFullNameRaw = $this->oSalesModule->getConfig('FolderFullNameRaw', '');
 		$this->sFromPaypal = $this->oSalesModule->getConfig('PayPalSearchFrom', '');
 		$this->sSubjectPaypal = $this->oSalesModule->getConfig('PayPalSearchSubject', '');
