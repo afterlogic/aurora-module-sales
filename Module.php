@@ -439,13 +439,24 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$aSearchFilters = [];
+		$aProductGroupsWithUUIDs = [];
 		if (!empty($Search))
 		{
 			$aSearchFilters = [
 				'Title' => ['%'.$Search.'%', 'LIKE']
 			];
 		}
+		$aProductGroups = $this->oApiProductGroupsManager->getProductGroups(0, 0, [], ['Title']);
+		foreach ($aProductGroups as $oProductGroup)
+		{
+			$aProductGroupsWithUUIDs[$oProductGroup->UUID] = $oProductGroup;
+		}
 		$aProducts = $this->oApiProductsManager->getProducts($Limit, $Offset, $aSearchFilters);
+		foreach ($aProducts as &$oProduct)
+		{
+			$oProductGroup = isset($aProductGroupsWithUUIDs[$oProduct->ProductGroupUUID]) ? $aProductGroupsWithUUIDs[$oProduct->ProductGroupUUID] : null;
+			$oProduct->ProductGroupTitle = isset($oProductGroup) ? $oProductGroup->Title : '';
+		}
 		return [
 			'Products' => is_array($aProducts) ? $aProducts : [],
 			'ItemsCount' => $this->oApiProductsManager->getProductsCount($aSearchFilters)
