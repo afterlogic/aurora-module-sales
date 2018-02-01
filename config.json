@@ -34,5 +34,21 @@
 	"ShareItSearchSubject": [
 		"",
 		"string"
+	],
+	"SourceDbHost": [
+		"",
+		"string"
+	],
+	"SourceDbName": [
+		"",
+		"string"
+	],
+	"SourceDbUser": [
+		"",
+		"string"
+	],
+	"SourceDbPass": [
+		"",
+		"string"
 	]
 }

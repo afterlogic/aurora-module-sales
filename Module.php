@@ -72,17 +72,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Sale',
 			[
-				'VatId'					=> ['string', ''],
+				'VatId'						=> ['string', ''],
 				'Payment'					=> ['string', ''],
 				'LicenseKey'				=> ['string', ''],
-				'RefNumber'				=> ['int', 0],
+				'RefNumber'					=> ['int', 0],
 				'ShareItPurchaseId'			=> ['string', ''],
-				'IsNotified'					=> ['bool', false],
+				'IsNotified'				=> ['bool', false],
 				'MaintenanceExpirationDate'	=> ['datetime', date('Y-m-d H:i:s', 0)],
 				'RecurrentMaintenance'		=> ['bool', true],
 				'TwoMonthsEmailSent'		=> ['bool', false],
 				'ParentSaleId'				=> ['int', 0],
-				'PaymentSystem'			=> ['int', 0],
+				'PaymentSystem'				=> ['int', 0],
 				'NumberOfLicenses'			=> ['int', 0],
 				'RawEmlData'				=> ['mediumblob', ''],
 				'PayPalItem'				=> ['string', ''],
@@ -142,6 +142,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'FirstName'	=> ['string', ''],
 			]
 		);
+		
+		// $this->CreateGroups();
+		// exit;
 	}
 
 	/**
@@ -665,7 +668,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$mSale->{$this->GetName() . '::ReferrerPage'} = $ReferrerPage; 
 			$mSale->{$this->GetName() . '::IsUpgrade'} = $IsUpgrade;
 			$mSale->{$this->GetName() . '::PlatformType'} = $PlatformType;
-			$mSale->{$this->GetName() . '::CrmProductId'} = $CrmProductId;
 
 			$bResult = $this->oApiSalesManager->updateSale($mSale);
 		}
@@ -1218,5 +1220,83 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$mResult =  $this->oApiSalesManager->deleteSale($oSale);
 		}
 		return $mResult;
+	}
+	
+	public function ImportSales()
+	{
+		set_time_limit(0);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		
+		$sDbHost = $this->oSalesModule->getConfig('SourceDbHost', '');
+		$sDbName = $this->oSalesModule->getConfig('SourceDbName', '');
+		$sDbLogin = $this->oSalesModule->getConfig('SourceDbUser', '');
+		$sDbPassword = $this->oSalesModule->getConfig('SourceDbPass', '');
+
+		if (!empty($sDbHost) && !empty($sDbName) && !empty($sDbLogin) && !empty($sDbPassword))
+		{
+			$oPdo = @new \PDO('mysql:dbname='.$sDbName.';host='.$sDbHost, $sDbLogin, $sDbPassword);
+			$sQuery = "SELECT * FROM sale";//OFFSET 1000
+			$stmt = $oPdo->prepare($sQuery);
+			$stmt->execute();
+			$aResult = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+			foreach ($aResult as $aSale)
+			{
+				if ((int) $aSale['shareit_product_id'] < 1)
+				{
+					continue;
+				}
+				$aAdressParts = [$aSale['street'], $aSale['city'], $aSale['state'], $aSale['zip'], $aSale['country']];
+				$aAdressPartsClear = [];
+				foreach ($aAdressParts as $sPart)
+				{
+					if (trim($sPart) !== '')
+					{
+						array_push($aAdressPartsClear, trim($sPart));
+					}
+				}
+
+				$sAddress = implode(', ', $aAdressPartsClear);
+				$this->CreateSale($aSale['payment'], \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt,  $aSale['net_total'],
+					$aSale['email'], $aSale['reg_name'],
+					$aSale['product'], $aSale['product_code'], $aSale['maintenance_expiration_date'],
+					'',
+					$aSale['date'], $aSale['license_key'], $aSale['ref_number'], null, $aSale['shareit_product_id'], $aSale['share_it_purchase_id'], $aSale['is_notified'], $aSale['recurrent_maintenance'], $aSale['two_months_email_sent'], $aSale['parent_sale_id'], $aSale['vat_id'],
+					$aSale['salutation'], $aSale['title'], $aSale['first_name'], $aSale['last_name'], $aSale['company'], $sAddress, $aSale['phone'], $aSale['fax'], $aSale['language']
+				);
+			}
+		}
+
+		return true;
+	}
+
+	public function ImportPaypalSales()
+	{
+		set_time_limit(0);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		
+		$sDbHost = $this->oSalesModule->getConfig('SourceDbHost', '');
+		$sDbName = $this->oSalesModule->getConfig('SourceDbName', '');
+		$sDbLogin = $this->oSalesModule->getConfig('SourceDbUser', '');
+		$sDbPassword = $this->oSalesModule->getConfig('SourceDbPass', '');
+		
+		if (!empty($sDbHost) && !empty($sDbName) && !empty($sDbLogin) && !empty($sDbPassword))
+		{
+			$oPdo = @new \PDO('mysql:dbname='.$sDbName.';host='.$sDbHost, $sDbLogin, $sDbPassword);
+			$sQuery = "SELECT * FROM paypal_sale";
+			$stmt = $oPdo->prepare($sQuery);
+			$stmt->execute();
+			$aResult = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+			foreach ($aResult as $aSale)
+			{
+				$this->CreateSale('PayPal', \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal, $aSale['payment_amount'],
+					$aSale['email'], $aSale['full_name'],
+					$aSale['product'], $aSale['product_id'], $aSale['maintenance_expiration_date'],
+					$aSale['transaction_id'],
+					$aSale['date'] . " 00:00:00", '', 0, $aSale['product_id']
+				);
+			}
+		}
+
+		return true;
 	}
 }
