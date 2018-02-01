@@ -316,16 +316,23 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param int $Limit Limit.
 	 * @param int $Offset Offset.
 	 * @param string $Search Search string.
+	 * @param string $ProductUUID UUID UUID of searched product.
 	 * @return array
 	 */
-	public function GetSales($Limit = 20, $Offset = 0, $Search = '')
+	public function GetSales($Limit = 20, $Offset = 0, $Search = '', $ProductUUID = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
 		$aCustomersUUID = [];
 		$aProductsUUID = [];
-		
-		$aSalesSearchFilters = $this->getSalesSearchFilters($Search);
+		if (!empty($ProductUUID))
+		{
+			$aSalesSearchFilters = ['ProductUUID' => $ProductUUID];
+		}
+		else
+		{
+			$aSalesSearchFilters = $this->getSalesSearchFilters($Search);
+		}
 		$iSalesCount = $this->oApiSalesManager->getSalesCount($aSalesSearchFilters);
 		$aSales = $this->oApiSalesManager->getSales($Limit, $Offset, $aSalesSearchFilters, [
 			'CustomerUUID',
@@ -364,7 +371,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aProductsUUID[] = $oSale->ProductUUID;
 		}
 		$aCustomers = count($aCustomersUUID) > 0 ? $this->oApiCustomersManager->getCustomers(0, 0, ['UUID' => [\array_unique($aCustomersUUID), 'IN']]) : [];
-		$aProducts = count($aProductsUUID) > 0 ? $this->oApiProductsManager->getProducts(0, 0, ['UUID' => [$aProductsUUID, 'IN']]) : [];
+		$aProducts = count($aProductsUUID) > 0 ? $this->oApiProductsManager->getProducts(0, 0, ['UUID' => [\array_unique($aProductsUUID), 'IN']]) : [];
 
 		//add Contact information to oCustomer
 		if (count($aCustomersUUID) > 0)
