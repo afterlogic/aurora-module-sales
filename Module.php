@@ -74,7 +74,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			[
 				'VatId'						=> ['string', ''],
 				'Payment'					=> ['string', ''],
-				'LicenseKey'				=> ['string', ''],
+				'LicenseKey'				=> ['text', ''],
 				'RefNumber'					=> ['int', 0],
 				'ShareItPurchaseId'			=> ['string', ''],
 				'IsNotified'				=> ['bool', false],
