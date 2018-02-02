@@ -777,7 +777,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oProduct->{$this->GetName() . '::IsAutocreated'} = true;
 			$oProduct->Title = $aGroup['Title'] . " free license";
 			$oProduct->{$this->GetName() . '::IsDefault'} = true;
-			$oProduct->{$this->GetName() . '::CrmProductId'} = (int) $aGroup['ProductCode'];
+			$oProduct->{$this->GetName() . '::CrmProductId'} = "CRM" . $aGroup['ProductCode'];
 			$this->oApiProductsManager->createProduct($oProduct);
 		}
 		return true;
@@ -1286,12 +1286,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 		set_time_limit(0);
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
-		$sDbHost = $this->oSalesModule->getConfig('SourceDbHost', '');
-		$sDbName = $this->oSalesModule->getConfig('SourceDbName', '');
-		$sDbLogin = $this->oSalesModule->getConfig('SourceDbUser', '');
-		$sDbPassword = $this->oSalesModule->getConfig('SourceDbPass', '');
-		
-		if (!empty($sDbHost) && !empty($sDbName) && !empty($sDbLogin) && !empty($sDbPassword))
+		$sDbHost = $this->getConfig('SourceDbHost', '');
+		$sDbName = $this->getConfig('SourceDbName', '');
+		$sDbLogin = $this->getConfig('SourceDbUser', '');
+		$sDbPassword = $this->getConfig('SourceDbPass', '');
+		\Aurora\System\Api::Log('Start import ', \Aurora\System\Enums\LogLevel::Full, 'import-');
+		if (!empty($sDbHost) && !empty($sDbName) && !empty($sDbLogin))
 		{
 			$oPdo = @new \PDO('mysql:dbname='.$sDbName.';host='.$sDbHost, $sDbLogin, $sDbPassword);
 			$sQuery = "SELECT * FROM paypal_sale";
@@ -1300,15 +1300,18 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aResult = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 			foreach ($aResult as $aSale)
 			{
-				$this->CreateSale('PayPal', \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal, $aSale['payment_amount'],
+				\Aurora\System\Api::Log('START: Create sale ['. $aSale['sale_id'] .']', \Aurora\System\Enums\LogLevel::Full, 'import-pay-pal-');
+				$oResult = $this->CreateSale('PayPal', \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal, $aSale['payment_amount'],
 					$aSale['email'], $aSale['full_name'],
 					$aSale['product'], $aSale['product_id'], $aSale['maintenance_expiration_date'],
 					$aSale['transaction_id'],
-					$aSale['date'] . " 00:00:00", '', 0, $aSale['product_id']
+					$aSale['date'] . " 00:00:00"
 				);
+				$sResult = $oResult ? 'true' : 'false';
+				\Aurora\System\Api::Log('END: ' . $sResult, \Aurora\System\Enums\LogLevel::Full, 'import-');
 			}
 		}
-
+		\Aurora\System\Api::Log('End import ', \Aurora\System\Enums\LogLevel::Full, 'import-');
 		return true;
 	}
 }
