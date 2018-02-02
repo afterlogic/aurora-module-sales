@@ -399,7 +399,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aContacts = $this->oApiContactsManager->getContacts(0, 0, ['CustomerUUID' => [\array_unique($aCustomersUUID), 'IN']]);
 			foreach ($aContacts as $oContact)
 			{
-				if(isset($aCustomers[$oContact->CustomerUUID]) && !isset($aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::FullName'}))
+				if (isset($aCustomers[$oContact->CustomerUUID]) && !isset($aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::FullName'}))
 				{
 					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::FullName'} = $oContact->FullName;
 					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Email'} = $oContact->Email;
@@ -1239,12 +1239,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 		set_time_limit(0);
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
-		$sDbHost = $this->oSalesModule->getConfig('SourceDbHost', '');
-		$sDbName = $this->oSalesModule->getConfig('SourceDbName', '');
-		$sDbLogin = $this->oSalesModule->getConfig('SourceDbUser', '');
-		$sDbPassword = $this->oSalesModule->getConfig('SourceDbPass', '');
-
-		if (!empty($sDbHost) && !empty($sDbName) && !empty($sDbLogin) && !empty($sDbPassword))
+		$sDbHost = $this->getConfig('SourceDbHost', '');
+		$sDbName = $this->getConfig('SourceDbName', '');
+		$sDbLogin = $this->getConfig('SourceDbUser', '');
+		$sDbPassword = $this->getConfig('SourceDbPass', '');
+		\Aurora\System\Api::Log('Start import ', \Aurora\System\Enums\LogLevel::Full, 'import-sales-');
+		if (!empty($sDbHost) && !empty($sDbName) && !empty($sDbLogin))
 		{
 			$oPdo = @new \PDO('mysql:dbname='.$sDbName.';host='.$sDbHost, $sDbLogin, $sDbPassword);
 			$sQuery = "SELECT * FROM sale";//OFFSET 1000
@@ -1268,16 +1268,19 @@ class Module extends \Aurora\System\Module\AbstractModule
 				}
 
 				$sAddress = implode(', ', $aAdressPartsClear);
-				$this->CreateSale($aSale['payment'], \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt,  $aSale['net_total'],
+				\Aurora\System\Api::Log('START: Create sale ['. $aSale['sale_id'] .']', \Aurora\System\Enums\LogLevel::Full, 'import-sales-');
+				$oResult = $this->CreateSale($aSale['payment'], \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt,  $aSale['net_total'],
 					$aSale['email'], $aSale['reg_name'],
 					$aSale['product'], $aSale['product_code'], $aSale['maintenance_expiration_date'],
 					'',
 					$aSale['date'], $aSale['license_key'], $aSale['ref_number'], null, $aSale['shareit_product_id'], $aSale['share_it_purchase_id'], $aSale['is_notified'], $aSale['recurrent_maintenance'], $aSale['two_months_email_sent'], $aSale['parent_sale_id'], $aSale['vat_id'],
 					$aSale['salutation'], $aSale['title'], $aSale['first_name'], $aSale['last_name'], $aSale['company'], $sAddress, $aSale['phone'], $aSale['fax'], $aSale['language']
 				);
+				$sResult = $oResult ? 'true' : 'false';
+				\Aurora\System\Api::Log('END: ' . $sResult, \Aurora\System\Enums\LogLevel::Full, 'import-sales-');
 			}
 		}
-
+		\Aurora\System\Api::Log('End import ', \Aurora\System\Enums\LogLevel::Full, 'import-sales-');
 		return true;
 	}
 
@@ -1290,7 +1293,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$sDbName = $this->getConfig('SourceDbName', '');
 		$sDbLogin = $this->getConfig('SourceDbUser', '');
 		$sDbPassword = $this->getConfig('SourceDbPass', '');
-		\Aurora\System\Api::Log('Start import ', \Aurora\System\Enums\LogLevel::Full, 'import-');
+		\Aurora\System\Api::Log('Start import ', \Aurora\System\Enums\LogLevel::Full, 'import-pay-pal-');
 		if (!empty($sDbHost) && !empty($sDbName) && !empty($sDbLogin))
 		{
 			$oPdo = @new \PDO('mysql:dbname='.$sDbName.';host='.$sDbHost, $sDbLogin, $sDbPassword);
@@ -1308,10 +1311,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 					$aSale['date'] . " 00:00:00"
 				);
 				$sResult = $oResult ? 'true' : 'false';
-				\Aurora\System\Api::Log('END: ' . $sResult, \Aurora\System\Enums\LogLevel::Full, 'import-');
+				\Aurora\System\Api::Log('END: ' . $sResult, \Aurora\System\Enums\LogLevel::Full, 'import-pay-pal-');
 			}
 		}
-		\Aurora\System\Api::Log('End import ', \Aurora\System\Enums\LogLevel::Full, 'import-');
+		\Aurora\System\Api::Log('End import ', \Aurora\System\Enums\LogLevel::Full, 'import-pay-pal-');
 		return true;
 	}
 }
