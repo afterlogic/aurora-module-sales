@@ -258,7 +258,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		return false;
 	}
 
-	protected function getSalesSearchFilters($Search = '')
+	protected function getSalesSearchFilters($Search = '', $GetDownloads = false)
 	{
 		$aSalesSearchFilters = [];
 		
@@ -309,7 +309,20 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 			$aSalesSearchFilters = ['$OR' => $aSalesSearchFilters];
 		}
-		
+
+		if (is_array($aSalesSearchFilters) && count($aSalesSearchFilters) > 0)
+		{
+			$aSalesSearchFilters = ['$AND' => [
+					'$AND' => $aSalesSearchFilters,
+					$this->GetName() . '::PaymentSystem' => $GetDownloads ? Enums\PaymentSystem::Download : [Enums\PaymentSystem::Download, '!=']
+				]
+			];
+		}
+		else
+		{
+			$aSalesSearchFilters = [$this->GetName() . '::PaymentSystem' => $GetDownloads ? Enums\PaymentSystem::Download : [Enums\PaymentSystem::Download, '!=']];
+		}
+
 		return $aSalesSearchFilters;
 	}
 	
@@ -319,22 +332,26 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param int $Limit Limit.
 	 * @param int $Offset Offset.
 	 * @param string $Search Search string.
-	 * @param string $ProductUUID UUID UUID of searched product.
+	 * @param string $ProductUUID UUID of searched product.
+	 * @param bool $GetDownloads
 	 * @return array
 	 */
-	public function GetSales($Limit = 20, $Offset = 0, $Search = '', $ProductUUID = '')
+	public function GetSales($Limit = 20, $Offset = 0, $Search = '', $ProductUUID = '', $GetDownloads = false)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
+
 		$aCustomersUUID = [];
 		$aProductsUUID = [];
 		if (!empty($ProductUUID))
 		{
-			$aSalesSearchFilters = ['ProductUUID' => $ProductUUID];
+			$aSalesSearchFilters =  ['$AND' => [
+				'ProductUUID' => $ProductUUID,
+				$this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!=']
+			]];
 		}
 		else
 		{
-			$aSalesSearchFilters = $this->getSalesSearchFilters($Search);
+			$aSalesSearchFilters = $this->getSalesSearchFilters($Search, $GetDownloads);
 		}
 		$iSalesCount = $this->oApiSalesManager->getSalesCount($aSalesSearchFilters);
 		$aSales = $this->oApiSalesManager->getSales($Limit, $Offset, $aSalesSearchFilters, [
@@ -407,17 +424,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 	}
 
-	public function GetChartSales($FromDate = '', $TillDate = '', $Search = '')
+	public function GetChartSales($FromDate = '', $TillDate = '', $Search = '', $GetDownloads = false)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
-		$aFilters = [];
-		
-		if ($Search)
-		{
-			$aFilters = $this->getSalesSearchFilters($Search);
-		}
-		
+
+		$aFilters = $this->getSalesSearchFilters($Search, $GetDownloads);
+
 		if ($FromDate && $TillDate)
 		{
 			$aFilters['1@Date'] = [
@@ -429,9 +441,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'<'
 			];
 		}
-		
+
 		$aSales = $this->oApiSalesManager->getSales(0, 0, $aFilters, ['Date']);
-		
+
 		$fGetOnlyDate = function($value) {
 			return ['Date' => $value->Date];
 		};
