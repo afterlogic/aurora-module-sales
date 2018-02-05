@@ -104,8 +104,8 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 				1,
 				[
 					'$AND' => [
-						'Email' => [$sEmail, 'LIKE'],
-						'Storage' => [$this->GetModule()->sStorage, 'LIKE']
+						'Email' => $sEmail,
+						'Storage' => $this->GetModule()->sStorage
 					]
 				]
 			);
@@ -135,13 +135,13 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 		{
 			$aSearchFilters = ['$AND' => [
 					'$AND' => $aSearchFilters,
-					'Storage' => [$this->GetModule()->sStorage, 'LIKE']
+					'Storage' => $this->GetModule()->sStorage
 				]
 			];
 		}
 		else
 		{
-			$aSearchFilters = ['Storage' => [$this->GetModule()->sStorage, 'LIKE']];
+			$aSearchFilters = ['Storage' => $this->GetModule()->sStorage];
 		}
 
 		$aResults = $this->oEavManager->getEntities(
@@ -174,13 +174,13 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 		{
 			$aSearchFilters = ['$AND' => [
 					'$AND' => $aSearchFilters,
-					'Storage' => [$this->GetModule()->sStorage, 'LIKE']
+					'Storage' => $this->GetModule()->sStorage
 				]
 			];
 		}
 		else
 		{
-			$aSearchFilters = ['Storage' => [$this->GetModule()->sStorage, 'LIKE']];
+			$aSearchFilters = ['Storage' => $this->GetModule()->sStorage];
 		}
 		$iResult = $this->oEavManager->getEntitiesCount(
 			\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Contact',

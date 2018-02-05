@@ -99,13 +99,13 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 		{
 			$aSearchFilters = ['$AND' => [
 					'$AND' => $aSearchFilters,
-					'Storage' => [$this->GetModule()->sStorage, 'LIKE']
+					'Storage' => $this->GetModule()->sStorage
 				]
 			];
 		}
 		else
 		{
-			$aSearchFilters = ['Storage' => [$this->GetModule()->sStorage, 'LIKE']];
+			$aSearchFilters = ['Storage' => $this->GetModule()->sStorage];
 		}
 
 		$aResults = $this->oEavManager->getEntities(
@@ -158,7 +158,7 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 				0,
 				1,
 				[
-					'Title' => [$sTitle, 'LIKE']
+					'Title' => $sTitle
 				]
 			);
 			if (is_array($aResults) && isset($aResults[0]))
