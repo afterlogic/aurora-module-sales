@@ -114,7 +114,7 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 			$iOffset,
 			$iLimit,
 			$aSearchFilters,
-			'FullName'
+			'Title'
 		);
 
 		if (is_array($aResults) && count($aResults) > 0)
