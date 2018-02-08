@@ -74,7 +74,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			[
 				'VatId'						=> ['string', ''],
 				'Payment'					=> ['string', ''],
-				'LicenseKey'				=> ['text', '', true],
+				'LicenseKey'				=> ['text', ''],
 				'RefNumber'					=> ['int', 0],
 				'ShareItPurchaseId'			=> ['string', ''],
 				'IsNotified'				=> ['bool', false],
@@ -82,7 +82,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'RecurrentMaintenance'		=> ['bool', true],
 				'TwoMonthsEmailSent'		=> ['bool', false],
 				'ParentSaleId'				=> ['int', 0],
-				'PaymentSystem'				=> ['int', 0, true],
+				'PaymentSystem'				=> ['int', 0],
 				'NumberOfLicenses'			=> ['int', 0],
 				'RawEmlData'				=> ['mediumblob', ''],
 				'PayPalItem'				=> ['string', ''],
@@ -118,28 +118,28 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Product',
 			[
-				'ShareItProductId'	=> ['string', '', true],
-				'PayPalItem'		=> ['string', '', true],
-				'CrmProductId'		=> ['string', '', true],
-				'IsAutocreated'		=> ['bool', true, true],
-				'IsDefault'			=> ['bool', false, true]
+				'ShareItProductId'	=> ['string', ''],
+				'PayPalItem'		=> ['string', ''],
+				'CrmProductId'		=> ['string', ''],
+				'IsAutocreated'		=> ['bool', true],
+				'IsDefault'			=> ['bool', false]
 			]
 		);
 
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\ProductGroup',
 			[
-				'ProductCode'	=> ['string', '', true],
+				'ProductCode'	=> ['string', ''],
 			]
 		);
 
 		$this->extendObject(
 			'Aurora\Modules\ContactObjects\Classes\Contact',
 			[
-				'Fax'			=> ['string', '', true],
-				'Salutation'	=> ['string', '', true],
-				'LastName'		=> ['string', '', true],
-				'FirstName'		=> ['string', '', true],
+				'Fax'			=> ['string', ''],
+				'Salutation'		=> ['string', ''],
+				'LastName'		=> ['string', ''],
+				'FirstName'	=> ['string', ''],
 			]
 		);
 		
