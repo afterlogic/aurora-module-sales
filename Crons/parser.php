@@ -123,7 +123,7 @@ class CrmParser
 								$oMessage['Eml'],
 								isset($aData['NumberOfLicenses']) ? $aData['NumberOfLicenses'] : null,
 								$oMessage['Subject'],
-								isset($aData['IsParsed']) ? $aData['IsParsed'] : null
+								isset($aData['ParsingStatus']) ? $aData['ParsingStatus'] : \Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed
 							);
 							if ($UID > (int) @file_get_contents($this->sLastParsedUidPath))
 							{
@@ -591,7 +591,7 @@ class CrmParser
 		}
 		$aResult['FullCity'] = implode(', ', $aAdressPartsClear);
 		$aResult['PaymentSystem'] = \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt;
-		$aResult['IsParsed'] = true;
+		$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithShareItSuccesfully;
 		return $aResult;
 	}
 
@@ -646,7 +646,7 @@ class CrmParser
 		}
 		$aResult['Payment'] = 'PayPal';
 		$aResult['PaymentSystem'] = \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal;
-		$aResult['IsParsed'] = true;
+		$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithPayPalSuccesfully;
 		return $aResult;
 	}
 }

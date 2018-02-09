@@ -88,7 +88,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'PayPalItem'				=> ['string', ''],
 				'MessageSubject'			=> ['string', ''],
 				'Deleted'					=> ['bool', false, true],
-				'IsParsed'					=> ['bool', false],
+				'ParsingStatus'				=> ['int', 0],
 
 				// Download section
 				'DownloadId'		=> array('int', 0),
@@ -167,7 +167,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$TransactionId = '',
 		$Date = null, $LicenseKey ='', $RefNumber = 0, $CrmProductId = '', $ShareItProductId = '', $ShareItPurchaseId = '', $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
 		$Salutation = '', $CustomerTitle = '', $FirstName = '', $LastName = '', $Company = '', $Address = '', $Phone = '', $Fax = '', $Language = '',
-		$PayPalItem = '', $RawEmlData = '', $NumberOfLicenses = 0, $MessageSubject = '', $IsParsed = false
+		$PayPalItem = '', $RawEmlData = '', $NumberOfLicenses = 0, $MessageSubject = '', $ParsingStatus = 0
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
@@ -240,7 +240,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
 		$oSale->{$this->GetName() . '::NumberOfLicenses'} = $NumberOfLicenses;
 		$oSale->{$this->GetName() . '::MessageSubject'} = substr($MessageSubject, 0, 255);
-		$oSale->{$this->GetName() . '::IsParsed'} = $IsParsed;
+		$oSale->{$this->GetName() . '::ParsingStatus'} = $ParsingStatus;
 		if (isset($Date))
 		{
 			$oSale->Date = $Date;
@@ -373,6 +373,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$this->GetName() . '::PaymentSystem',
 			$this->GetName() . '::NumberOfLicenses',
 			$this->GetName() . '::MessageSubject',
+			$this->GetName() . '::ParsingStatus',
 			// Download section
 			$this->GetName() . '::DownloadId',
 			$this->GetName() . '::Referer',
