@@ -342,6 +342,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		$aCustomersUUID = [];
 		$aProductsUUID = [];
+		$Search = \trim($Search);
 		if (!empty($ProductUUID))
 		{
 			$aSalesSearchFilters =  ['$AND' => [
@@ -465,6 +466,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$aSearchFilters = [];
 		$aProductGroupsWithUUIDs = [];
+		$Search = \trim($Search);
 		if (!empty($Search))
 		{
 			$aSearchFilters = [
@@ -500,6 +502,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$aSearchFilters = [];
+		$Search = \trim($Search);
 		if (!empty($Search))
 		{
 			$aSearchFilters = [
@@ -1065,6 +1068,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$aSearchFilters = [];
+		$Search = \trim($Search);
 		if (!empty($Search))
 		{
 			$aSearchFilters = ['$OR' => [
