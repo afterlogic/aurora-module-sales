@@ -375,6 +375,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$this->GetName() . '::NumberOfLicenses',
 			$this->GetName() . '::MessageSubject',
 			$this->GetName() . '::ParsingStatus',
+			$this->GetName() . '::RawEmlData',
 			// Download section
 			$this->GetName() . '::DownloadId',
 			$this->GetName() . '::Referer',
@@ -387,10 +388,15 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$this->GetName() . '::PlatformType'
 		]);
 
-		foreach ($aSales as $oSale)
+		foreach ($aSales as &$oSale)
 		{
 			$aCustomersUUID[] = $oSale->CustomerUUID;
 			$aProductsUUID[] = $oSale->ProductUUID;
+			if (isset($oSale->{$this->GetName() . '::RawEmlData'}) && !empty($oSale->{$this->GetName() . '::RawEmlData'}))
+			{
+				$oSale->IsEmlAvailable = 1;
+				$oSale->{$this->GetName() . '::RawEmlData'} = null;
+			}
 		}
 		$aCustomers = count($aCustomersUUID) > 0 ? $this->oApiCustomersManager->getCustomers(0, 0, ['UUID' => [\array_unique($aCustomersUUID), 'IN']]) : [];
 		$aProducts = count($aProductsUUID) > 0 ? $this->oApiProductsManager->getProducts(0, 0, ['UUID' => [\array_unique($aProductsUUID), 'IN']]) : [];
