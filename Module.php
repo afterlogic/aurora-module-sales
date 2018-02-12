@@ -1325,6 +1325,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 				\Aurora\System\Api::Log('END: ' . $sResult, \Aurora\System\Enums\LogLevel::Full, 'import-pay-pal-');
 			}
 		}
+		else
+		{
+			\Aurora\System\Api::Log('Can\'t connect to source db ', \Aurora\System\Enums\LogLevel::Full, 'import-pay-pal-');
+		}
 		\Aurora\System\Api::Log('End import ', \Aurora\System\Enums\LogLevel::Full, 'import-pay-pal-');
 		return true;
 	}
