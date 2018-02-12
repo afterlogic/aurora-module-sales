@@ -7,7 +7,12 @@ ob_start();
 switch (filter_input(INPUT_GET, 'mode', FILTER_SANITIZE_SPECIAL_CHARS))
 {
 	case 'groups':
-		$oSalesModule->CreateGroups();
+		$products = $oSalesModule->GetProducts();
+		$groups = $oSalesModule->GetProductGroups();
+		if (count($products) === 0 && count($groups) === 0) 
+		{
+			$oSalesModule->CreateGroups();
+		}
 		break;
 	case 'paypal':
 		echo "Start import process for Paypal";
