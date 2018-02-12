@@ -69,15 +69,19 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 		if (is_array($aSearchFilters) && count($aSearchFilters) > 0)
 		{
 			$aSearchFilters = [
-				'$AND' => [
-					'$AND' => $aSearchFilters,
-					$this->GetModule()->GetName() . '::Deleted' => false
+				'$AND' => $aSearchFilters,
+				'$OR' => [
+					'1@' . $this->GetModule()->GetName() . '::Deleted' => false,
+					'2@' . $this->GetModule()->GetName() . '::Deleted' => ['NULL', 'IS']
 				]
 			];
 		}
 		else
 		{
-			$aSearchFilters = [$this->GetModule()->GetName() . '::Deleted' => false];
+			$aSearchFilters = ['$OR' => [
+				'1@' . $this->GetModule()->GetName() . '::Deleted' => false,
+				'2@' . $this->GetModule()->GetName() . '::Deleted' => ['NULL', 'IS'],
+			]];
 		}
 
 		$mResult = $this->oEavManager->getEntities(
@@ -101,15 +105,19 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 		if (is_array($aSearchFilters) && count($aSearchFilters) > 0)
 		{
 			$aSearchFilters = [
-				'$AND' => [
-					'$AND' => $aSearchFilters,
-					$this->GetModule()->GetName() . '::Deleted' => false
+				'$AND' => $aSearchFilters,
+				'$OR' => [
+					'1@' . $this->GetModule()->GetName() . '::Deleted' => false,
+					'2@' . $this->GetModule()->GetName() . '::Deleted' => ['NULL', 'IS']
 				]
 			];
 		}
 		else
 		{
-			$aSearchFilters = [$this->GetModule()->GetName() . '::Deleted' => false];
+			$aSearchFilters = ['$OR' => [
+				'1@' . $this->GetModule()->GetName() . '::Deleted' => false,
+				'2@' . $this->GetModule()->GetName() . '::Deleted' => ['NULL', 'IS'],
+			]];
 		}
 		$iResult = $this->oEavManager->getEntitiesCount(
 			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Sale',

@@ -89,6 +89,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'MessageSubject'			=> ['string', ''],
 				'Deleted'					=> ['bool', false, true],
 				'ParsingStatus'				=> ['int', 0],
+				'TransactionId'				=> ['string', ''],
 
 				// Download section
 				'DownloadId'		=> array('int', 0),
@@ -227,7 +228,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale->{$this->GetName() . '::LicenseKey'} = $LicenseKey;
 		$oSale->Price = $Price;
 		$oSale->{$this->GetName() . '::RefNumber'} = $RefNumber;
-		$oSale->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
 		$oSale->{$this->GetName() . '::ShareItPurchaseId'} = $ShareItPurchaseId;
 		$oSale->{$this->GetName() . '::IsNotified'} = $IsNotified;
 		$oSale->{$this->GetName() . '::RecurrentMaintenance'} = $RecurrentMaintenance;
