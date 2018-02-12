@@ -1,5 +1,5 @@
 <?php
-require_once "../system/autoload.php";
+require_once "../../system/autoload.php";
 \Aurora\System\Api::Init(true);
 
 $oSalesModule = \Aurora\System\Api::GetModule('Sales');

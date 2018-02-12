@@ -1,5 +1,5 @@
 <?php
-require_once "../system/autoload.php";
+require_once "../../system/autoload.php";
 \Aurora\System\Api::Init(true);
 set_time_limit(0);
 class ImportDownloads
