@@ -340,7 +340,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 			else
 			{
-				$aSearchFilters = ['$OR' => [
+				$aSalesSearchFilters = ['$OR' => [
 					'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
 					'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
 				]];
