@@ -15,4 +15,13 @@ class PaymentSystem extends \Aurora\System\Enums\AbstractEnumeration
 	const ShareIt = 1;
 	const PayPal = 2;
 	const Download = 3;
+
+	/**
+	 * @var array
+	 */
+	protected $aConsts = [
+		'ShareIt'	=> self::ShareIt,
+		'PayPal'	=> self::PayPal,
+		'Download'	=> self::Download,
+	];
 }

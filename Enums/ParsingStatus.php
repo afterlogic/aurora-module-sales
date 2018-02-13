@@ -15,4 +15,13 @@ class ParsingStatus extends \Aurora\System\Enums\AbstractEnumeration
 	const NotParsed = 1;
 	const ParsedWithShareItSuccesfully = 2;
 	const ParsedWithPayPalSuccesfully = 3;
+
+	/**
+	 * @var array
+	 */
+	protected $aConsts = [
+		'NotParsed'						=> self::NotParsed,
+		'ParsedWithShareItSuccesfully'	=> self::ParsedWithShareItSuccesfully,
+		'ParsedWithPayPalSuccesfully'	=> self::ParsedWithPayPalSuccesfully,
+	];
 }

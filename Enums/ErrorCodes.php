@@ -26,4 +26,24 @@ class ErrorCodes
 	const ContactUpdateFailed			= 1012;
 	const CompanyCreateFailed		= 1013;
 	const CompanyUpdateFailed		= 1014;
+
+	/**
+	 * @var array
+	 */
+	protected $aConsts = [
+		'DataIntegrity'					=> self::DataIntegrity,
+		'SaleCreateFailed'				=> self::SaleCreateFailed,
+		'Validation_InvalidParameters'	=> self::Validation_InvalidParameters,
+		'SaleUpdateFailed'				=> self::SaleUpdateFailed,
+		'ProductCreateFailed'			=> self::ProductCreateFailed,
+		'ProductUpdateFailed'			=> self::ProductUpdateFailed,
+		'ProductGroupCreateFailed'		=> self::ProductGroupCreateFailed,
+		'ProductGroupUpdateFailed'		=> self::ProductGroupUpdateFailed,
+		'CustomerCreateFailed'			=> self::CustomerCreateFailed,
+		'CustomerExists'				=> self::CustomerExists,
+		'ContactCreateFailed'			=> self::ContactCreateFailed,
+		'ContactUpdateFailed'			=> self::ContactUpdateFailed,
+		'CompanyCreateFailed'			=> self::CompanyCreateFailed,
+		'CompanyUpdateFailed'			=> self::CompanyUpdateFailed,
+	];
 }
