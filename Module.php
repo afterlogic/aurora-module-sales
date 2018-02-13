@@ -87,7 +87,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'RawEmlData'				=> ['mediumblob', ''],
 				'PayPalItem'				=> ['string', ''],
 				'MessageSubject'			=> ['string', ''],
-				'Deleted'					=> ['bool', false, true],
+				'Deleted'					=> ['bool', false],
 				'ParsingStatus'				=> ['int', 0],
 				'TransactionId'				=> ['string', ''],
 
