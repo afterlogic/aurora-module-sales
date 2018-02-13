@@ -472,7 +472,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'>='
 			];
 			$aFilters['2@Date'] = [
-				(string) $TillDate,
+				(string) $TillDate . ' 23:59:59',
 				'<='
 			];
 		}
