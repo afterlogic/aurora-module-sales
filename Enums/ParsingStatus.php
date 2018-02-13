@@ -12,6 +12,7 @@ namespace Aurora\Modules\Sales\Enums;
 
 class ParsingStatus extends \Aurora\System\Enums\AbstractEnumeration
 {
+	const Unknown = 0;
 	const NotParsed = 1;
 	const ParsedWithShareItSuccesfully = 2;
 	const ParsedWithPayPalSuccesfully = 3;

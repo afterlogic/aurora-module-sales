@@ -28,6 +28,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		'ContactObjects',
 		'SaleObjects'
 	];
+	
+	protected $oPDO = null;
 
 	/**
 	 * Initializes Sales Module.
@@ -37,6 +39,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 	public function init()
 	{
+		$this->oPDO = \Aurora\System\Api::GetPDO();
+		
 		$this->aErrors = [
 			Enums\ErrorCodes::DataIntegrity				=> $this->i18N('ERROR_DATA_INTEGRITY'),
 			Enums\ErrorCodes::SaleCreateFailed				=> $this->i18N('ERROR_SALE_CREATE_FAILED'),
@@ -88,7 +92,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'PayPalItem'				=> ['string', ''],
 				'MessageSubject'			=> ['string', ''],
 				'Deleted'					=> ['bool', false],
-				'ParsingStatus'				=> ['int', 0],
+				'ParsingStatus'				=> ['int', \Aurora\Modules\Sales\Enums\ParsingStatus::Unknown],
 				'TransactionId'				=> ['string', ''],
 
 				// Download section
@@ -96,10 +100,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'Referer'			=> array('text', ''),
 				'Ip'				=> array('string', ''),
 				'Gad'				=> array('string', ''),
-				'ProductVersion'		=> array('string', ''),
+				'ProductVersion'	=> array('string', ''),
 				'LicenseType'		=> array('int', 0),
 				'ReferrerPage'		=> array('int', 0),
-				'IsUpgrade'		=> array('bool', false),
+				'IsUpgrade'			=> array('bool', false),
 				'PlatformType'		=> array('int', 0),
 			]
 		);
@@ -111,7 +115,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'Notify'		=> ['bool', true],
 				'GotGreeting'	=> ['bool', true],
 				'GotGreeting2'	=> ['bool', true],
-				'GotSurvey'	=> ['bool', true],
+				'GotSurvey'		=> ['bool', true],
 				'IsSale'		=> ['bool', true],
 			]
 		);
@@ -138,14 +142,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'Aurora\Modules\ContactObjects\Classes\Contact',
 			[
 				'Fax'			=> ['string', ''],
-				'Salutation'		=> ['string', ''],
+				'Salutation'	=> ['string', ''],
 				'LastName'		=> ['string', ''],
-				'FirstName'	=> ['string', ''],
+				'FirstName'		=> ['string', ''],
 			]
 		);
-		
-		// $this->CreateGroups();
-		// exit;
 	}
 
 	/**
@@ -380,7 +381,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$aSalesSearchFilters = $this->getSalesSearchFilters($Search, $GetDownloads);
 		}
-		$iSalesCount = $this->oApiSalesManager->getSalesCount($aSalesSearchFilters);
+		$iSalesCount = (int)$this->oApiSalesManager->getSalesCount($aSalesSearchFilters);
 		$aSales = $this->oApiSalesManager->getSales($Limit, $Offset, $aSalesSearchFilters, [
 			'CustomerUUID',
 			'ProductUUID',
@@ -518,7 +519,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		return [
 			'Products' => is_array($aProducts) ? $aProducts : [],
-			'ItemsCount' => $this->oApiProductsManager->getProductsCount($aSearchFilters)
+			'ItemsCount' => (int)$this->oApiProductsManager->getProductsCount($aSearchFilters)
 		];
 	}
 
@@ -544,7 +545,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$aProductGroups = $this->oApiProductGroupsManager->getProductGroups($Limit, $Offset, $aSearchFilters);
 		return [
 			'ProductGroups' => is_array($aProductGroups) ? $aProductGroups : [],
-			'ItemsCount' => $this->oApiProductGroupsManager->getProductGroupsCount($aSearchFilters)
+			'ItemsCount' => (int)$this->oApiProductGroupsManager->getProductGroupsCount($aSearchFilters)
 		];
 	}
 
@@ -1120,7 +1121,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$aContacts = $this->oApiContactsManager->getContacts($Limit, $Offset, $aSearchFilters);
 		return [
 			'Contacts' => is_array($aContacts) ? $aContacts : [],
-			'ItemsCount' => $this->oApiContactsManager->getContactsCount($aSearchFilters)
+			'ItemsCount' => (int)$this->oApiContactsManager->getContactsCount($aSearchFilters)
 		];
 	}
 
@@ -1275,17 +1276,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		set_time_limit(0);
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		
-		$sDbHost = $this->getConfig('SourceDbHost', '');
-		$sDbName = $this->getConfig('SourceDbName', '');
-		$sDbLogin = $this->getConfig('SourceDbUser', '');
-		$sDbPassword = $this->getConfig('SourceDbPass', '');
+
 		\Aurora\System\Api::Log('Start import ', \Aurora\System\Enums\LogLevel::Full, 'import-sales-');
-		if (!empty($sDbHost) && !empty($sDbName) && !empty($sDbLogin))
+		
+		if (!empty($this->oPDO))
 		{
-			$oPdo = @new \PDO('mysql:dbname='.$sDbName.';host='.$sDbHost, $sDbLogin, $sDbPassword);
 			$sQuery = "SELECT * FROM sale";//OFFSET 1000
-			$stmt = $oPdo->prepare($sQuery);
+			$stmt = $this->oPDO->prepare($sQuery);
 			$stmt->execute();
 			$aResult = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 			foreach ($aResult as $aSale)
@@ -1326,18 +1323,15 @@ class Module extends \Aurora\System\Module\AbstractModule
 		set_time_limit(0);
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		
-		$sDbHost = $this->getConfig('SourceDbHost', '');
-		$sDbName = $this->getConfig('SourceDbName', '');
-		$sDbLogin = $this->getConfig('SourceDbUser', '');
-		$sDbPassword = $this->getConfig('SourceDbPass', '');
 		\Aurora\System\Api::Log('Start import ', \Aurora\System\Enums\LogLevel::Full, 'import-pay-pal-');
-		if (!empty($sDbHost) && !empty($sDbName) && !empty($sDbLogin))
+		
+		if (!empty($this->oPDO))
 		{
-			$oPdo = @new \PDO('mysql:dbname='.$sDbName.';host='.$sDbHost, $sDbLogin, $sDbPassword);
 			$sQuery = "SELECT * FROM paypal_sale";
-			$stmt = $oPdo->prepare($sQuery);
+			$stmt = $this->oPDO->prepare($sQuery);
 			$stmt->execute();
 			$aResult = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
 			foreach ($aResult as $aSale)
 			{
 				\Aurora\System\Api::Log('START: Create sale ['. $aSale['sale_id'] .']', \Aurora\System\Enums\LogLevel::Full, 'import-pay-pal-');

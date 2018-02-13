@@ -7,11 +7,13 @@ ob_start();
 switch (filter_input(INPUT_GET, 'mode', FILTER_SANITIZE_SPECIAL_CHARS))
 {
 	case 'groups':
-		$products = $oSalesModule->GetProducts();
-		$groups = $oSalesModule->GetProductGroups();
-		if (count($products) === 0 && count($groups) === 0) 
+		$productsResult = $oSalesModule->GetProducts();
+		$groupsResult = $oSalesModule->GetProductGroups();
+		
+		if (isset($productsResult['ItemsCount']) && $productsResult['ItemsCount'] === 0 && isset($groupsResult['ItemsCount']) && $groupsResult['ItemsCount'] === 0 ) 
 		{
-			$oSalesModule->CreateGroups();
+			$result = $oSalesModule->CreateGroups();
+			echo $result;
 		}
 		break;
 	case 'paypal':
