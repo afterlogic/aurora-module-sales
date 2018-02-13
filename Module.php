@@ -468,11 +468,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$aFilters['1@Date'] = [
 				(string) $FromDate,
-				'>'
+				'>='
 			];
 			$aFilters['2@Date'] = [
 				(string) $TillDate,
-				'<'
+				'<='
 			];
 		}
 
