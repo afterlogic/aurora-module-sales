@@ -312,15 +312,38 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		if (is_array($aSalesSearchFilters) && count($aSalesSearchFilters) > 0)
 		{
-			$aSalesSearchFilters = ['$AND' => [
+			if ($GetDownloads)
+			{
+				$aSalesSearchFilters = ['$AND' => [
+						'$AND' => $aSalesSearchFilters,
+						$this->GetName() . '::PaymentSystem' =>  Enums\PaymentSystem::Download
+					]
+				];
+			}
+			else
+			{
+				$aSalesSearchFilters = [
 					'$AND' => $aSalesSearchFilters,
-					$this->GetName() . '::PaymentSystem' => $GetDownloads ? Enums\PaymentSystem::Download : [Enums\PaymentSystem::Download, '!=']
-				]
-			];
+					'$OR' => [
+						'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
+						'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
+					]
+				];
+			}
 		}
 		else
 		{
-			$aSalesSearchFilters = [$this->GetName() . '::PaymentSystem' => $GetDownloads ? Enums\PaymentSystem::Download : [Enums\PaymentSystem::Download, '!=']];
+			if ($GetDownloads)
+			{
+				$aSalesSearchFilters = [$this->GetName() . '::PaymentSystem' => Enums\PaymentSystem::Download];
+			}
+			else
+			{
+				$aSearchFilters = ['$OR' => [
+					'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
+					'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
+				]];
+			}
 		}
 
 		return $aSalesSearchFilters;
@@ -347,7 +370,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$aSalesSearchFilters =  ['$AND' => [
 				'ProductUUID' => $ProductUUID,
-				$this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!=']
+				'$OR' => [
+					'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
+					'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
+				]
 			]];
 		}
 		else
