@@ -369,13 +369,23 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$Search = \trim($Search);
 		if (!empty($ProductUUID))
 		{
-			$aSalesSearchFilters =  ['$AND' => [
-				'ProductUUID' => $ProductUUID,
-				'$OR' => [
-					'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
-					'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
-				]
-			]];
+			if ($GetDownloads)
+			{
+				$aSalesSearchFilters =  ['$AND' => [
+					'ProductUUID' => $ProductUUID,
+					$this->GetName() . '::PaymentSystem' =>  Enums\PaymentSystem::Download
+				]];
+			}
+			else
+			{
+				$aSalesSearchFilters =  ['$AND' => [
+					'ProductUUID' => $ProductUUID,
+					'$OR' => [
+						'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
+						'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
+					]
+				]];
+			}
 		}
 		else
 		{
