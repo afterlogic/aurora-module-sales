@@ -504,7 +504,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param string $Search Search string.
 	 * @return array
 	 */
-	public function GetProducts($Limit = 0, $Offset = 0, $Search = "")
+	public function GetProducts($Limit = 0, $Offset = 0, $Search = "", $Filters = [])
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$aSearchFilters = [];
@@ -515,6 +515,23 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aSearchFilters = [
 				'Title' => ['%'.$Search.'%', 'LIKE']
 			];
+		}
+		if (is_array($Filters) && !empty($Filters))
+		{
+			foreach ($Filters as $sFilter => $bValue)
+			{
+				if ($sFilter === 'Autocreated' && !!$bValue)
+				{
+					if (is_array($aSearchFilters) && !empty($aSearchFilters))
+					{
+						$aSearchFilters = ['$AND' => $aSearchFilters];
+					}
+					$aSearchFilters['$OR'] = [
+						'1@' . $this->GetName() . '::IsAutocreated' => true,
+						'2@' . $this->GetName() . '::IsAutocreated' => ['NULL', 'IS']
+					];
+				}
+			}
 		}
 		$aProductGroups = $this->oApiProductGroupsManager->getProductGroups(0, 0, [], ['Title']);
 		foreach ($aProductGroups as $oProductGroup)
