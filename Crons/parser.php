@@ -258,7 +258,8 @@ class CrmParser
 			$sSubject = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::SUBJECT, $bCharsetAutoDetect);
 			$sFrom = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::FROM_, $bCharsetAutoDetect);
 
-			$dt = new \DateTime($oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::DATE, $bCharsetAutoDetect), new \DateTimeZone('UTC'));
+			$dt = new \DateTime($oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::DATE, $bCharsetAutoDetect));
+			$dt->setTimezone(new \DateTimeZone('UTC'));
 			$sDate = $dt->format('Y-m-d H:i:s');
 		}
 
