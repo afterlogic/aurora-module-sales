@@ -217,7 +217,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oCustomer = $this->CreateCustomerWithContact(
 				$FullName,
 				$CustomerTitle, '', 0, $Language,
-				$Address, $Phone,  $Email, $FirstName, $LastName, $Fax, $Salutation,
+				$Address, $Phone, $Email, $FirstName, $LastName, $Fax, $Salutation,
 				$Company
 			);
 		}
@@ -259,14 +259,106 @@ class Module extends \Aurora\System\Module\AbstractModule
 		return false;
 	}
 
-	protected function getSalesSearchFilters($Search = '', $GetDownloads = false)
+	/**
+	 * Prepare filters from search string and filters.
+	 *
+	 * @param string $Search Search string.
+	 * @param array $Filters
+	 * @return array
+	 */
+	protected function getSalesFilters($Search = '', $Filters = [])
 	{
 		$aSalesSearchFilters = [];
-		
+
+		if (is_array($Filters) && !empty($Filters))
+		{
+			if (isset($Filters['ProductUUID']) && $Filters['ProductUUID'])
+			{
+				//search all sales/downloads with selected product
+				//ignoring other filters and the search string
+				if (isset($Filters['GetDownloads']) && $Filters['GetDownloads'])
+				{
+					$aSalesSearchFilters = ['$AND' => [
+						$this->GetName() . '::PaymentSystem' => Enums\PaymentSystem::Download
+					]];
+				}
+				else
+				{
+					$aSalesSearchFilters = ['$AND' => [
+						'$OR' => [
+							'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
+							'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
+						]
+					]];
+				}
+				$aSalesSearchFilters['$AND']['ProductUUID'] = $Filters['ProductUUID'];
+			}
+			else
+			{
+				//apply filters after search
+				$mSalesSearchFilters = $this->getSalesSearch($Search);
+				if (isset($Filters['GetDownloads']) && $Filters['GetDownloads'])
+				{
+					$aSalesSearchFilters = ['$AND' => [
+							$this->GetName() . '::PaymentSystem' => Enums\PaymentSystem::Download
+						]
+					];
+					if ($mSalesSearchFilters)
+					{
+						$aSalesSearchFilters['$AND']['$AND'] = $mSalesSearchFilters;
+					}
+				}
+				else
+				{
+					$aSalesSearchFilters = [
+						'$OR' => [
+							'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
+							'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
+						]
+					];
+					if ($mSalesSearchFilters)
+					{
+						$aSalesSearchFilters['1@$AND'] = $mSalesSearchFilters;
+					}
+					if (isset($Filters['NotParsed']) && $Filters['NotParsed'])
+					{
+						$aSalesSearchFilters['2@$AND'] = [$this->GetName() . '::ParsingStatus' => \Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed];
+					}
+				}
+			}
+		}
+		else
+		{
+			$mSalesSearchFilters = $this->getSalesSearch($Search);
+			//Select sales by default
+			$aSalesSearchFilters = [
+				'$OR' => [
+					'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
+					'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
+				]
+			];
+			if ($mSalesSearchFilters !== false)
+			{
+				$aSalesSearchFilters['$AND'] = $mSalesSearchFilters;
+			}
+		}
+
+		return $aSalesSearchFilters;
+	}
+
+	/**
+	 * Prepare filters from search string.
+	 *
+	 * @param string $Search Search string.
+	 * @return array|false
+	 */
+	protected function getSalesSearch($Search = '')
+	{
+		$aSalesSearchFilters = [];
 		if (!empty($Search))
 		{
 			$aSearchCustomers = [];
-			
+
 			$aProductSearchFilters = [
 				'Title' => ['%'.$Search.'%', 'LIKE']
 			];
@@ -307,49 +399,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 			{
 				$aSalesSearchFilters['CustomerUUID'] = [array_keys($aSearchCustomers), 'IN'];
 			}
-
 			$aSalesSearchFilters = ['$OR' => $aSalesSearchFilters];
 		}
-
-		if (is_array($aSalesSearchFilters) && count($aSalesSearchFilters) > 0)
-		{
-			if ($GetDownloads)
-			{
-				$aSalesSearchFilters = ['$AND' => [
-						'$AND' => $aSalesSearchFilters,
-						$this->GetName() . '::PaymentSystem' =>  Enums\PaymentSystem::Download
-					]
-				];
-			}
-			else
-			{
-				$aSalesSearchFilters = [
-					'$AND' => $aSalesSearchFilters,
-					'$OR' => [
-						'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
-						'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
-					]
-				];
-			}
-		}
-		else
-		{
-			if ($GetDownloads)
-			{
-				$aSalesSearchFilters = [$this->GetName() . '::PaymentSystem' => Enums\PaymentSystem::Download];
-			}
-			else
-			{
-				$aSalesSearchFilters = ['$OR' => [
-					'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
-					'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
-				]];
-			}
-		}
-
-		return $aSalesSearchFilters;
+		return empty($aSalesSearchFilters) ? false : $aSalesSearchFilters;
 	}
-	
+
 	/**
 	 * Get all sales.
 	 *
@@ -360,37 +414,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param bool $GetDownloads
 	 * @return array
 	 */
-	public function GetSales($Limit = 20, $Offset = 0, $Search = '', $ProductUUID = '', $GetDownloads = false)
+	public function GetSales($Limit = 20, $Offset = 0, $Search = '', $Filters = [])
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$aCustomersUUID = [];
 		$aProductsUUID = [];
 		$Search = \trim($Search);
-		if (!empty($ProductUUID))
-		{
-			if ($GetDownloads)
-			{
-				$aSalesSearchFilters =  ['$AND' => [
-					'ProductUUID' => $ProductUUID,
-					$this->GetName() . '::PaymentSystem' =>  Enums\PaymentSystem::Download
-				]];
-			}
-			else
-			{
-				$aSalesSearchFilters =  ['$AND' => [
-					'ProductUUID' => $ProductUUID,
-					'$OR' => [
-						'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
-						'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
-					]
-				]];
-			}
-		}
-		else
-		{
-			$aSalesSearchFilters = $this->getSalesSearchFilters($Search, $GetDownloads);
-		}
+		$aSalesSearchFilters = $this->getSalesFilters($Search, $Filters);
 		$iSalesCount = (int)$this->oApiSalesManager->getSalesCount($aSalesSearchFilters);
 		$aSales = $this->oApiSalesManager->getSales($Limit, $Offset, $aSalesSearchFilters, [
 			'CustomerUUID',
@@ -473,7 +504,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		$aFilters = $this->getSalesSearchFilters($Search, $GetDownloads);
+		$aFilters = $this->getSalesFilters($Search, ['GetDownloads' => $GetDownloads]);
 
 		if ($FromDate && $TillDate)
 		{
@@ -674,7 +705,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			if (isset($ProductIdOrUUID))
 			{
-				$Product =  $this->oApiProductsManager->getProductByIdOrUUID($ProductIdOrUUID);
+				$Product = $this->oApiProductsManager->getProductByIdOrUUID($ProductIdOrUUID);
 			}
 			$oSale->ProductUUID = isset($Product, $Product->UUID) ? $Product->UUID : $oSale->ProductUUID;
 			$oSale->Date = isset($Date) ? $Date : $oSale->Date;
@@ -856,9 +887,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param string $Description Description.
 	 * @param string $Homepage Homepage.
 	 * @param int $ProductPrice Product price.
-	 * @param int  $Status Product status.
+	 * @param int $Status Product status.
 	 *
-	 * @return  int|boolean
+	 * @return int|boolean
 	 */
 	public function CreateProduct($Title, $ShareItProductId = '', $CrmProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Description = '', $Homepage = '', $ProductPrice = 0, $Status = 0, $PayPalItem = '')
 	{
@@ -903,7 +934,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oProductGroup->Description = $Description;
 		$oProductGroup->Homepage = $Homepage;
 
-		return  $this->oApiProductGroupsManager->createProductGroup($oProductGroup);
+		return $this->oApiProductGroupsManager->createProductGroup($oProductGroup);
 	}
 
 	/**
@@ -921,7 +952,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 *
 	 * @return int|boolean
 	 */
-	public function CreateContact($FullName = '', $CustomerUUID = '', $CompanyUUID = '', $Address = '', $Phone = '',  $Email = '', $FirstName = '', $LastName = '', $Fax = '', $Salutation = '')
+	public function CreateContact($FullName = '', $CustomerUUID = '', $CompanyUUID = '', $Address = '', $Phone = '', $Email = '', $FirstName = '', $LastName = '', $Fax = '', $Salutation = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$oContact = new \Aurora\Modules\ContactObjects\Classes\Contact($this->GetName());
@@ -979,7 +1010,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function CreateCustomerWithContact(
 		$ContactFullName = '',
 		$CustomerTitle = '', $CustomerDescription = '', $CustomerStatus = 0, $CustomerLanguage = '',
-		$Address = '', $Phone = '',  $Email = '', $FirstName = '', $LastName = '', $Fax = '', $Salutation = '',
+		$Address = '', $Phone = '', $Email = '', $FirstName = '', $LastName = '', $Fax = '', $Salutation = '',
 		$Company = ''
 	)
 	{
@@ -1065,7 +1096,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			{
 				throw new \Aurora\System\Exceptions\BaseException(Enums\ErrorCodes::DataIntegrity);
 			}
-			$mResult =  $this->oApiProductGroupsManager->deleteProductGroup($oProductGroup);
+			$mResult = $this->oApiProductGroupsManager->deleteProductGroup($oProductGroup);
 		}
 		return $mResult;
 	}
@@ -1090,7 +1121,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			{
 				throw new \Aurora\System\Exceptions\BaseException(Enums\ErrorCodes::DataIntegrity);
 			}
-			$mResult =  $this->oApiProductsManager->deleteProduct($oProduct);
+			$mResult = $this->oApiProductsManager->deleteProduct($oProduct);
 		}
 		return $mResult;
 	}
@@ -1110,7 +1141,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oContact = $this->oApiContactsManager->getContactByIdOrUUID($IdOrUUID);
 		if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
 		{
-			$mResult =  $this->oApiContactsManager->deleteContact($oContact);
+			$mResult = $this->oApiContactsManager->deleteContact($oContact);
 		}
 		
 		return $mResult;
@@ -1170,14 +1201,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact && isset($oContact->CustomerUUID))
 		{
 			$oCustomer = $this->oApiCustomersManager->getCustomerByIdOrUUID($oContact->CustomerUUID);
-			if ($oCustomer  instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
+			if ($oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
 			{
 				$aSalesFilters = ['CustomerUUID' => $oCustomer->UUID];
 				$aSales = $this->oApiSalesManager->getSales(0, 0, $aSalesFilters);
 
 				$aResult = [
 					'Sales' => is_array($aSales) ? $aSales : [],
-					'SalesCount' =>  $this->oApiSalesManager->getSalesCount($aSalesFilters)
+					'SalesCount' => $this->oApiSalesManager->getSalesCount($aSalesFilters)
 				];
 			}
 		}
@@ -1294,7 +1325,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale = $this->oApiSalesManager->getSaleByIdOrUUID($UUID);
 		if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
 		{
-			$mResult =  $this->oApiSalesManager->deleteSale($oSale);
+			$mResult = $this->oApiSalesManager->deleteSale($oSale);
 		}
 		return $mResult;
 	}
@@ -1330,7 +1361,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 				$sAddress = implode(', ', $aAdressPartsClear);
 				\Aurora\System\Api::Log('START: Create sale ['. $aSale['sale_id'] .']', \Aurora\System\Enums\LogLevel::Full, 'import-sales-');
-				$oResult = $this->CreateSale($aSale['payment'], \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt,  $aSale['net_total'],
+				$oResult = $this->CreateSale($aSale['payment'], \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt, $aSale['net_total'],
 					$aSale['email'], $aSale['reg_name'],
 					$aSale['product'], $aSale['product_code'], $aSale['maintenance_expiration_date'],
 					'',
