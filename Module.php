@@ -789,7 +789,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 	public function CreateProducts()
 	{
-		\Aurora\System\Api::skipCheckUserRole(true);
+		$bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
 		$aProductGroups = $this->oApiProductGroupsManager->getProductGroups();
 		if (is_array($aProductGroups))
 		{
@@ -805,11 +805,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 				}
 			}
 		}
+		\Aurora\System\Api::skipCheckUserRole($bPrevState);
 	}
 	
 	public function CreateGroups()
 	{
-		\Aurora\System\Api::skipCheckUserRole(true);
+		$bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
 		$aGroups = [
 			["Title" => "MailBee Objects","ProductCode" => "1"],
 			["Title" => "MailBee POP3 Component","ProductCode" => "2"],
@@ -875,6 +876,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oProduct->{$this->GetName() . '::CrmProductId'} = "CRM" . $aGroup['ProductCode'];
 			$this->oApiProductsManager->createProduct($oProduct);
 		}
+		\Aurora\System\Api::skipCheckUserRole($bPrevState);
 		return true;
 	}
 
