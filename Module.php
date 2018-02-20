@@ -155,7 +155,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param string $PaymentSystem Payment system.
 	 * @param datetime $MaintenanceExpirationDate Maintenance expiration date.
 	 * @param string $IncomingLogin Login for IMAP connection.
-	 * @param int $Price Payment amount.
+	 * @param double $Price Payment amount.
 	 * @param string $Email Email.
 	 * @param string $FullName Customer full name.
 	 * @param string $ProductTitle Product name.
@@ -888,7 +888,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 * @param string $ProductGroupUUID UUID of product group.
 	 * @param string $Description Description.
 	 * @param string $Homepage Homepage.
-	 * @param int $ProductPrice Product price.
+	 * @param double $ProductPrice Product price.
 	 * @param int $Status Product status.
 	 *
 	 * @return int|boolean
