@@ -575,11 +575,11 @@ class CrmParser
 		$aResult['RefNumber'] = isset($aSubjectMatches[1]) ? (int) $aSubjectMatches[1] : '';
 
 		$aAdressParts = [
-			isset($aData['Street']) ? $aData['Street'] : '',
-			isset($aData['City']) ? $aData['City'] : '',
-			isset($aData['State']) ? $aData['State'] : '',
-			isset($aData['Zip']) ? $aData['Zip'] : '',
-			isset($aData['Country']) ? $aData['Country'] : ''
+			isset($aResult['Street']) ? $aResult['Street'] : '',
+			isset($aResult['City']) ? $aResult['City'] : '',
+			isset($aResult['State']) ? $aResult['State'] : '',
+			isset($aResult['Zip']) ? $aResult['Zip'] : '',
+			isset($aResult['Country']) ? $aResult['Country'] : ''
 		];
 		$aAdressPartsClear = [];
 		foreach ($aAdressParts as $sPart)
