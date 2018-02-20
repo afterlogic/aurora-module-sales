@@ -637,7 +637,7 @@ class CrmParser
 					{
 						$oSubData = $oData->find('table tr', 2);
 						$oPaymentAmount =  $oSubData ? $oSubData->find('td', 1) : null;
-						$aResult['NetTotal'] = $oPaymentAmount ? (int) preg_replace('/[^.0-9]/', ' ', $oPaymentAmount->plaintext) : '';
+						$aResult['NetTotal'] = $oPaymentAmount ? (double) preg_replace('/[^.0-9]/', ' ', $oPaymentAmount->plaintext) : '';
 					}
 				}
 			}
