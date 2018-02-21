@@ -95,18 +95,6 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 	public function getCompanies($iLimit = 0, $iOffset = 0, $aSearchFilters = [], $aViewAttributes = [])
 	{
 		$aCompanies = [];
-		if (is_array($aSearchFilters) && count($aSearchFilters) > 0)
-		{
-			$aSearchFilters = ['$AND' => [
-					'$AND' => $aSearchFilters,
-					'Storage' => $this->GetModule()->sStorage
-				]
-			];
-		}
-		else
-		{
-			$aSearchFilters = ['Storage' => $this->GetModule()->sStorage];
-		}
 
 		$aResults = $this->oEavManager->getEntities(
 			\Aurora\System\Api::GetModule('ContactObjects')->getNamespace() . '\Classes\Company',

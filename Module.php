@@ -458,8 +458,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		foreach ($aSales as &$oSale)
 		{
-			$aCustomersUUID[] = $oSale->CustomerUUID;
-			$aProductsUUID[] = $oSale->ProductUUID;
+			if (isset($oSale->CustomerUUID) && !empty($oSale->CustomerUUID))
+			{
+				$aCustomersUUID[] = $oSale->CustomerUUID;
+			}
+			if (isset($oSale->ProductUUID) && !empty($oSale->ProductUUID))
+			{
+				$aProductsUUID[] = $oSale->ProductUUID;
+			}
 			if (isset($oSale->{$this->GetName() . '::RawEmlData'}) && !empty($oSale->{$this->GetName() . '::RawEmlData'}))
 			{
 				$oSale->IsEmlAvailable = 1;
@@ -468,8 +474,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		$aCustomers = count($aCustomersUUID) > 0 ? $this->oApiCustomersManager->getCustomers(0, 0, ['UUID' => [\array_unique($aCustomersUUID), 'IN']]) : [];
 		$aProducts = count($aProductsUUID) > 0 ? $this->oApiProductsManager->getProducts(0, 0, ['UUID' => [\array_unique($aProductsUUID), 'IN']]) : [];
+		$aCompanies = count($aCustomersUUID) > 0 ? $this->oApiCompaniesManager->getCompanies(0, 0, ['CustomerUUID' => [\array_unique($aCustomersUUID), 'IN']]) : [];
 
-		//add Contact information to oCustomer
+		//add Contact and Company information to oCustomer
 		if (count($aCustomersUUID) > 0)
 		{
 			$aContacts = $this->oApiContactsManager->getContacts(0, 0, ['CustomerUUID' => [\array_unique($aCustomersUUID), 'IN']]);
@@ -489,6 +496,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::LastName'	} = $oContact->{$this->GetName() . '::LastName'};
 					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::FirstName'} = $oContact->{$this->GetName() . '::FirstName'};
 				}
+			}
+			foreach ($aCompanies as $oCompany)
+			{
+				if (isset($aCustomers[$oCompany->CustomerUUID]))
+					{
+						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Title'} = $oCompany->Title;
+						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Description'} = $oCompany->Description;
+						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Address'} = $oCompany->Address;
+						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Phone'} = $oCompany->Phone;
+						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Website'} = $oCompany->Website;
+					}
 			}
 		}
 
