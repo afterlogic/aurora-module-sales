@@ -190,7 +190,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 		$mProduct = false;
 		if ($mIdOrUUID)
 		{
-			$mProduct = $this->oEavManager->getEntity($mIdOrUUID);
+			$mProduct = $this->oEavManager->getEntity($mIdOrUUID, '\Aurora\Modules\SaleObjects\Classes\Product');
 		}
 		else
 		{

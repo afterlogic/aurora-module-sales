@@ -76,7 +76,7 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 		$mCompany = false;
 		if ($mIdOrUUID)
 		{
-			$mCompany = $this->oEavManager->getEntity($mIdOrUUID);
+			$mCompany = $this->oEavManager->getEntity($mIdOrUUID, '\Aurora\Modules\ContactObjects\Classes\Company');
 		}
 		else
 		{

@@ -77,7 +77,7 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 		$mContact = false;
 		if ($mIdOrUUID)
 		{
-			$mContact = $this->oEavManager->getEntity($mIdOrUUID);
+			$mContact = $this->oEavManager->getEntity($mIdOrUUID, '\Aurora\Modules\ContactObjects\Classes\Contact');
 		}
 		else
 		{

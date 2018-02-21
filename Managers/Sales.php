@@ -105,7 +105,7 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 		$mSale = false;
 		if ($mIdOrUUID)
 		{
-			$mSale = $this->oEavManager->getEntity($mIdOrUUID);
+			$mSale = $this->oEavManager->getEntity($mIdOrUUID, '\Aurora\Modules\SaleObjects\Classes\Sale');
 		}
 		else
 		{

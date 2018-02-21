@@ -105,7 +105,7 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 		$mProductGroup = false;
 		if ($mIdOrUUID)
 		{
-			$mProductGroup = $this->oEavManager->getEntity($mIdOrUUID);
+			$mProductGroup = $this->oEavManager->getEntity($mIdOrUUID, '\Aurora\Modules\SaleObjects\Classes\ProductGroup');
 		}
 		else
 		{

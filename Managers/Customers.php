@@ -120,7 +120,7 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 		$mCustomer = false;
 		if ($mIdOrUUID)
 		{
-			$mCustomer = $this->oEavManager->getEntity($mIdOrUUID);
+			$mCustomer = $this->oEavManager->getEntity($mIdOrUUID, '\Aurora\Modules\SaleObjects\Classes\Customer');
 		}
 		else
 		{
