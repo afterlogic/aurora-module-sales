@@ -444,6 +444,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$this->GetName() . '::MessageSubject',
 			$this->GetName() . '::ParsingStatus',
 			$this->GetName() . '::RawEmlData',
+			$this->GetName() . '::TransactionId',
 			// Download section
 			$this->GetName() . '::DownloadId',
 			$this->GetName() . '::Referer',
