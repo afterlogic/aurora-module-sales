@@ -485,6 +485,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 			{
 				if (isset($aCustomers[$oContact->CustomerUUID]) && !isset($aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::FullName'}))
 				{
+					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::ContactId'} = $oContact->EntityId;
+					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::ContactUUID'} = $oContact->UUID;
 					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::FullName'} = $oContact->FullName;
 					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Email'} = $oContact->Email;
 					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Address'} = $oContact->Address;
@@ -502,6 +504,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 			{
 				if (isset($aCustomers[$oCompany->CustomerUUID]))
 					{
+						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Id'} = $oCompany->EntityId;
+						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_UUID'} = $oCompany->UUID;
 						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Title'} = $oCompany->Title;
 						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Description'} = $oCompany->Description;
 						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Address'} = $oCompany->Address;
