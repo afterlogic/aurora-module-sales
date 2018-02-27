@@ -522,7 +522,7 @@ class CrmParser
 			'Total'					=> ['NetTotal', 'double'],
 		];
 
-		$LicenseKeysHeaders = ['WM700', 'MN110', 'MBC900', 'AU700'];
+		$LicenseKeysHeaders = ['WM', 'MN', 'MBC', 'AU'];
 		$aResult = [];
 		$aParams = [];
 		preg_match_all('/^(?:.+)=(?:.+)/m', $sMessagePlainText, $aParams);
@@ -567,7 +567,7 @@ class CrmParser
 		$aResult['ProductName'] = isset($aNameMatches[1]) ? trim($aNameMatches[1]) : '';
 		//LicenseKey
 		$aLicenseKeyMatches = [];
-		preg_match("/(?:" . implode("|", $LicenseKeysHeaders) . ")-(?:[A-Z0-9-]*[\n\r])+/", $sMessagePlainText, $aLicenseKeyMatches);
+		preg_match("/(?:" . implode("|", $LicenseKeysHeaders) . ")[0-9]+-(?:[A-Z0-9-]*[\n\r])+/", $sMessagePlainText, $aLicenseKeyMatches);
 		$aResult['LicenseKey'] =isset($aLicenseKeyMatches[0]) ? trim($aLicenseKeyMatches[0]) : '';
 		//RefNumber
 		$aSubjectMatches = [];
