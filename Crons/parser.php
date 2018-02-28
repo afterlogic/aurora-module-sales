@@ -484,8 +484,16 @@ class CrmParser
 		{
 			if (strpos($aMessage['From'], $this->sFromPaypal) !== false)
 			{
-				$aData = $this->ParseMessagePaypal($aMessage['Html'], $aMessage['Subject']);
-				$sLogMessage = "Message {$UID} was parsed with ParseMessagePaypal.";
+				if (strpos($aMessage['Subject'], 'just paid for your invoice') !== false)
+				{
+					$aData = $this->ParseMessagePaypalInvoice($aMessage['Html'], $aMessage['Subject']);
+					$sLogMessage = "Message {$UID} was parsed with ParseMessagePaypalDefaultInvoice.";
+				}
+				else
+				{
+					$aData = $this->ParseMessagePaypalDefault($aMessage['Html'], $aMessage['Subject']);
+					$sLogMessage = "Message {$UID} was parsed with ParseMessagePaypalDefault.";
+				}
 			}
 			elseif (strpos($aMessage['From'], $this->sFromShareit) !== false && strpos($aMessage['Subject'], $this->sSubjectShareit) !== false)
 			{
@@ -600,7 +608,7 @@ class CrmParser
 		return $aResult;
 	}
 
-	public function ParseMessagePaypal($sMessageHtml, $sSubject)
+	public function ParseMessagePaypalDefault($sMessageHtml, $sSubject)
 	{
 		$aResult = [];
 		$oDom = \Sunra\PhpSimple\HtmlDomParser::str_get_html($sMessageHtml);
@@ -608,7 +616,8 @@ class CrmParser
 		if ($oDom)
 		{
 			$oTransactionId = $oDom->find('table table a', 0);
-			$aResult['TransactionId'] = $oTransactionId ? trim($oTransactionId->plaintext) : '';
+			$sTransaction = $oTransactionId? \trim($oTransactionId->plaintext, " \t\n\r\0\x0B\xC2\xA0") : '';
+			$aResult['TransactionId'] = preg_match('/^[0-9A-Z]+$/', $sTransaction) ? $sTransaction : '';
 
 			$oData = $oDom->find('td.ppsans div div table', 0);
 			$oData = $oData ? $oData : $oDom->find('td.ppsans div table', 1);
@@ -654,7 +663,81 @@ class CrmParser
 		$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithPayPalSuccesfully;
 		return $aResult;
 	}
+
+	public function ParseMessagePaypalInvoice($sMessageHtml, $sSubject)
+	{
+		$aResult = [];
+		$oDom = \Sunra\PhpSimple\HtmlDomParser::str_get_html($sMessageHtml);
+
+		if ($oDom)
+		{
+			$oTransactionId = $oDom->find('table table a', 0);
+			$sTransaction = $oTransactionId? \trim($oTransactionId->plaintext, " \t\n\r\0\x0B\xC2\xA0") : '';
+			$aResult['TransactionId'] = preg_match('/^[0-9A-Z]+$/', $sTransaction) ? $sTransaction : '';
+
+			$oData = $oDom->find('td.ppsans table', 0);
+			if ($oData)
+			{
+				$oSubData =  $oData->find('tr', 0);
+				$oBuyer = $oSubData ? $oSubData->find('td', 0) : null;
+				$aResult['RegName'] = $oBuyer ? \strip_tags(strip_tags_content(trim($oBuyer->innertext))) : '';
+				$oEmail =  $oSubData ? $oSubData->find('td span', 1) : null;
+				$aResult['Email'] = $oEmail ? trim($oEmail->plaintext) : '';
+				$oShipping = $oDom->find('td.ppsans span table tr td', 0);
+				$aShipping = $oShipping ? explode("\r\n", trim($oShipping->plaintext)) : [];
+				unset($aShipping[0]);
+				$aResult['FullCity'] = preg_replace('/ {2,}/', ' ', trim(implode("; ", $aShipping)));
+				$oData = $oDom->find('td.ppsans table', 2);
+				if ($oData)
+				{
+					$oSubData = $oData->find('tr', 1);
+					$oDescription = $oSubData ? $oSubData->find('td', 0) : null;
+					$aDescription = $oDescription ? explode("\r\n", trim($oDescription->plaintext)) : [];
+					$aResult['ProductName'] = isset($aDescription[0]) ? trim($aDescription[0]) : '';
+
+					$oData = $oDom->find('td.ppsans table', 3);
+					if ($oData)
+					{
+						$oSubData = $oData->find('tr td table tr', 1);
+						$oPaymentAmount =  $oSubData ? $oSubData->find('td', 1) : null;
+						$aResult['NetTotal'] = $oPaymentAmount ? (double) preg_replace('/[^.0-9]/', ' ', $oPaymentAmount->plaintext) : '';
+					}
+				}
+			}
+
+			$oDom->clear();
+			unset($oDom);
+		}
+		$aResult['Payment'] = 'PayPal';
+		$aResult['PaymentSystem'] = \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal;
+		$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithPayPalSuccesfully;
+		return $aResult;
+	}
 }
+
+function strip_tags_content($text, $tags = '', $invert = FALSE) {
+
+	preg_match_all('/<(.+?)[\s]*\/?[\s]*>/si', trim($tags), $tags);
+	$tags = array_unique($tags[1]);
+
+	if (is_array($tags) AND count($tags) > 0)
+	{
+		if ($invert == FALSE)
+		{
+			return preg_replace('@<(?!(?:'. implode('|', $tags) .')\b)(\w+)\b.*?>.*?</\1>@si', '', $text);
+		}
+		else
+		{
+			return preg_replace('@<('. implode('|', $tags) .')\b.*?>.*?</\1>@si', '', $text);
+		}
+	}
+	elseif ($invert == FALSE)
+	{
+		return preg_replace('@<(\w+)\b.*?>.*?</\1>@si', '', $text);
+	}
+	return $text;
+}
+
 $oCrmParser = new CrmParser();
 $oCrmParser->Start();
 exit();
