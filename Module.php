@@ -1040,6 +1040,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+		$Company = \trim($Company);
 		$iCustomerId = $this->CreateCustomer($CustomerTitle, $CustomerDescription, $CustomerStatus, $CustomerLanguage);
 		if ($iCustomerId)
 		{
@@ -1049,30 +1051,25 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			return false;
 		}
+		if ($Company !== '')
+		{
+			$oCompany = new \Aurora\Modules\ContactObjects\Classes\Company($this->GetName());
+			$oCompany->Title = $Company;
+			$oCompany->CustomerUUID = $oCustomer->UUID;
+			$iCompanyId = $this->oApiCompaniesManager->createCompany($oCompany);
+			if ($iCompanyId)
+			{
+				$oCompany = $this->oApiCompaniesManager->getCompanyByIdOrUUID($iCompanyId);
+			}
+			if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
+			{
+				return false;
+			}
+		}
 
 		$oContact = $Email ? $this->oApiContactsManager->getContactByEmail($Email) : null;
 		if (!$oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
 		{
-			$Company = \trim($Company);
-			if ($Company !== '')
-			{
-				$oCompany = $this->oApiCompaniesManager->getCompanyByTitle($Company);
-				if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
-				{
-					$oCompany = new \Aurora\Modules\ContactObjects\Classes\Company($this->GetName());
-					$oCompany->Title = $Company;
-					$oCompany->CustomerUUID = $oCustomer->UUID;
-					$iCompanyId = $this->oApiCompaniesManager->createCompany($oCompany);
-					if ($iCompanyId)
-					{
-						$oCompany = $this->oApiCompaniesManager->getCompanyByIdOrUUID($iCompanyId);
-					}
-					if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
-					{
-						return false;
-					}
-				}
-			}
 			if (!empty($ContactFullName) || !empty($Email) || !empty($Address) || !empty($Phone) || !empty($FirstName) || !empty($LastName))
 			{
 				$iContactId = $this->CreateContact(
