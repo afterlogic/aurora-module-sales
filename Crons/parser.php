@@ -123,7 +123,9 @@ class CrmParser
 								$oMessage['Eml'],
 								isset($aData['NumberOfLicenses']) ? $aData['NumberOfLicenses'] : null,
 								$oMessage['Subject'],
-								isset($aData['ParsingStatus']) ? $aData['ParsingStatus'] : \Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed
+								isset($aData['ParsingStatus']) ? $aData['ParsingStatus'] : \Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed,
+								isset($aData['Reseller']) ? $aData['Reseller'] : null,
+								isset($aData['PromotionName']) ? $aData['PromotionName'] : null
 							);
 							if ($UID > (int) @file_get_contents($this->sLastParsedUidPath))
 							{
@@ -520,6 +522,8 @@ class CrmParser
 			'Registration name'		=> ['RegName', 'string'],
 			'Language'				=> ['Language', 'string'],
 			'Total'					=> ['NetTotal', 'double'],
+			'Reseller'				=> ['Reseller', 'string'],
+			'Promotion name'		=> ['PromotionName', 'string'],
 		];
 
 		$LicenseKeysHeaders = ['WM', 'MN', 'MBC', 'AU'];

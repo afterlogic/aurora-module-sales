@@ -94,6 +94,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'Deleted'					=> ['bool', false],
 				'ParsingStatus'				=> ['int', \Aurora\Modules\Sales\Enums\ParsingStatus::Unknown],
 				'TransactionId'				=> ['string', ''],
+				'Reseller'					=> ['string', ''],
+				'PromotionName'				=> ['string', ''],
 
 				// Download section
 				'DownloadId'		=> array('int', 0),
@@ -169,7 +171,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$TransactionId = '',
 		$Date = null, $LicenseKey ='', $RefNumber = 0, $CrmProductId = '', $ShareItProductId = '', $ShareItPurchaseId = '', $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
 		$Salutation = '', $CustomerTitle = '', $FirstName = '', $LastName = '', $Company = '', $Address = '', $Phone = '', $Fax = '', $Language = '',
-		$PayPalItem = '', $RawEmlData = '', $NumberOfLicenses = 0, $MessageSubject = '', $ParsingStatus = 0
+		$PayPalItem = '', $RawEmlData = '', $NumberOfLicenses = 0, $MessageSubject = '', $ParsingStatus = 0, $Reseller = '', $PromotionName = ''
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
@@ -242,6 +244,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oSale->{$this->GetName() . '::NumberOfLicenses'} = $NumberOfLicenses;
 		$oSale->{$this->GetName() . '::MessageSubject'} = substr($MessageSubject, 0, 255);
 		$oSale->{$this->GetName() . '::ParsingStatus'} = $ParsingStatus;
+		$oSale->{$this->GetName() . '::Reseller'} = $Reseller;
+		$oSale->{$this->GetName() . '::PromotionName'} = $PromotionName;
 		if (isset($Date))
 		{
 			$oSale->Date = $Date;
@@ -445,6 +449,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$this->GetName() . '::ParsingStatus',
 			$this->GetName() . '::RawEmlData',
 			$this->GetName() . '::TransactionId',
+			$this->GetName() . '::Reseller',
+			$this->GetName() . '::PromotionName',
 			// Download section
 			$this->GetName() . '::DownloadId',
 			$this->GetName() . '::Referer',
