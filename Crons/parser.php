@@ -537,18 +537,27 @@ class CrmParser
 		$LicenseKeysHeaders = ['WM', 'MN', 'MBC', 'AU'];
 		$aResult = [];
 		$aParams = [];
-		preg_match_all('/^(?:.+)=(?:.+)/m', $sMessagePlainText, $aParams);
-
-		if (isset($aParams[0]) && is_array($aParams[0]))
+		$aLines = explode("\r\n", $sMessagePlainText);
+		$sPattern = '/(' . addcslashes(implode("|", array_keys($aParamTypes)), '/') . ')(?:\s+)=/';
+		$iCurrentLine = 0;
+		foreach ($aLines as $sLine)
 		{
-			foreach ($aParams[0] as $sParamString)
+			if (preg_match($sPattern, $sLine))
 			{
-				$aParts = explode("=", $sParamString);
+				$aParts = explode("=", $sLine);
 				if (is_array($aParts) && isset($aParts[0]) && isset($aParts[1]))
 				{
 					$sParamName = trim(array_shift($aParts));
+					$iNextLine = $iCurrentLine + 1;
+					//if data takes two lines
+					while ($iNextLine <= count($aLines) && !empty($aLines[$iNextLine]) && !preg_match($sPattern, $aLines[$iNextLine]))
+					{
+						$aParts[] =  trim($aLines[$iNextLine]);
+						$iNextLine++;
+					}
 					$sParamValue = trim(implode('=', $aParts));	// if value contains "=" - return them back
-					if (isset($aParamTypes[$sParamName]))
+
+					if (!empty($sParamValue))
 					{
 						switch ($sParamName)
 						{
@@ -572,6 +581,7 @@ class CrmParser
 					}
 				}
 			}
+			$iCurrentLine++;
 		}
 		//Name
 		$aNameMatches = [];
