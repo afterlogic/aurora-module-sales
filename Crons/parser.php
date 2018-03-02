@@ -552,7 +552,7 @@ class CrmParser
 					//if data takes two lines
 					while ($iNextLine <= count($aLines) && !empty($aLines[$iNextLine]) && !preg_match($sPattern, $aLines[$iNextLine]))
 					{
-						$aParts[] =  trim($aLines[$iNextLine]);
+						$aParts[count($aParts) - 1] .=  trim($aLines[$iNextLine]);
 						$iNextLine++;
 					}
 					$sParamValue = trim(implode('=', $aParts));	// if value contains "=" - return them back
