@@ -16,6 +16,8 @@ class ParsingStatus extends \Aurora\System\Enums\AbstractEnumeration
 	const NotParsed = 1;
 	const ParsedWithShareItSuccesfully = 2;
 	const ParsedWithPayPalSuccesfully = 3;
+	const ParsedWithShareItWithWarning = 4;
+	const ParsedWithPayPalWithWarning = 5;
 
 	/**
 	 * @var array
@@ -24,5 +26,7 @@ class ParsingStatus extends \Aurora\System\Enums\AbstractEnumeration
 		'NotParsed'						=> self::NotParsed,
 		'ParsedWithShareItSuccesfully'	=> self::ParsedWithShareItSuccesfully,
 		'ParsedWithPayPalSuccesfully'	=> self::ParsedWithPayPalSuccesfully,
+		'ParsedWithShareItSuccesfully'	=> self::ParsedWithShareItWithWarning,
+		'ParsedWithPayPalSuccesfully'	=> self::ParsedWithPayPalWithWarning,
 	];
 }
