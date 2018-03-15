@@ -546,14 +546,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'<='
 			];
 		}
+		$aFilters[$this->GetName() . '::ParsingStatus'] = [\Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed, '!='];
+		$aSales = $this->oApiSalesManager->getSales(0, 0, $aFilters, ['Date', 'Price']);
 
-		$aSales = $this->oApiSalesManager->getSales(0, 0, $aFilters, ['Date']);
-
-		$fGetOnlyDate = function($value) {
-			return ['Date' => $value->Date];
+		$fGetChartData = function($value) {
+			return ['Date' => $value->Date, 'Price' => $value->Price];
 		};
 
-		return array_map($fGetOnlyDate, $aSales);
+		return array_map($fGetChartData, $aSales);
 	}
 	
 	/**
