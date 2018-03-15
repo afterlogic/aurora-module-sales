@@ -546,7 +546,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'<='
 			];
 		}
-		$aFilters[$this->GetName() . '::ParsingStatus'] = [\Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed, '!='];
+		if (!$GetDownloads)
+		{
+			$aFilters[$this->GetName() . '::ParsingStatus'] = [\Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed, '!='];
+		}
 		$aSales = $this->oApiSalesManager->getSales(0, 0, $aFilters, ['Date', 'Price']);
 
 		$fGetChartData = function($value) {
