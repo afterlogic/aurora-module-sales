@@ -487,12 +487,12 @@ class CrmParser
 				if (strpos($aMessage['Subject'], 'just paid for your invoice') !== false)
 				{
 					$aData = $this->ParseMessagePaypalInvoice($aMessage['Html'], $aMessage['Subject']);
-					$sLogMessage = "Message {$UID} was parsed with ParseMessagePaypalDefaultInvoice.";
+					$sLogMessage = "Message {$UID} was parsed with ParseMessagePaypalInvoice.";
 				}
-				else
+				else if (strpos($aMessage['Subject'], 'Notification of Payment') !== false)
 				{
-					$aData = $this->ParseMessagePaypalDefault($aMessage['Html'], $aMessage['Subject']);
-					$sLogMessage = "Message {$UID} was parsed with ParseMessagePaypalDefault.";
+					$aData = $this->ParseMessagePaypalNotification($aMessage['Html'], $aMessage['Subject']);
+					$sLogMessage = "Message {$UID} was parsed with ParseMessagePaypalNotification.";
 				}
 			}
 			elseif (strpos($aMessage['From'], $this->sFromShareit) !== false && strpos($aMessage['Subject'], $this->sSubjectShareit) !== false)
@@ -629,7 +629,7 @@ class CrmParser
 		return $aResult;
 	}
 
-	public function ParseMessagePaypalDefault($sMessageHtml, $sSubject)
+	public function ParseMessagePaypalNotification($sMessageHtml, $sSubject)
 	{
 		$aResult = [];
 		$oDom = \Sunra\PhpSimple\HtmlDomParser::str_get_html($sMessageHtml);
