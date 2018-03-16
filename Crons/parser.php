@@ -482,23 +482,24 @@ class CrmParser
 		$sLogMessage = "Message {$UID} saved without parsing.";
 		if (isset($aMessage['From']))
 		{
-			if (strpos($aMessage['From'], $this->sFromPaypal) !== false)
+			if (strpos($aMessage['From'], $this->sFromPaypal) !== false && strpos($aMessage['Subject'], 'just paid for your invoice') !== false)
 			{
-				if (strpos($aMessage['Subject'], 'just paid for your invoice') !== false)
-				{
-					$aData = $this->ParseMessagePaypalInvoice($aMessage['Html'], $aMessage['Subject']);
-					$sLogMessage = "Message {$UID} was parsed with ParseMessagePaypalInvoice.";
-				}
-				else if (strpos($aMessage['Subject'], 'Notification of Payment') !== false)
-				{
-					$aData = $this->ParseMessagePaypalNotification($aMessage['Html'], $aMessage['Subject']);
-					$sLogMessage = "Message {$UID} was parsed with ParseMessagePaypalNotification.";
-				}
+				$aData = $this->ParseMessagePaypalInvoice($aMessage['Html'], $aMessage['Subject']);
+				$sLogMessage = "Message {$UID} was parsed with ParseMessagePaypalInvoice.";
+			}
+			else if (strpos($aMessage['From'], $this->sFromPaypal) !== false && strpos($aMessage['Subject'], 'Notification of Payment') !== false)
+			{
+				$aData = $this->ParseMessagePaypalNotification($aMessage['Html'], $aMessage['Subject']);
+				$sLogMessage = "Message {$UID} was parsed with ParseMessagePaypalNotification.";
 			}
 			elseif (strpos($aMessage['From'], $this->sFromShareit) !== false && strpos($aMessage['Subject'], $this->sSubjectShareit) !== false)
 			{
 				$aData = $this->ParseMessageShareit($aMessage['Plain'], $aMessage['Subject']);
 				$sLogMessage = "Message {$UID} was parsed with ParseMessageShareit.";
+			}
+			else
+			{
+				$aData['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed;
 			}
 		}
 		\Aurora\System\Api::Log($sLogMessage , \Aurora\System\Enums\LogLevel::Full, 'sales-parsing-');
@@ -613,18 +614,18 @@ class CrmParser
 		}
 		$aResult['FullCity'] = implode(', ', $aAdressPartsClear);
 		$aResult['PaymentSystem'] = \Aurora\Modules\Sales\Enums\PaymentSystem::ShareIt;
-		if ((!isset($aResult['RefNumber']) || empty($aResult['RefNumber'])) ||
-			(!isset($aResult['ProductName']) || empty($aResult['ProductName'])) ||
-			(!isset($aResult['NetTotal']) || empty($aResult['NetTotal'])) ||
-			(!isset($aResult['ShareItProductId']) || empty($aResult['ShareItProductId'])) ||
-			(!isset($aResult['RegName']) || empty($aResult['RegName']))
+		if (empty($aResult['RefNumber']) ||
+			empty($aResult['ProductName']) ||
+			empty($aResult['NetTotal']) ||
+			empty($aResult['ShareItProductId']) ||
+			empty($aResult['RegName'])
 		)
 		{
-			$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithShareItWithWarning;
+			$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithWarning;
 		}
 		else
 		{
-			$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithShareItSuccesfully;
+			$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedSuccessfully;
 		}
 		return $aResult;
 	}
@@ -681,18 +682,19 @@ class CrmParser
 		}
 		$aResult['Payment'] = 'PayPal';
 		$aResult['PaymentSystem'] = \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal;
-		if ((!isset($aResult['TransactionId']) || empty($aResult['TransactionId'])) ||
-			(!isset($aResult['RegName']) || empty($aResult['RegName'])) ||
-			(!isset($aResult['Email']) || empty($aResult['Email'])) ||
-			(!isset($aResult['ProductName']) || empty($aResult['ProductName'])) ||
-			(!isset($aResult['NetTotal']) || empty($aResult['NetTotal']))
+		if (empty($aResult['TransactionId']) ||
+			empty($aResult['RegName']) ||
+			empty($aResult['Email']) ||
+			empty($aResult['ProductName']) ||
+			empty($aResult['NetTotal']) ||
+			empty($aResult['ProductPayPalItem'])
 		)
 		{
-			$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithPayPalWithWarning;
+			$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithWarning;
 		}
 		else
 		{
-			$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithPayPalSuccesfully;
+			$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedSuccessfully;
 		}
 		return $aResult;
 	}
@@ -743,18 +745,18 @@ class CrmParser
 		}
 		$aResult['Payment'] = 'PayPal';
 		$aResult['PaymentSystem'] = \Aurora\Modules\Sales\Enums\PaymentSystem::PayPal;
-		if ((!isset($aResult['TransactionId']) || empty($aResult['TransactionId'])) ||
-			(!isset($aResult['RegName']) || empty($aResult['RegName'])) ||
-			(!isset($aResult['Email']) || empty($aResult['Email'])) ||
-			(!isset($aResult['ProductName']) || empty($aResult['ProductName'])) ||
-			(!isset($aResult['NetTotal']) || empty($aResult['NetTotal']))
+		if (empty($aResult['TransactionId']) ||
+			empty($aResult['RegName']) ||
+			empty($aResult['Email']) ||
+			empty($aResult['ProductName']) ||
+			empty($aResult['NetTotal'])
 		)
 		{
-			$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithPayPalWithWarning;
+			$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithWarning;
 		}
 		else
 		{
-			$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedWithPayPalSuccesfully;
+			$aResult['ParsingStatus'] = \Aurora\Modules\Sales\Enums\ParsingStatus::ParsedSuccessfully;
 		}
 		return $aResult;
 	}
