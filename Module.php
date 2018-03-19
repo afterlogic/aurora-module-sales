@@ -23,6 +23,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public $oApiContactsManager = null;
 	public $oApiCompaniesManager = null;
 	public $sStorage = null;
+	public $oSxGeo = null;
 
 	protected $aRequireModules = [
 		'ContactObjects',
@@ -149,6 +150,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'FirstName'		=> ['string', ''],
 			]
 		);
+
+		try
+		{
+			if (!class_exists("SxGeo")) //TODO: remove after AfterlogicDownloadsWebclient removing
+			{
+				include_once(__DIR__ ."/SxGeo.php");
+			}
+			$this->SxGeo = new \SxGeo(__DIR__.'/SxGeoCity.dat');
+		}
+		catch (Exception $ex)
+		{}
 	}
 
 	/**
@@ -477,6 +489,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 			{
 				$oSale->IsEmlAvailable = 1;
 				$oSale->{$this->GetName() . '::RawEmlData'} = null;
+			}
+			if (!empty($this->SxGeo) && !empty($oSale->{$this->GetName() . '::Ip'}))
+			{
+				$aCity = $this->SxGeo->getCityFull($oSale->{$this->GetName() . '::Ip'});
+				$oSale->City = !empty($aCity["city"]["name_en"]) ? $aCity["city"]["name_en"] : '';
+				$oSale->Country =!empty($aCity["country"]["name_en"]) ? $aCity["country"]["name_en"] : '';
 			}
 		}
 		$aCustomers = count($aCustomersUUID) > 0 ? $this->oApiCustomersManager->getCustomers(0, 0, ['UUID' => [\array_unique($aCustomersUUID), 'IN']]) : [];
