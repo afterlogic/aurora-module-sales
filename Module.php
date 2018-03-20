@@ -235,6 +235,54 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$Company
 			);
 		}
+		else if ($oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
+		{
+			//Update contact if needed
+			$oContact = $Email ? $this->oApiContactsManager->getContactByEmail($Email) : null;
+			if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
+			{
+				$bNeedToUpdate = false;
+				if (!empty($FullName) && empty($oContact->FullName))
+				{
+					$oContact->FullName = $FullName;
+					$bNeedToUpdate = true;
+				}
+				if (!empty($Address) && empty($oContact->Address))
+				{
+					$oContact->Address = $Address;
+					$bNeedToUpdate = true;
+				}
+				if (!empty($Phone) && empty($oContact->Phone))
+				{
+					$oContact->Phone = $Phone;
+					$bNeedToUpdate = true;
+				}
+				if (!empty($FirstName) && empty($oContact->{$this->GetName() . '::FirstName'}))
+				{
+					$oContact->{$this->GetName() . '::FirstName'} = $FirstName;
+					$bNeedToUpdate = true;
+				}
+				if (!empty($LastName) && empty($oContact->{$this->GetName() . '::LastName'}))
+				{
+					$oContact->{$this->GetName() . '::LastName'} = $LastName;
+					$bNeedToUpdate = true;
+				}
+				if (!empty($Fax) && empty($oContact->{$this->GetName() . '::Fax'}))
+				{
+					$oContact->{$this->GetName() . '::Fax'} = $Fax;
+					$bNeedToUpdate = true;
+				}
+				if (!empty($Salutation) && empty($oContact->{$this->GetName() . '::Salutation'}))
+				{
+					$oContact->{$this->GetName() . '::Salutation'} = $Salutation;
+					$bNeedToUpdate = true;
+				}
+				if ($bNeedToUpdate)
+				{
+					$this->oApiContactsManager->UpdateContact($oContact);
+				}
+			}
+		}
 
 		$oSale = new \Aurora\Modules\SaleObjects\Classes\Sale($this->GetName());
 		$oSale->ProductUUID = isset($oProduct->UUID) ? $oProduct->UUID : '';
