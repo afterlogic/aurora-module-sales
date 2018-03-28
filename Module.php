@@ -614,7 +614,22 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		if (!$GetDownloads)
 		{
-			$aFilters[$this->GetName() . '::ParsingStatus'] = [\Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed, '!='];
+			if (isset($aFilters['$OR']))
+			{
+				$i = 1;
+				do {
+					$sOR = $i++ . "@\$OR";
+				} while (isset($aFilters[$sOR]));
+			}
+			else
+			{
+				$sOR = '$OR';
+			}
+
+			$aFilters[$sOR] = [
+				'1@' . $this->GetName() . '::ParsingStatus' => [\Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed, '!='],
+				'2@' . $this->GetName() . '::ParsingStatus' => ['NULL', 'IS']
+			];
 		}
 		$aSales = $this->oApiSalesManager->getSales(0, 0, $aFilters, ['Date', 'Price']);
 
