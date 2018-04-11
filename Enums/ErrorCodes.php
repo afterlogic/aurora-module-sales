@@ -26,6 +26,7 @@ class ErrorCodes
 	const ContactUpdateFailed			= 1012;
 	const CompanyCreateFailed		= 1013;
 	const CompanyUpdateFailed		= 1014;
+	const MailchimpConnectionFailed	= 1015;
 
 	/**
 	 * @var array
@@ -45,5 +46,6 @@ class ErrorCodes
 		'ContactUpdateFailed'			=> self::ContactUpdateFailed,
 		'CompanyCreateFailed'			=> self::CompanyCreateFailed,
 		'CompanyUpdateFailed'			=> self::CompanyUpdateFailed,
+		'MailchimpConnectionFailed'		=> self::MailchimpConnectionFailed,
 	];
 }

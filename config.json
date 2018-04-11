@@ -50,5 +50,9 @@
 	"SourceDbPass": [
 		"",
 		"string"
+	],
+	"MailchimpApiKey": [
+		"",
+		"string"
 	]
 }

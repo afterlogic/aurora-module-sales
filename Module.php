@@ -22,6 +22,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public $oApiProductGroupsManager = null;
 	public $oApiContactsManager = null;
 	public $oApiCompaniesManager = null;
+	public $oApiMailchimpManager = null;
 	public $sStorage = null;
 	public $oSxGeo = null;
 
@@ -56,9 +57,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 			Enums\ErrorCodes::ContactCreateFailed			=> $this->i18N('ERROR_CONTACT_CREATE_FAILED'),
 			Enums\ErrorCodes::ContactUpdateFailed			=> $this->i18N('ERROR_CONTACT_UPDATE_FAILED'),
 			Enums\ErrorCodes::CompanyCreateFailed			=> $this->i18N('ERROR_COMPANY_CREATE_FAILED'),
-			Enums\ErrorCodes::CompanyUpdateFailed			=> $this->i18N('ERROR_COMPANY_UPDATE_FAILED')
+			Enums\ErrorCodes::CompanyUpdateFailed			=> $this->i18N('ERROR_COMPANY_UPDATE_FAILED'),
+			Enums\ErrorCodes::MailchimpConnectionFailed		=> $this->i18N('ERROR_MAILCHIMP_CONNECTION_FAILED')
 		];
+
 		$this->subscribeEvent('Contacts::GetStorage', array($this, 'onGetStorage'));
+		$this->subscribeEvent('Sales::CreateContact::after', array($this, 'onCreateContact'));
 
 		$this->AddEntries(
 			array(
@@ -72,6 +76,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->oApiProductGroupsManager = new Managers\ProductGroups($this);
 		$this->oApiContactsManager = new Managers\Contacts($this);
 		$this->oApiCompaniesManager = new Managers\Companies($this);
+		$this->oApiMailchimpManager = new Managers\Mailchimp($this);
 		$this->sStorage = 'sales';
 
 		$this->extendObject(
@@ -1162,7 +1167,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			if (!empty($ContactFullName) || !empty($Email) || !empty($Address) || !empty($Phone) || !empty($FirstName) || !empty($LastName))
 			{
-				$iContactId = $this->CreateContact(
+				$iContactId = self::Decorator()->CreateContact(
 					$ContactFullName,
 					$oCustomer->UUID,
 					isset($oCompany->UUID) ? $oCompany->UUID : '',
@@ -1521,5 +1526,90 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		\Aurora\System\Api::Log('End import ', \Aurora\System\Enums\LogLevel::Full, 'import-pay-pal-');
 		return true;
+	}
+
+	public function CreateMailchimpList($Title, $ListId, $Description = "")
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$oMailchimpList = new \Aurora\Modules\Sales\Classes\MailchimpList($this->GetName());
+		$oMailchimpList->Title = $Title;
+		$oMailchimpList->Description = $Description;
+		$oMailchimpList->ListId = $ListId;
+
+		return $this->oApiMailchimpManager->createMailchimpList($oMailchimpList);
+	}
+
+	public function GetMailchimpList()
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		return $this->oApiMailchimpManager->getMailchimpList();
+	}
+
+	public function UpdateMailchimpList($Title = null, $Description = null, $ListId = null)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+		$bResult = false;
+		$oMailchimpList = $this->oApiMailchimpManager->getMailchimpList();
+		if (!$oMailchimpList instanceof \Aurora\Modules\Sales\Classes\MailchimpList)
+		{
+			$bResult = !!$this->CreateMailchimpList($Title, $ListId, $Description);
+		}
+		else
+		{
+			if (isset($Title))
+			{
+				$oMailchimpList->Title = $Title;
+			}
+			if (isset($ListId))
+			{
+				$oMailchimpList->ListId = $ListId;
+			}
+			if (isset($Description))
+			{
+				$oMailchimpList->Description = $Description;
+			}
+			$bResult = !!$this->oApiMailchimpManager->updateMailchimpList($oMailchimpList);
+		}
+		return $bResult;
+	}
+
+	public function AddMemeberToMailchimpList($Email)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		return $this->oApiMailchimpManager->addMemeberToList($Email);
+	}
+
+	public function GetSettings()
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+		$oMailchimpList = $this->GetMailchimpList();
+		if ($oMailchimpList instanceof \Aurora\Modules\Sales\Classes\MailchimpList)
+		{
+			return array(
+				'Title' => $oMailchimpList->Title,
+				'Description' => $oMailchimpList->Description,
+				'ListId' => $oMailchimpList->ListId
+			);
+		}
+
+		return null;
+	}
+
+	public function UpdateSettings($Title = null, $Description = null, $ListId = null)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+		return $this->UpdateMailchimpList($Title, $Description, $ListId);
+	}
+
+	public function onCreateContact(&$aArgs, &$mResult)
+	{
+		if(!empty($aArgs['Email']))
+		{
+			return $this->AddMemeberToMailchimpList($aArgs['Email']);
+		}
+		return false;
 	}
 }
