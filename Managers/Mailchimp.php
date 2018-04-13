@@ -26,7 +26,10 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 		parent::__construct($oModule);
 
 		$this->oEavManager = new \Aurora\System\Managers\Eav();
-		$this->oMailchimpApi = new \DrewM\MailChimp\MailChimp($this->GetModule()->getConfig('MailchimpApiKey', ''));
+		if (!empty($this->GetModule()->getConfig('MailchimpApiKey', '')))
+		{
+			$this->oMailchimpApi = new \DrewM\MailChimp\MailChimp($this->GetModule()->getConfig('MailchimpApiKey', ''));
+		}
 	}
 
 	/**
