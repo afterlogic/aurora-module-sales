@@ -97,7 +97,8 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 			$oMailchimpList = $this->getMailchimpList();
 			if ($oMailchimpList instanceof \Aurora\Modules\Sales\Classes\MailchimpList)
 			{
-				if (strpos($sEmail, "@afterlogic.com") !== false)//only for tests, remove after release
+				//only for tests, remove after release
+				if (true || strpos($sEmail, "@afterlogic.com") !== false)
 				{
 					$aResponse = $this->oMailchimpApi->post(
 						"lists/{$oMailchimpList->ListId}/members",
