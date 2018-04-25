@@ -1577,7 +1577,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function AddMemeberToMailchimpList($Email)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		return $this->oApiMailchimpManager->addMemeberToList($Email);
+		return $this->oApiMailchimpManager->addMemberToList($Email);
 	}
 
 	public function GetSettings()

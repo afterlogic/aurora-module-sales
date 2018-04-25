@@ -81,7 +81,7 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 	/**
 	 * @return \Aurora\Modules\Sales\Classes\MailchimpList $oMailchimpList|bool
 	 */
-	public function addMemeberToList($sEmail)
+	public function addMemberToList($sEmail)
 	{
 		$bResult = false;
 		if (!filter_var($sEmail, FILTER_VALIDATE_EMAIL))
@@ -90,7 +90,7 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 		}
 		else if (!$this->ping())
 		{
-			\Aurora\System\Api::Log('Error: Mailchimp connection failed', \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
+			\Aurora\System\Api::Log('Error: Mailchimp connection failed. Member wasn\'t added to the list: ' . $sEmail, \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
 		}
 		else
 		{
@@ -116,11 +116,11 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 				if (isset($aResponse['status']) && $aResponse['status'] === 'subscribed')
 				{
 					$bResult = true;
-					\Aurora\System\Api::Log('Memeber added to list: ' . $sEmail, \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
+					\Aurora\System\Api::Log('Member added to list: ' . $sEmail, \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
 				}
 				else
 				{
-					\Aurora\System\Api::Log('Error: addMemeberToList ' . json_encode($aResponse), \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
+					\Aurora\System\Api::Log('Error: addMemberToList ' . json_encode($aResponse), \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
 				}
 			}
 			else
@@ -136,6 +136,7 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 		$this->oMailchimpApi->get('/ping');
 		if ($this->oMailchimpApi->getLastError())
 		{
+			\Aurora\System\Api::Log('Error: Mailchimp connection failed. ' . $this->oMailchimpApi->getLastError(), \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
 			return false;
 		}
 		return true;
