@@ -18,6 +18,7 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 	 */
 	public $oEavManager = null;
 	private $oMailchimpApi = null;
+	private $oMailchimpList = null;
 
 	/**
 	 * @param \Aurora\System\Module\AbstractModule $oModule
@@ -66,16 +67,17 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function getMailchimpList()
 	{
-		$mMailchimpList = false;
-
-		$aResults = $this->oEavManager->getEntities($this->GetModule()->getNamespace() . '\Classes\MailchimpList',
-			['Title', 'Description', 'ListId']);
-
-		if (is_array($aResults) && isset($aResults[0]))
+		if (!$this->oMailchimpList)
 		{
-			$mMailchimpList = $aResults[0];
+			$aResults = $this->oEavManager->getEntities($this->GetModule()->getNamespace() . '\Classes\MailchimpList',
+				['Title', 'Description', 'ListId']);
+
+			if (is_array($aResults) && isset($aResults[0]))
+			{
+				$this->oMailchimpList = $aResults[0];
+			}
 		}
-		return $mMailchimpList;
+		return $this->oMailchimpList;
 	}
 
 	/**
@@ -131,6 +133,40 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 		return $bResult;
 	}
 
+	public function getGroups()
+	{
+		$aResult = [];
+		if (!$this->ping())
+		{
+			\Aurora\System\Api::Log('Error: Mailchimp connection failed. Can\'t get group list ', \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
+		}
+		else
+		{
+			$oMailchimpList = $this->getMailchimpList();
+			if ($oMailchimpList instanceof \Aurora\Modules\Sales\Classes\MailchimpList)
+			{
+				$Groups = $this->oMailchimpApi->get("lists/{$oMailchimpList->ListId}/interest-categories");
+				if ($Groups && $Groups['categories'])
+				{
+					foreach ($Groups['categories'] as $aGroup)
+					{
+//						$aResult[$aGroup['id']] = [ 'title' => $aGroup['title']];
+						$aGroupNames = $this->oMailchimpApi->get("lists/{$oMailchimpList->ListId}/interest-categories/{$aGroup['id']}/interests");
+						if ($aGroupNames && isset($aGroupNames['interests']))
+						{
+							foreach ($aGroupNames['interests'] as $aGroupName)
+							{
+								$aResult[$aGroupName['id']] = $aGroupName['name'];
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return $aResult;
+	}
+
 	public function ping()
 	{
 		$this->oMailchimpApi->get('/ping');
@@ -140,5 +176,70 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 			return false;
 		}
 		return true;
+	}
+
+	public function getMembers()
+	{
+		$aResult = [];
+		if (!$this->ping())
+		{
+			\Aurora\System\Api::Log('Error: Mailchimp connection failed. Can\'t get members list ', \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
+		}
+		else
+		{
+			$oMailchimpList = $this->getMailchimpList();
+			if ($oMailchimpList instanceof \Aurora\Modules\Sales\Classes\MailchimpList)
+			{
+				$aMembers = $this->oMailchimpApi->get("lists/{$oMailchimpList->ListId}/members");
+				if ($aMembers && $aMembers['members'])
+				{
+					foreach ($aMembers['members'] as $oMember)
+					{
+						$aResult[$oMember['email_address']] = $oMember['id'];
+					}
+				}
+			}
+		}
+
+		return $aResult;
+	}
+
+	public function getMemberByEmail($sEmail)
+	{
+		$mResult = false;
+
+		$aMembers = $this->getMembers();
+		if (!empty($aMembers) && isset($aMembers[$sEmail]))
+		{
+			$mResult = $this->getMemberById($aMembers[$sEmail]);
+		}
+
+		return $mResult;
+	}
+
+	public function getMemberById($id)
+	{
+		$mResult = false;
+
+		$oMailchimpList = $this->getMailchimpList();
+		if ($oMailchimpList instanceof \Aurora\Modules\Sales\Classes\MailchimpList)
+		{
+			$mResult = $this->oMailchimpApi->get("lists/{$oMailchimpList->ListId}/members/{$id}");
+		}
+
+		return $mResult;
+	}
+
+	public function updateMember($oMember)
+	{
+		$mResult = false;
+
+		$oMailchimpList = $this->getMailchimpList();
+		if ($oMailchimpList instanceof \Aurora\Modules\Sales\Classes\MailchimpList)
+		{
+			$mResult = $this->oMailchimpApi->patch("lists/{$oMailchimpList->ListId}/members/{$oMember['id']}", $oMember);
+		}
+
+		return $mResult;
 	}
 }

@@ -62,7 +62,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 
 		$this->subscribeEvent('Contacts::GetStorage', array($this, 'onGetStorage'));
-		$this->subscribeEvent('Sales::CreateContact::after', array($this, 'onCreateContact'));
+		$this->subscribeEvent('Sales::CreateSale::after', array($this, 'onCreateSale'));
 
 		$this->AddEntries(
 			array(
@@ -131,11 +131,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->extendObject(
 			'Aurora\Modules\SaleObjects\Classes\Product',
 			[
-				'ShareItProductId'	=> ['string', ''],
-				'PayPalItem'		=> ['string', ''],
-				'CrmProductId'		=> ['string', ''],
-				'IsAutocreated'		=> ['bool', true],
-				'IsDefault'			=> ['bool', false]
+				'ShareItProductId'		=> ['string', ''],
+				'PayPalItem'			=> ['string', ''],
+				'CrmProductId'			=> ['string', ''],
+				'IsAutocreated'			=> ['bool', true],
+				'IsDefault'				=> ['bool', false],
+				'MailchimpGroupTitle'	=> ['string', ''],
+				'MailchimpGroupUUID'	=> ['string', '']
 			]
 		);
 
@@ -725,7 +727,19 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 	}
 
-	public function UpdateProduct($ProductId, $Title = null, $CrmProductId = null, $ShareItProductId = null, $IsAutocreated = null, $ProductGroupUUID = null, $Description = null, $Homepage = null, $ProductPrice = null, $Status = 0, $PayPalItem = null)
+	public function UpdateProduct($ProductId,
+		$Title = null,
+		$CrmProductId = null,
+		$ShareItProductId = null,
+		$IsAutocreated = null,
+		$ProductGroupUUID = null,
+		$Description = null,
+		$Homepage = null,
+		$ProductPrice = null,
+		$Status = 0,
+		$PayPalItem = null,
+		$MailchimpGroupTitle = null,
+		$MailchimpGroupUUID = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
@@ -769,6 +783,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		if (isset($Status))
 		{
 			$oProduct->Status = $Status;
+		}
+		if (isset($MailchimpGroupTitle))
+		{
+			$oProduct->{$this->GetName() . '::MailchimpGroupTitle'} = $MailchimpGroupTitle;
+		}
+		if (isset($MailchimpGroupUUID))
+		{
+			$oProduct->{$this->GetName() . '::MailchimpGroupUUID'} = $MailchimpGroupUUID;
 		}
 		return $this->oApiProductsManager->UpdateProduct($oProduct);
 	}
@@ -881,7 +903,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$CrmProductId = $oProduct->{$this->GetName() . '::CrmProductId'};
 			}
 		}
-		$mSale = $this->CreateSale('Download', Enums\PaymentSystem::Download, 0, $Email, '', $ProductTitle, $ProductCode, null, '', $Date, $TrialKey, 0, $CrmProductId);
+		$mSale = self::Decorator()->CreateSale('Download', Enums\PaymentSystem::Download, 0, $Email, '', $ProductTitle, $ProductCode, null, '', $Date, $TrialKey, 0, $CrmProductId);
 		if ($mSale)
 		{
 			$mSale->{$this->GetName() . '::DownloadId'} = $DownloadId;
@@ -1011,7 +1033,18 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 *
 	 * @return int|boolean
 	 */
-	public function CreateProduct($Title, $ShareItProductId = '', $CrmProductId = '', $IsAutocreated = false, $ProductGroupUUID = '', $Description = '', $Homepage = '', $ProductPrice = 0, $Status = 0, $PayPalItem = '')
+	public function CreateProduct($Title,
+		$ShareItProductId = '',
+		$CrmProductId = '',
+		$IsAutocreated = false,
+		$ProductGroupUUID = '',
+		$Description = '',
+		$Homepage = '',
+		$ProductPrice = 0,
+		$Status = 0,
+		$PayPalItem = '',
+		$MailchimpGroupTitle = '',
+		$MailchimpGroupUUID = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
@@ -1032,6 +1065,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oProduct->Homepage = $Homepage;
 		$oProduct->Price = $ProductPrice;
 		$oProduct->Status = $Status;
+		$oProduct->{$this->GetName() . '::MailchimpGroupTitle'} = $MailchimpGroupTitle;
+		$oProduct->{$this->GetName() . '::MailchimpGroupUUID'} = $MailchimpGroupUUID;
 
 		return $this->oApiProductsManager->createProduct($oProduct);
 	}
@@ -1577,6 +1612,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function AddMemeberToMailchimpList($Email)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
 		return $this->oApiMailchimpManager->addMemberToList($Email);
 	}
 
@@ -1597,6 +1633,15 @@ class Module extends \Aurora\System\Module\AbstractModule
 		return null;
 	}
 
+	public function GetMailchimpGroups()
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
+		return  [
+			'Groups' =>$this->oApiMailchimpManager->getGroups()
+		];
+	}
+
 	public function UpdateSettings($Title = null, $Description = null, $ListId = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
@@ -1604,12 +1649,35 @@ class Module extends \Aurora\System\Module\AbstractModule
 		return $this->UpdateMailchimpList($Title, $Description, $ListId);
 	}
 
-	public function onCreateContact(&$aArgs, &$mResult)
+	public function onCreateSale(&$aArgs, &$mResult)
 	{
-		if(!empty($aArgs['Email']))
+		if (isset($mResult->UUID) && !empty($aArgs['Email']))
 		{
-			return $this->AddMemeberToMailchimpList($aArgs['Email']);
+			$oSale = $this->oApiSalesManager->getSaleByIdOrUUID($mResult->UUID);
+			if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
+			{
+				$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($oSale->ProductUUID);
+				if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product && isset($oProduct->{$this->GetName() . '::MailchimpGroupUUID'}))
+				{
+					$oMember = $this->oApiMailchimpManager->getMemberByEmail($aArgs['Email']);
+					if (!$oMember)
+					{//add member if not exists
+						$this->AddMemeberToMailchimpList($aArgs['Email']);
+						$oMember = $this->oApiMailchimpManager->getMemberByEmail($aArgs['Email']);
+					}
+					if ($oMember['interests'])
+					{
+						foreach ($oMember['interests'] as $GroupUUID => $bGroupValue)
+						{
+							if($GroupUUID === $oProduct->{$this->GetName() . '::MailchimpGroupUUID'})
+							{
+								$oMember['interests'][$GroupUUID] = true;
+							}
+						}
+						$this->oApiMailchimpManager->updateMember($oMember);
+					}
+				}
+			}
 		}
-		return false;
 	}
 }
