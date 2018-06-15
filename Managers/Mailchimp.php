@@ -238,6 +238,14 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 		if ($oMailchimpList instanceof \Aurora\Modules\Sales\Classes\MailchimpList)
 		{
 			$mResult = $this->oMailchimpApi->patch("lists/{$oMailchimpList->ListId}/members/{$oMember['id']}", $oMember);
+			if ($mResult)
+			{
+				\Aurora\System\Api::Log('Member information updated: ' . $oMember['email_address'], \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
+			}
+			else
+			{
+				\Aurora\System\Api::Log('Error: updateMember ' . json_encode($mResult), \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
+			}
 		}
 
 		return $mResult;
