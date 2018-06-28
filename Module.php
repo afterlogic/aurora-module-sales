@@ -1610,6 +1610,5 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			return $this->AddMemeberToMailchimpList($aArgs['Email']);
 		}
-		return false;
 	}
 }
