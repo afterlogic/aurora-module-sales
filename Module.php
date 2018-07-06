@@ -190,7 +190,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$TransactionId = '',
 		$Date = null, $LicenseKey ='', $RefNumber = 0, $CrmProductId = '', $ShareItProductId = '', $ShareItPurchaseId = '', $IsNotified = false, $RecurrentMaintenance = true, $TwoMonthsEmailSent = false, $ParentSaleId = 0, $VatId = '',
 		$Salutation = '', $CustomerTitle = '', $FirstName = '', $LastName = '', $Company = '', $Address = '', $Phone = '', $Fax = '', $Language = '',
-		$PayPalItem = '', $RawEmlData = '', $NumberOfLicenses = 0, $MessageSubject = '', $ParsingStatus = \Aurora\Modules\Sales\Enums\ParsingStatus::Unknown, $Reseller = '', $PromotionName = ''
+		$PayPalItem = '', $RawEmlData = '', $NumberOfLicenses = 0, $MessageSubject = '', $ParsingStatus = \Aurora\Modules\Sales\Enums\ParsingStatus::Unknown, $Reseller = '', $PromotionName = '',
+		$Subscribe = false
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
@@ -889,7 +890,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$IsUpgrade,
 		$PlatformType,
 		$ProductTitle = '',
-		$CrmProductId = ''
+		$CrmProductId = '',
+		$Subscribe = false
 	)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
@@ -903,7 +905,46 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$CrmProductId = $oProduct->{$this->GetName() . '::CrmProductId'};
 			}
 		}
-		$mSale = self::Decorator()->CreateSale('Download', Enums\PaymentSystem::Download, 0, $Email, '', $ProductTitle, $ProductCode, null, '', $Date, $TrialKey, 0, $CrmProductId);
+
+		$mSale = self::Decorator()->CreateSale(
+			'Download',
+			 Enums\PaymentSystem::Download,
+			 0,
+			 $Email,
+			 '',
+			 $ProductTitle,
+			 $ProductCode,
+			 null,
+			 '',
+			 $Date,
+			 $TrialKey,
+			 0,
+			 $CrmProductId,
+			 '',
+			 '',
+			 false,
+			 true,
+			 false,
+			 0,
+			 '',
+			 '',
+			 '',
+			 '',
+			 '',
+			 '',
+			 '',
+			 '',
+			 '',
+			 '',
+			 '',
+			 '',
+			 0,
+			 '',
+			 \Aurora\Modules\Sales\Enums\ParsingStatus::Unknown,
+			 '',
+			 '',
+			 $Subscribe
+		);
 		if ($mSale)
 		{
 			$mSale->{$this->GetName() . '::DownloadId'} = $DownloadId;
@@ -1660,7 +1701,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product && isset($oProduct->{$this->GetName() . '::MailchimpGroupUUID'}))
 				{
 					$oMember = $this->oApiMailchimpManager->getMemberByEmail($aArgs['Email']);
-					if (!$oMember)
+					if (!$oMember && $aArgs['Subscribe'] === true)
 					{//add member if not exists
 						$this->AddMemeberToMailchimpList($aArgs['Email']);
 						$oMember = $this->oApiMailchimpManager->getMemberByEmail($aArgs['Email']);
