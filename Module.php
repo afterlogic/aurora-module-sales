@@ -1698,15 +1698,19 @@ class Module extends \Aurora\System\Module\AbstractModule
 			if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
 			{
 				$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($oSale->ProductUUID);
-				if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product && isset($oProduct->{$this->GetName() . '::MailchimpGroupUUID'}))
+
+				if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product
+					&& isset($oProduct->{$this->GetName() . '::MailchimpGroupUUID'})
+					&& $aArgs['Subscribe'] === true
+				)
 				{
 					$oMember = $this->oApiMailchimpManager->getMemberByEmail($aArgs['Email']);
-					if (!$oMember && $aArgs['Subscribe'] === true)
+					if (!$oMember)
 					{//add member if not exists
 						$this->AddMemeberToMailchimpList($aArgs['Email']);
 						$oMember = $this->oApiMailchimpManager->getMemberByEmail($aArgs['Email']);
 					}
-					if ($oMember['interests'])
+					if (isset($oMember['interests']) && is_array($oMember['interests']))
 					{
 						foreach ($oMember['interests'] as $GroupUUID => $bGroupValue)
 						{
