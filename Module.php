@@ -1690,37 +1690,33 @@ class Module extends \Aurora\System\Module\AbstractModule
 		return $this->UpdateMailchimpList($Title, $Description, $ListId);
 	}
 
-	public function onCreateSale(&$aArgs, &$mResult)
+	public function onCreateSale(&$aArgs, &$oSale)
 	{
-		if (isset($mResult->UUID) && !empty($aArgs['Email']))
+		if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale && !empty($aArgs['Email']) && !empty($oSale->ProductUUID))
 		{
-			$oSale = $this->oApiSalesManager->getSaleByIdOrUUID($mResult->UUID);
-			if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
-			{
-				$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($oSale->ProductUUID);
+			$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($oSale->ProductUUID);
 
-				if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product
-					&& isset($oProduct->{$this->GetName() . '::MailchimpGroupUUID'})
-					&& $aArgs['Subscribe'] === true
-				)
-				{
+			if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product
+				&& isset($oProduct->{$this->GetName() . '::MailchimpGroupUUID'})
+				&& $aArgs['Subscribe'] === true
+			)
+			{
+				$oMember = $this->oApiMailchimpManager->getMemberByEmail($aArgs['Email']);
+				if (!$oMember)
+				{//add member if not exists
+					$this->AddMemeberToMailchimpList($aArgs['Email']);
 					$oMember = $this->oApiMailchimpManager->getMemberByEmail($aArgs['Email']);
-					if (!$oMember)
-					{//add member if not exists
-						$this->AddMemeberToMailchimpList($aArgs['Email']);
-						$oMember = $this->oApiMailchimpManager->getMemberByEmail($aArgs['Email']);
-					}
-					if (isset($oMember['interests']) && is_array($oMember['interests']))
+				}
+				if (isset($oMember['interests']) && is_array($oMember['interests']))
+				{
+					foreach ($oMember['interests'] as $GroupUUID => $bGroupValue)
 					{
-						foreach ($oMember['interests'] as $GroupUUID => $bGroupValue)
+						if($GroupUUID === $oProduct->{$this->GetName() . '::MailchimpGroupUUID'})
 						{
-							if($GroupUUID === $oProduct->{$this->GetName() . '::MailchimpGroupUUID'})
-							{
-								$oMember['interests'][$GroupUUID] = true;
-							}
+							$oMember['interests'][$GroupUUID] = true;
 						}
-						$this->oApiMailchimpManager->updateMember($oMember);
 					}
+					$this->oApiMailchimpManager->updateMember($oMember);
 				}
 			}
 		}
