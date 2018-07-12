@@ -208,10 +208,10 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 	{
 		$mResult = false;
 
-		$aMembers = $this->getMembers();
-		if (!empty($aMembers) && isset($aMembers[$sEmail]))
+		$sMemberId = md5(strtolower($sEmail));
+		if (!empty($sMemberId))
 		{
-			$mResult = $this->getMemberById($aMembers[$sEmail]);
+			$mResult = $this->getMemberById($sMemberId);
 		}
 
 		return $mResult;
