@@ -211,7 +211,11 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 		$sMemberId = md5(strtolower($sEmail));
 		if (!empty($sMemberId))
 		{
-			$mResult = $this->getMemberById($sMemberId);
+			$mResponse = $this->getMemberById($sMemberId);
+			if (isset($mResponse['email_address']) && $mResponse['email_address'] === $sEmail)
+			{
+				$mResult = $mResponse;
+			}
 		}
 
 		return $mResult;
