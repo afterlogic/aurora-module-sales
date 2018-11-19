@@ -69,7 +69,7 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 	{
 		if (!$this->oMailchimpList)
 		{
-			$aResults = $this->oEavManager->getEntities($this->GetModule()->getNamespace() . '\Classes\MailchimpList',
+			$aResults = $this->oEavManager->getEntities($this->GetModule()::getNamespace() . '\Classes\MailchimpList',
 				['Title', 'Description', 'ListId']);
 
 			if (is_array($aResults) && isset($aResults[0]))

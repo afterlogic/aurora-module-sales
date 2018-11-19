@@ -61,7 +61,7 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 			if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact && isset($oContact->CustomerUUID))
 			{
 				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
+				\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\Customer',
 					[],
 					0,
 					1,
@@ -92,7 +92,7 @@ class Customers extends \Aurora\System\Managers\AbstractManager
 	{
 		$aCustomers = [];
 		$aResults = $this->oEavManager->getEntities(
-		\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Customer',
+		\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\Customer',
 			$aViewAttributes,
 			$iOffset,
 			$iLimit,

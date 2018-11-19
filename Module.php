@@ -265,24 +265,24 @@ class Module extends \Aurora\System\Module\AbstractModule
 					$oContact->Phone = $Phone;
 					$bNeedToUpdate = true;
 				}
-				if (!empty($FirstName) && empty($oContact->{$this->GetName() . '::FirstName'}))
+				if (!empty($FirstName) && empty($oContact->{self::GetName() . '::FirstName'}))
 				{
-					$oContact->{$this->GetName() . '::FirstName'} = $FirstName;
+					$oContact->{self::GetName() . '::FirstName'} = $FirstName;
 					$bNeedToUpdate = true;
 				}
-				if (!empty($LastName) && empty($oContact->{$this->GetName() . '::LastName'}))
+				if (!empty($LastName) && empty($oContact->{self::GetName() . '::LastName'}))
 				{
-					$oContact->{$this->GetName() . '::LastName'} = $LastName;
+					$oContact->{self::GetName() . '::LastName'} = $LastName;
 					$bNeedToUpdate = true;
 				}
-				if (!empty($Fax) && empty($oContact->{$this->GetName() . '::Fax'}))
+				if (!empty($Fax) && empty($oContact->{self::GetName() . '::Fax'}))
 				{
-					$oContact->{$this->GetName() . '::Fax'} = $Fax;
+					$oContact->{self::GetName() . '::Fax'} = $Fax;
 					$bNeedToUpdate = true;
 				}
-				if (!empty($Salutation) && empty($oContact->{$this->GetName() . '::Salutation'}))
+				if (!empty($Salutation) && empty($oContact->{self::GetName() . '::Salutation'}))
 				{
-					$oContact->{$this->GetName() . '::Salutation'} = $Salutation;
+					$oContact->{self::GetName() . '::Salutation'} = $Salutation;
 					$bNeedToUpdate = true;
 				}
 				if ($bNeedToUpdate)
@@ -292,35 +292,35 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 		}
 
-		$oSale = new \Aurora\Modules\SaleObjects\Classes\Sale($this->GetName());
+		$oSale = new \Aurora\Modules\SaleObjects\Classes\Sale(self::GetName());
 		$oSale->ProductUUID = isset($oProduct->UUID) ? $oProduct->UUID : '';
 		$oSale->CustomerUUID = ($oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer) ? $oCustomer->UUID : '';
-		$oSale->{$this->GetName() . '::Payment'} = $Payment;
-		$oSale->{$this->GetName() . '::LicenseKey'} = $LicenseKey;
+		$oSale->{self::GetName() . '::Payment'} = $Payment;
+		$oSale->{self::GetName() . '::LicenseKey'} = $LicenseKey;
 		$oSale->Price = $Price;
-		$oSale->{$this->GetName() . '::RefNumber'} = $RefNumber;
-		$oSale->{$this->GetName() . '::ShareItPurchaseId'} = $ShareItPurchaseId;
-		$oSale->{$this->GetName() . '::IsNotified'} = $IsNotified;
-		$oSale->{$this->GetName() . '::RecurrentMaintenance'} = $RecurrentMaintenance;
-		$oSale->{$this->GetName() . '::TwoMonthsEmailSent'} = $TwoMonthsEmailSent;
-		$oSale->{$this->GetName() . '::ParentSaleId'} = $ParentSaleId;
-		$oSale->{$this->GetName() . '::VatId'} = $VatId;
-		$oSale->{$this->GetName() . '::PaymentSystem'} = $PaymentSystem;
-		$oSale->{$this->GetName() . '::TransactionId'} = $TransactionId;
-		$oSale->{$this->GetName() . '::RawEmlData'} = $RawEmlData;
-		$oSale->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
-		$oSale->{$this->GetName() . '::NumberOfLicenses'} = $NumberOfLicenses;
-		$oSale->{$this->GetName() . '::MessageSubject'} = substr($MessageSubject, 0, 255);
-		$oSale->{$this->GetName() . '::ParsingStatus'} = $ParsingStatus;
-		$oSale->{$this->GetName() . '::Reseller'} = $Reseller;
-		$oSale->{$this->GetName() . '::PromotionName'} = $PromotionName;
+		$oSale->{self::GetName() . '::RefNumber'} = $RefNumber;
+		$oSale->{self::GetName() . '::ShareItPurchaseId'} = $ShareItPurchaseId;
+		$oSale->{self::GetName() . '::IsNotified'} = $IsNotified;
+		$oSale->{self::GetName() . '::RecurrentMaintenance'} = $RecurrentMaintenance;
+		$oSale->{self::GetName() . '::TwoMonthsEmailSent'} = $TwoMonthsEmailSent;
+		$oSale->{self::GetName() . '::ParentSaleId'} = $ParentSaleId;
+		$oSale->{self::GetName() . '::VatId'} = $VatId;
+		$oSale->{self::GetName() . '::PaymentSystem'} = $PaymentSystem;
+		$oSale->{self::GetName() . '::TransactionId'} = $TransactionId;
+		$oSale->{self::GetName() . '::RawEmlData'} = $RawEmlData;
+		$oSale->{self::GetName() . '::PayPalItem'} = $PayPalItem;
+		$oSale->{self::GetName() . '::NumberOfLicenses'} = $NumberOfLicenses;
+		$oSale->{self::GetName() . '::MessageSubject'} = substr($MessageSubject, 0, 255);
+		$oSale->{self::GetName() . '::ParsingStatus'} = $ParsingStatus;
+		$oSale->{self::GetName() . '::Reseller'} = $Reseller;
+		$oSale->{self::GetName() . '::PromotionName'} = $PromotionName;
 		if (isset($Date))
 		{
 			$oSale->Date = $Date;
 		}
 		if (isset($MaintenanceExpirationDate))
 		{
-			$oSale->{$this->GetName() . '::MaintenanceExpirationDate'} = $MaintenanceExpirationDate;
+			$oSale->{self::GetName() . '::MaintenanceExpirationDate'} = $MaintenanceExpirationDate;
 		}
 		$bSaleResult = $this->oApiSalesManager->createSale($oSale);
 		if ($bSaleResult)
@@ -351,15 +351,15 @@ class Module extends \Aurora\System\Module\AbstractModule
 				if (isset($Filters['GetDownloads']) && $Filters['GetDownloads'])
 				{
 					$aSalesSearchFilters = ['$AND' => [
-						$this->GetName() . '::PaymentSystem' => Enums\PaymentSystem::Download
+						self::GetName() . '::PaymentSystem' => Enums\PaymentSystem::Download
 					]];
 				}
 				else
 				{
 					$aSalesSearchFilters = ['$AND' => [
 						'$OR' => [
-							'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
-							'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
+							'1@' . self::GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
+							'2@' . self::GetName() . '::PaymentSystem' => ['NULL', 'IS']
 						]
 					]];
 				}
@@ -372,7 +372,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				if (isset($Filters['GetDownloads']) && $Filters['GetDownloads'])
 				{
 					$aSalesSearchFilters = ['$AND' => [
-							$this->GetName() . '::PaymentSystem' => Enums\PaymentSystem::Download
+							self::GetName() . '::PaymentSystem' => Enums\PaymentSystem::Download
 						]
 					];
 					if ($mSalesSearchFilters)
@@ -384,8 +384,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 				{
 					$aSalesSearchFilters = [
 						'$OR' => [
-							'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
-							'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
+							'1@' . self::GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
+							'2@' . self::GetName() . '::PaymentSystem' => ['NULL', 'IS']
 						]
 					];
 					if ($mSalesSearchFilters)
@@ -394,7 +394,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 					}
 					if (isset($Filters['NotParsed']) && $Filters['NotParsed'])
 					{
-						$aSalesSearchFilters['2@$AND'] = [$this->GetName() . '::ParsingStatus' => \Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed];
+						$aSalesSearchFilters['2@$AND'] = [self::GetName() . '::ParsingStatus' => \Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed];
 					}
 				}
 			}
@@ -405,8 +405,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 			//Select sales by default
 			$aSalesSearchFilters = [
 				'$OR' => [
-					'1@' . $this->GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
-					'2@' . $this->GetName() . '::PaymentSystem' => ['NULL', 'IS']
+					'1@' . self::GetName() . '::PaymentSystem' => [Enums\PaymentSystem::Download, '!='],
+					'2@' . self::GetName() . '::PaymentSystem' => ['NULL', 'IS']
 				]
 			];
 			if ($mSalesSearchFilters !== false)
@@ -437,13 +437,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aSearchProducts = $this->oApiProductsManager->getProducts(0, 0, $aProductSearchFilters, [
 				'ProductGroupUUID',
 				'Title',
-				$this->GetName() . '::ShareItProductId',
+				self::GetName() . '::ShareItProductId',
 			]);
 			$aContactsSearchFilters = ['$OR' => [
 					'Email' => ['%'.$Search.'%', 'LIKE'],
 					'FullName' => ['%'.$Search.'%', 'LIKE'],
-					$this->GetName() . '::FirstName' => ['%'.$Search.'%', 'LIKE'],
-					$this->GetName() . '::LastName' => ['%'.$Search.'%', 'LIKE']
+					self::GetName() . '::FirstName' => ['%'.$Search.'%', 'LIKE'],
+					self::GetName() . '::LastName' => ['%'.$Search.'%', 'LIKE']
 				]
 			];
 			$aSearchContacts = $this->oApiContactsManager->getContacts(0, 0, $aContactsSearchFilters, ['CustomerUUID']);
@@ -455,11 +455,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 					$aCustomerUIDs[] = $oContact->CustomerUUID;
 				}
 				$aCustomersSearchFilters['UUID'] = [$aCustomerUIDs, 'IN'];
-				$aSearchCustomers = $this->oApiCustomersManager->getCustomers(0, 0, $aCustomersSearchFilters, [$this->GetName() . '::Email']);
+				$aSearchCustomers = $this->oApiCustomersManager->getCustomers(0, 0, $aCustomersSearchFilters, [self::GetName() . '::Email']);
 			}
 
 			$aSalesSearchFilters = [
-				$this->GetName() . '::LicenseKey' => ['%'.$Search.'%', 'LIKE'],
+				self::GetName() . '::LicenseKey' => ['%'.$Search.'%', 'LIKE'],
 				'Date' => ['%'.$Search.'%', 'LIKE']
 			];
 
@@ -500,35 +500,35 @@ class Module extends \Aurora\System\Module\AbstractModule
 			'ProductUUID',
 			'Date',
 			'Price',
-			$this->GetName() . '::LicenseKey',
-			$this->GetName() . '::MaintenanceExpirationDate',
-			$this->GetName() . '::Payment',
-			$this->GetName() . '::PayPalItem',
-			$this->GetName() . '::VatId',
-			$this->GetName() . '::RefNumber',
-			$this->GetName() . '::ShareItPurchaseId',
-			$this->GetName() . '::IsNotified',
-			$this->GetName() . '::RecurrentMaintenance',
-			$this->GetName() . '::TwoMonthsEmailSent',
-			$this->GetName() . '::ParentSaleId',
-			$this->GetName() . '::PaymentSystem',
-			$this->GetName() . '::NumberOfLicenses',
-			$this->GetName() . '::MessageSubject',
-			$this->GetName() . '::ParsingStatus',
-			$this->GetName() . '::RawEmlData',
-			$this->GetName() . '::TransactionId',
-			$this->GetName() . '::Reseller',
-			$this->GetName() . '::PromotionName',
+			self::GetName() . '::LicenseKey',
+			self::GetName() . '::MaintenanceExpirationDate',
+			self::GetName() . '::Payment',
+			self::GetName() . '::PayPalItem',
+			self::GetName() . '::VatId',
+			self::GetName() . '::RefNumber',
+			self::GetName() . '::ShareItPurchaseId',
+			self::GetName() . '::IsNotified',
+			self::GetName() . '::RecurrentMaintenance',
+			self::GetName() . '::TwoMonthsEmailSent',
+			self::GetName() . '::ParentSaleId',
+			self::GetName() . '::PaymentSystem',
+			self::GetName() . '::NumberOfLicenses',
+			self::GetName() . '::MessageSubject',
+			self::GetName() . '::ParsingStatus',
+			self::GetName() . '::RawEmlData',
+			self::GetName() . '::TransactionId',
+			self::GetName() . '::Reseller',
+			self::GetName() . '::PromotionName',
 			// Download section
-			$this->GetName() . '::DownloadId',
-			$this->GetName() . '::Referer',
-			$this->GetName() . '::Ip',
-			$this->GetName() . '::Gad',
-			$this->GetName() . '::ProductVersion',
-			$this->GetName() . '::LicenseType',
-			$this->GetName() . '::ReferrerPage',
-			$this->GetName() . '::IsUpgrade',
-			$this->GetName() . '::PlatformType'
+			self::GetName() . '::DownloadId',
+			self::GetName() . '::Referer',
+			self::GetName() . '::Ip',
+			self::GetName() . '::Gad',
+			self::GetName() . '::ProductVersion',
+			self::GetName() . '::LicenseType',
+			self::GetName() . '::ReferrerPage',
+			self::GetName() . '::IsUpgrade',
+			self::GetName() . '::PlatformType'
 		]);
 
 		foreach ($aSales as &$oSale)
@@ -541,14 +541,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 			{
 				$aProductsUUID[] = $oSale->ProductUUID;
 			}
-			if (isset($oSale->{$this->GetName() . '::RawEmlData'}) && !empty($oSale->{$this->GetName() . '::RawEmlData'}))
+			if (isset($oSale->{self::GetName() . '::RawEmlData'}) && !empty($oSale->{self::GetName() . '::RawEmlData'}))
 			{
 				$oSale->IsEmlAvailable = 1;
-				$oSale->{$this->GetName() . '::RawEmlData'} = null;
+				$oSale->{self::GetName() . '::RawEmlData'} = null;
 			}
-			if (!empty($this->SxGeo) && !empty($oSale->{$this->GetName() . '::Ip'}))
+			if (!empty($this->SxGeo) && !empty($oSale->{self::GetName() . '::Ip'}))
 			{
-				$aCity = $this->SxGeo->getCityFull($oSale->{$this->GetName() . '::Ip'});
+				$aCity = $this->SxGeo->getCityFull($oSale->{self::GetName() . '::Ip'});
 				$oSale->City = !empty($aCity["city"]["name_en"]) ? $aCity["city"]["name_en"] : '';
 				$oSale->Country =!empty($aCity["country"]["name_en"]) ? $aCity["country"]["name_en"] : '';
 			}
@@ -563,34 +563,34 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aContacts = $this->oApiContactsManager->getContacts(0, 0, ['CustomerUUID' => [\array_unique($aCustomersUUID), 'IN']]);
 			foreach ($aContacts as $oContact)
 			{
-				if (isset($aCustomers[$oContact->CustomerUUID]) && !isset($aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::FullName'}))
+				if (isset($aCustomers[$oContact->CustomerUUID]) && !isset($aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::FullName'}))
 				{
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::ContactId'} = $oContact->EntityId;
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::ContactUUID'} = $oContact->UUID;
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::FullName'} = $oContact->FullName;
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Email'} = $oContact->Email;
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Address'} = $oContact->Address;
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Phone'} = $oContact->Phone;
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Facebook'} = $oContact->Facebook;
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::LinkedIn'} = $oContact->LinkedIn;
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Instagram'} = $oContact->Instagram;
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Fax'} = $oContact->{$this->GetName() . '::Fax'};
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::Salutation'} = $oContact->{$this->GetName() . '::Salutation'};
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::LastName'	} = $oContact->{$this->GetName() . '::LastName'};
-					$aCustomers[$oContact->CustomerUUID]->{$this->GetName() . '::FirstName'} = $oContact->{$this->GetName() . '::FirstName'};
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::ContactId'} = $oContact->EntityId;
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::ContactUUID'} = $oContact->UUID;
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::FullName'} = $oContact->FullName;
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::Email'} = $oContact->Email;
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::Address'} = $oContact->Address;
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::Phone'} = $oContact->Phone;
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::Facebook'} = $oContact->Facebook;
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::LinkedIn'} = $oContact->LinkedIn;
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::Instagram'} = $oContact->Instagram;
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::Fax'} = $oContact->{self::GetName() . '::Fax'};
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::Salutation'} = $oContact->{self::GetName() . '::Salutation'};
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::LastName'	} = $oContact->{self::GetName() . '::LastName'};
+					$aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::FirstName'} = $oContact->{self::GetName() . '::FirstName'};
 				}
 			}
 			foreach ($aCompanies as $oCompany)
 			{
 				if (isset($aCustomers[$oCompany->CustomerUUID]))
 					{
-						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Id'} = $oCompany->EntityId;
-						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_UUID'} = $oCompany->UUID;
-						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Title'} = $oCompany->Title;
-						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Description'} = $oCompany->Description;
-						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Address'} = $oCompany->Address;
-						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Phone'} = $oCompany->Phone;
-						$aCustomers[$oCompany->CustomerUUID]->{$this->GetName() . '::Company_Website'} = $oCompany->Website;
+						$aCustomers[$oCompany->CustomerUUID]->{self::GetName() . '::Company_Id'} = $oCompany->EntityId;
+						$aCustomers[$oCompany->CustomerUUID]->{self::GetName() . '::Company_UUID'} = $oCompany->UUID;
+						$aCustomers[$oCompany->CustomerUUID]->{self::GetName() . '::Company_Title'} = $oCompany->Title;
+						$aCustomers[$oCompany->CustomerUUID]->{self::GetName() . '::Company_Description'} = $oCompany->Description;
+						$aCustomers[$oCompany->CustomerUUID]->{self::GetName() . '::Company_Address'} = $oCompany->Address;
+						$aCustomers[$oCompany->CustomerUUID]->{self::GetName() . '::Company_Phone'} = $oCompany->Phone;
+						$aCustomers[$oCompany->CustomerUUID]->{self::GetName() . '::Company_Website'} = $oCompany->Website;
 					}
 			}
 		}
@@ -635,8 +635,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 
 			$aFilters[$sOR] = [
-				'1@' . $this->GetName() . '::ParsingStatus' => [\Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed, '!='],
-				'2@' . $this->GetName() . '::ParsingStatus' => ['NULL', 'IS']
+				'1@' . self::GetName() . '::ParsingStatus' => [\Aurora\Modules\Sales\Enums\ParsingStatus::NotParsed, '!='],
+				'2@' . self::GetName() . '::ParsingStatus' => ['NULL', 'IS']
 			];
 		}
 		$aSales = $this->oApiSalesManager->getSales(0, 0, $aFilters, ['Date', 'Price']);
@@ -679,8 +679,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 						$aSearchFilters = ['$AND' => $aSearchFilters];
 					}
 					$aSearchFilters['$OR'] = [
-						'1@' . $this->GetName() . '::IsAutocreated' => true,
-						'2@' . $this->GetName() . '::IsAutocreated' => ['NULL', 'IS']
+						'1@' . self::GetName() . '::IsAutocreated' => true,
+						'2@' . self::GetName() . '::IsAutocreated' => ['NULL', 'IS']
 					];
 				}
 			}
@@ -755,19 +755,19 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		if (isset($ShareItProductId))
 		{
-			$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
+			$oProduct->{self::GetName() . '::ShareItProductId'} = $ShareItProductId;
 		}
 		if (isset($CrmProductId))
 		{
-			$oProduct->{$this->GetName() . '::CrmProductId'} = $CrmProductId;
+			$oProduct->{self::GetName() . '::CrmProductId'} = $CrmProductId;
 		}
 		if (isset($PayPalItem))
 		{
-			$oProduct->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
+			$oProduct->{self::GetName() . '::PayPalItem'} = $PayPalItem;
 		}
 		if (isset($IsAutocreated))
 		{
-			$oProduct->{$this->GetName() . '::IsAutocreated'} = $IsAutocreated;
+			$oProduct->{self::GetName() . '::IsAutocreated'} = $IsAutocreated;
 		}
 		if (isset($ProductPrice))
 		{
@@ -787,11 +787,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		if (isset($MailchimpGroupTitle))
 		{
-			$oProduct->{$this->GetName() . '::MailchimpGroupTitle'} = $MailchimpGroupTitle;
+			$oProduct->{self::GetName() . '::MailchimpGroupTitle'} = $MailchimpGroupTitle;
 		}
 		if (isset($MailchimpGroupUUID))
 		{
-			$oProduct->{$this->GetName() . '::MailchimpGroupUUID'} = $MailchimpGroupUUID;
+			$oProduct->{self::GetName() . '::MailchimpGroupUUID'} = $MailchimpGroupUUID;
 		}
 		return $this->oApiProductsManager->UpdateProduct($oProduct);
 	}
@@ -815,7 +815,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		if (isset($ProductCode))
 		{
-			$oProductGroup->{$this->GetName() . '::ProductCode'} = (int) $ProductCode;
+			$oProductGroup->{self::GetName() . '::ProductCode'} = (int) $ProductCode;
 		}
 		return $this->oApiProductGroupsManager->UpdateProductGroup($oProductGroup);
 	}
@@ -850,20 +850,20 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 			$oSale->ProductUUID = isset($Product, $Product->UUID) ? $Product->UUID : $oSale->ProductUUID;
 			$oSale->Date = isset($Date) ? $Date : $oSale->Date;
-			$oSale->{$this->GetName() . '::VatId'} = isset($VatId) ? $VatId : $oSale->{$this->GetName() . '::VatId'};
-			$oSale->{$this->GetName() . '::Payment'} = isset($Payment) ? $Payment : $oSale->{$this->GetName() . '::Payment'};
+			$oSale->{self::GetName() . '::VatId'} = isset($VatId) ? $VatId : $oSale->{self::GetName() . '::VatId'};
+			$oSale->{self::GetName() . '::Payment'} = isset($Payment) ? $Payment : $oSale->{self::GetName() . '::Payment'};
 			$oSale->CustomerUUID = isset($CustomerUUID) ? $CustomerUUID : $oSale->CustomerUUID;
-			$oSale->{$this->GetName() . '::LicenseKey'} = isset($LicenseKey) ? $LicenseKey : $oSale->{$this->GetName() . '::LicenseKey'};
-			$oSale->{$this->GetName() . '::RefNumber'} = isset($RefNumber) ? $RefNumber : $oSale->{$this->GetName() . '::RefNumber'};
+			$oSale->{self::GetName() . '::LicenseKey'} = isset($LicenseKey) ? $LicenseKey : $oSale->{self::GetName() . '::LicenseKey'};
+			$oSale->{self::GetName() . '::RefNumber'} = isset($RefNumber) ? $RefNumber : $oSale->{self::GetName() . '::RefNumber'};
 			$oSale->Price = isset($Price) ? $Price : $oSale->Price;
-			$oSale->{$this->GetName() . '::ShareItPurchaseId'} = isset($ShareItPurchaseId) ? $ShareItPurchaseId : $oSale->{$this->GetName() . '::ShareItPurchaseId'};
-			$oSale->{$this->GetName() . '::IsNotified'} = isset($IsNotified) ? $IsNotified : $oSale->{$this->GetName() . '::IsNotified'};
-			$oSale->{$this->GetName() . '::MaintenanceExpirationDate'} = isset($MaintenanceExpirationDate) ? $MaintenanceExpirationDate : $oSale->{$this->GetName() . '::MaintenanceExpirationDate'};
-			$oSale->{$this->GetName() . '::RecurrentMaintenance'} = isset($RecurrentMaintenance) ? $RecurrentMaintenance : $oSale->{$this->GetName() . '::RecurrentMaintenance'};
-			$oSale->{$this->GetName() . '::TwoMonthsEmailSent'} = isset($TwoMonthsEmailSent) ? $TwoMonthsEmailSent : $oSale->{$this->GetName() . '::TwoMonthsEmailSent'};
-			$oSale->{$this->GetName() . '::ParentSaleId'} = isset($ParentSaleId) ? $ParentSaleId : $oSale->{$this->GetName() . '::ParentSaleId'};
-			$oSale->{$this->GetName() . '::PaymentSystem'} = isset($PaymentSystem) ? $PaymentSystem : $oSale->{$this->GetName() . '::PaymentSystem'};
-			$oSale->{$this->GetName() . '::PayPalItem'} = isset($PayPalItem) ? $PayPalItem : $oSale->{$this->GetName() . '::PayPalItem'};
+			$oSale->{self::GetName() . '::ShareItPurchaseId'} = isset($ShareItPurchaseId) ? $ShareItPurchaseId : $oSale->{self::GetName() . '::ShareItPurchaseId'};
+			$oSale->{self::GetName() . '::IsNotified'} = isset($IsNotified) ? $IsNotified : $oSale->{self::GetName() . '::IsNotified'};
+			$oSale->{self::GetName() . '::MaintenanceExpirationDate'} = isset($MaintenanceExpirationDate) ? $MaintenanceExpirationDate : $oSale->{self::GetName() . '::MaintenanceExpirationDate'};
+			$oSale->{self::GetName() . '::RecurrentMaintenance'} = isset($RecurrentMaintenance) ? $RecurrentMaintenance : $oSale->{self::GetName() . '::RecurrentMaintenance'};
+			$oSale->{self::GetName() . '::TwoMonthsEmailSent'} = isset($TwoMonthsEmailSent) ? $TwoMonthsEmailSent : $oSale->{self::GetName() . '::TwoMonthsEmailSent'};
+			$oSale->{self::GetName() . '::ParentSaleId'} = isset($ParentSaleId) ? $ParentSaleId : $oSale->{self::GetName() . '::ParentSaleId'};
+			$oSale->{self::GetName() . '::PaymentSystem'} = isset($PaymentSystem) ? $PaymentSystem : $oSale->{self::GetName() . '::PaymentSystem'};
+			$oSale->{self::GetName() . '::PayPalItem'} = isset($PayPalItem) ? $PayPalItem : $oSale->{self::GetName() . '::PayPalItem'};
 		}
 		else
 		{
@@ -902,7 +902,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oProduct = $this->oApiProductsManager->getDefaultProductByGroupCode($ProductCode);
 			if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
 			{
-				$CrmProductId = $oProduct->{$this->GetName() . '::CrmProductId'};
+				$CrmProductId = $oProduct->{self::GetName() . '::CrmProductId'};
 			}
 		}
 
@@ -947,15 +947,15 @@ class Module extends \Aurora\System\Module\AbstractModule
 		);
 		if ($mSale)
 		{
-			$mSale->{$this->GetName() . '::DownloadId'} = $DownloadId;
-			$mSale->{$this->GetName() . '::Referer'} = $Referer;
-			$mSale->{$this->GetName() . '::Ip'} = $Ip;
-			$mSale->{$this->GetName() . '::Gad'} = $Gad; 
-			$mSale->{$this->GetName() . '::ProductVersion'} = $ProductVersion; 
-			$mSale->{$this->GetName() . '::LicenseType'} = $LicenseType; 
-			$mSale->{$this->GetName() . '::ReferrerPage'} = $ReferrerPage; 
-			$mSale->{$this->GetName() . '::IsUpgrade'} = $IsUpgrade;
-			$mSale->{$this->GetName() . '::PlatformType'} = $PlatformType;
+			$mSale->{self::GetName() . '::DownloadId'} = $DownloadId;
+			$mSale->{self::GetName() . '::Referer'} = $Referer;
+			$mSale->{self::GetName() . '::Ip'} = $Ip;
+			$mSale->{self::GetName() . '::Gad'} = $Gad; 
+			$mSale->{self::GetName() . '::ProductVersion'} = $ProductVersion; 
+			$mSale->{self::GetName() . '::LicenseType'} = $LicenseType; 
+			$mSale->{self::GetName() . '::ReferrerPage'} = $ReferrerPage; 
+			$mSale->{self::GetName() . '::IsUpgrade'} = $IsUpgrade;
+			$mSale->{self::GetName() . '::PlatformType'} = $PlatformType;
 
 			$bResult = $this->oApiSalesManager->updateSale($mSale);
 		}
@@ -978,10 +978,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 			{
 				if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 				{
-					$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
+					$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product(self::GetName());
 					$oProduct->ProductGroupUUID = $oProductGroup->UUID;
 					$oProduct->Title = 'Free';
-					$oProduct->{$this->GetName() . '::ProductCode'} = $oProductGroup->{$this->GetName() . '::ProductCode'};
+					$oProduct->{self::GetName() . '::ProductCode'} = $oProductGroup->{self::GetName() . '::ProductCode'};
 					$this->oApiProductsManager->updateProduct($oProduct);
 				}
 			}
@@ -1042,19 +1042,19 @@ class Module extends \Aurora\System\Module\AbstractModule
 		];
 		foreach ($aGroups as $aGroup)
 		{
-			$oProductGroup = new \Aurora\Modules\SaleObjects\Classes\ProductGroup($this->GetName());
+			$oProductGroup = new \Aurora\Modules\SaleObjects\Classes\ProductGroup(self::GetName());
 			$oProductGroup->Title = $aGroup['Title'];
-			$oProductGroup->{$this->GetName() . '::ProductCode'} = (int) $aGroup['ProductCode'];
+			$oProductGroup->{self::GetName() . '::ProductCode'} = (int) $aGroup['ProductCode'];
 			$iProductGroupId = $this->oApiProductGroupsManager->createProductGroup($oProductGroup);
 			unset($oProductGroup);
 
 			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($iProductGroupId);
-			$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
+			$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product(self::GetName());
 			$oProduct->ProductGroupUUID = $oProductGroup->UUID;
-			$oProduct->{$this->GetName() . '::IsAutocreated'} = true;
+			$oProduct->{self::GetName() . '::IsAutocreated'} = true;
 			$oProduct->Title = $aGroup['Title'] . " free license";
-			$oProduct->{$this->GetName() . '::IsDefault'} = true;
-			$oProduct->{$this->GetName() . '::CrmProductId'} = "CRM" . $aGroup['ProductCode'];
+			$oProduct->{self::GetName() . '::IsDefault'} = true;
+			$oProduct->{self::GetName() . '::CrmProductId'} = "CRM" . $aGroup['ProductCode'];
 			$this->oApiProductsManager->createProduct($oProduct);
 		}
 		\Aurora\System\Api::skipCheckUserRole($bPrevState);
@@ -1088,7 +1088,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$MailchimpGroupUUID = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product($this->GetName());
+		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product(self::GetName());
 		if (isset($ProductGroupUUID) && !empty($ProductGroupUUID))
 		{
 			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($ProductGroupUUID);
@@ -1097,17 +1097,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$oProduct->ProductGroupUUID = $oProductGroup->UUID;
 			}
 		}
-		$oProduct->{$this->GetName() . '::ShareItProductId'} = $ShareItProductId;
-		$oProduct->{$this->GetName() . '::CrmProductId'} = $CrmProductId;
-		$oProduct->{$this->GetName() . '::IsAutocreated'} = $IsAutocreated;
-		$oProduct->{$this->GetName() . '::PayPalItem'} = $PayPalItem;
+		$oProduct->{self::GetName() . '::ShareItProductId'} = $ShareItProductId;
+		$oProduct->{self::GetName() . '::CrmProductId'} = $CrmProductId;
+		$oProduct->{self::GetName() . '::IsAutocreated'} = $IsAutocreated;
+		$oProduct->{self::GetName() . '::PayPalItem'} = $PayPalItem;
 		$oProduct->Title = $Title;
 		$oProduct->Description = $Description;
 		$oProduct->Homepage = $Homepage;
 		$oProduct->Price = $ProductPrice;
 		$oProduct->Status = $Status;
-		$oProduct->{$this->GetName() . '::MailchimpGroupTitle'} = $MailchimpGroupTitle;
-		$oProduct->{$this->GetName() . '::MailchimpGroupUUID'} = $MailchimpGroupUUID;
+		$oProduct->{self::GetName() . '::MailchimpGroupTitle'} = $MailchimpGroupTitle;
+		$oProduct->{self::GetName() . '::MailchimpGroupUUID'} = $MailchimpGroupUUID;
 
 		return $this->oApiProductsManager->createProduct($oProduct);
 	}
@@ -1124,8 +1124,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function CreateProductGroup($Title, $Description = '', $Homepage = '', $ProductCode = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$oProductGroup = new \Aurora\Modules\SaleObjects\Classes\ProductGroup($this->GetName());
-		$oProductGroup->{$this->GetName() . '::ProductCode'} = $ProductCode;
+		$oProductGroup = new \Aurora\Modules\SaleObjects\Classes\ProductGroup(self::GetName());
+		$oProductGroup->{self::GetName() . '::ProductCode'} = $ProductCode;
 		$oProductGroup->Title = $Title;
 		$oProductGroup->Description = $Description;
 		$oProductGroup->Homepage = $Homepage;
@@ -1151,17 +1151,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function CreateContact($FullName = '', $CustomerUUID = '', $CompanyUUID = '', $Address = '', $Phone = '', $Email = '', $FirstName = '', $LastName = '', $Fax = '', $Salutation = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$oContact = new \Aurora\Modules\ContactObjects\Classes\Contact($this->GetName());
+		$oContact = new \Aurora\Modules\ContactObjects\Classes\Contact(self::GetName());
 		$oContact->CustomerUUID = $CustomerUUID;
 		$oContact->CompanyUUID = $CompanyUUID;
 		$oContact->FullName = $FullName;
 		$oContact->Address = $Address;
 		$oContact->Phone = $Phone;
 		$oContact->Email = $Email;
-		$oContact->{$this->GetName() . '::FirstName'} = $FirstName;
-		$oContact->{$this->GetName() . '::LastName'} = $LastName;
-		$oContact->{$this->GetName() . '::Fax'} = $Fax;
-		$oContact->{$this->GetName() . '::Salutation'} = $Salutation;
+		$oContact->{self::GetName() . '::FirstName'} = $FirstName;
+		$oContact->{self::GetName() . '::LastName'} = $LastName;
+		$oContact->{self::GetName() . '::Fax'} = $Fax;
+		$oContact->{self::GetName() . '::Salutation'} = $Salutation;
 		return $this->oApiContactsManager->createContact($oContact);
 	}
 
@@ -1177,11 +1177,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function CreateCustomer($Title = '', $Description = '', $Status = 0, $Language = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$oCustomer = new \Aurora\Modules\SaleObjects\Classes\Customer($this->GetName());
+		$oCustomer = new \Aurora\Modules\SaleObjects\Classes\Customer(self::GetName());
 		$oCustomer->Title = $Title;
 		$oCustomer->Description = $Description;
 		$oCustomer->Status = $Status;
-		$oCustomer->{$this->GetName() . '::Language'} = $Language;
+		$oCustomer->{self::GetName() . '::Language'} = $Language;
 		return $this->oApiCustomersManager->createCustomer($oCustomer);
 	}
 
@@ -1224,7 +1224,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		if ($Company !== '')
 		{
-			$oCompany = new \Aurora\Modules\ContactObjects\Classes\Company($this->GetName());
+			$oCompany = new \Aurora\Modules\ContactObjects\Classes\Company(self::GetName());
 			$oCompany->Title = $Company;
 			$oCompany->CustomerUUID = $oCustomer->UUID;
 			$iCompanyId = $this->oApiCompaniesManager->createCompany($oCompany);
@@ -1363,10 +1363,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'Facebook' => ['%'.$Search.'%', 'LIKE'],
 				'LinkedIn' => ['%'.$Search.'%', 'LIKE'],
 				'Instagram' => ['%'.$Search.'%', 'LIKE'],
-				$this->GetName() . '::Fax' => ['%'.$Search.'%', 'LIKE'],
-				$this->GetName() . '::Salutation' => ['%'.$Search.'%', 'LIKE'],
-				$this->GetName() . '::LastName' => ['%'.$Search.'%', 'LIKE'],
-				$this->GetName() . '::FirstName' =>['%'.$Search.'%', 'LIKE']
+				self::GetName() . '::Fax' => ['%'.$Search.'%', 'LIKE'],
+				self::GetName() . '::Salutation' => ['%'.$Search.'%', 'LIKE'],
+				self::GetName() . '::LastName' => ['%'.$Search.'%', 'LIKE'],
+				self::GetName() . '::FirstName' =>['%'.$Search.'%', 'LIKE']
 			]];
 		}
 		$aContacts = $this->oApiContactsManager->getContacts($Limit, $Offset, $aSearchFilters);
@@ -1456,7 +1456,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		if (isset($Fax))
 		{
-			$oContact->{$this->GetName() . '::Fax'} = $Fax;
+			$oContact->{self::GetName() . '::Fax'} = $Fax;
 		}
 		if (isset($Facebook))
 		{
@@ -1472,15 +1472,15 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		if (isset($Salutation))
 		{
-			$oContact->{$this->GetName() . '::Salutation'} = $Salutation;
+			$oContact->{self::GetName() . '::Salutation'} = $Salutation;
 		}
 		if (isset($LastName))
 		{
-			$oContact->{$this->GetName() . '::LastName'} = $LastName;
+			$oContact->{self::GetName() . '::LastName'} = $LastName;
 		}
 		if (isset($FirstName))
 		{
-			$oContact->{$this->GetName() . '::FirstName'} = $FirstName;
+			$oContact->{self::GetName() . '::FirstName'} = $FirstName;
 		}
 		return $this->oApiContactsManager->UpdateContact($oContact);
 	}
@@ -1495,11 +1495,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oSale = $this->oApiSalesManager->getSaleByIdOrUUID($UUID);
 			if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
 			{
-				$sFileName = $oSale->{$this->GetName() . '::MessageSubject'} . '.eml';
+				$sFileName = $oSale->{self::GetName() . '::MessageSubject'} . '.eml';
 				\header('Content-Type: message/rfc822', true);
 				\header('Content-Disposition: attachment; '.
 					\trim(\MailSo\Base\Utils::EncodeHeaderUtf8AttributeValue('filename', $sFileName)), true);
-				echo $oSale->{$this->GetName() . '::RawEmlData'};
+				echo $oSale->{self::GetName() . '::RawEmlData'};
 			}
 		}
 	}
@@ -1607,7 +1607,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function CreateMailchimpList($Title, $ListId, $Description = "")
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		$oMailchimpList = new \Aurora\Modules\Sales\Classes\MailchimpList($this->GetName());
+		$oMailchimpList = new \Aurora\Modules\Sales\Classes\MailchimpList(self::GetName());
 		$oMailchimpList->Title = $Title;
 		$oMailchimpList->Description = $Description;
 		$oMailchimpList->ListId = $ListId;
@@ -1697,7 +1697,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($oSale->ProductUUID);
 
 			if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product
-				&& isset($oProduct->{$this->GetName() . '::MailchimpGroupUUID'})
+				&& isset($oProduct->{self::GetName() . '::MailchimpGroupUUID'})
 				&& $aArgs['Subscribe'] === true
 			)
 			{
@@ -1711,7 +1711,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				{
 					foreach ($oMember['interests'] as $GroupUUID => $bGroupValue)
 					{
-						if($GroupUUID === $oProduct->{$this->GetName() . '::MailchimpGroupUUID'})
+						if($GroupUUID === $oProduct->{self::GetName() . '::MailchimpGroupUUID'})
 						{
 							$oMember['interests'][$GroupUUID] = true;
 						}

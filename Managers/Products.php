@@ -79,14 +79,14 @@ class Products extends \Aurora\System\Managers\AbstractManager
 			if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 			{
 				$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+				\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\Product',
 					[],
 					0,
 					1,
 					[
 						'$AND' => [
 							'ProductGroupUUID' => $oProductGroup->UUID,
-							$this->GetModule()->GetName() . '::IsDefault' => true
+							$this->GetModule()::GetName() . '::IsDefault' => true
 						]
 					]
 				);
@@ -129,12 +129,12 @@ class Products extends \Aurora\System\Managers\AbstractManager
 		if (!empty($sShareItProductId))
 		{
 			$aResults = $this->oEavManager->getEntities(
-			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+			\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\Product',
 				[],
 				0,
 				0,
 				[
-					$this->GetModule()->GetName() . '::ShareItProductId' => $sShareItProductId
+					$this->GetModule()::GetName() . '::ShareItProductId' => $sShareItProductId
 				]
 			);
 
@@ -160,12 +160,12 @@ class Products extends \Aurora\System\Managers\AbstractManager
 		if (!empty($sCrmProductId))
 		{
 			$aResults = $this->oEavManager->getEntities(
-			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+			\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\Product',
 				[],
 				0,
 				0,
 				[
-					$this->GetModule()->GetName() . '::CrmProductId' => $sCrmProductId
+					$this->GetModule()::GetName() . '::CrmProductId' => $sCrmProductId
 				]
 			);
 
@@ -211,7 +211,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 		if ($sName !== "")
 		{
 			$aResults = $this->oEavManager->getEntities(
-			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+			\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\Product',
 				[],
 				0,
 				0,
@@ -244,17 +244,17 @@ class Products extends \Aurora\System\Managers\AbstractManager
 		if ($sPayPalItem === '')
 		{
 			$aFilters = [
-				$this->GetModule()->GetName() . '::PayPalItem' => ['NULL', 'IS NOT']
+				$this->GetModule()::GetName() . '::PayPalItem' => ['NULL', 'IS NOT']
 			];
 		}
 		else
 		{
 			$aFilters = [
-				$this->GetModule()->GetName() . '::PayPalItem' => $sPayPalItem
+				$this->GetModule()::GetName() . '::PayPalItem' => $sPayPalItem
 			];
 		}
 		$aResults = $this->oEavManager->getEntities(
-		\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+		\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\Product',
 			[],
 			0,
 			0,
@@ -279,7 +279,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	{
 		$aProducts = [];
 		$aResults = $this->oEavManager->getEntities(
-		\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+		\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\Product',
 			$aViewAttributes,
 			$iOffset,
 			$iLimit,
@@ -302,7 +302,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	{
 		$iResult = 0;
 		$iResult = $this->oEavManager->getEntitiesCount(
-			\Aurora\System\Api::GetModule('SaleObjects')->getNamespace() . '\Classes\Product',
+			\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\Product',
 			$aSearchFilters
 		);
 		return $iResult;
@@ -322,17 +322,17 @@ class Products extends \Aurora\System\Managers\AbstractManager
 
 	public function validate(\Aurora\Modules\SaleObjects\Classes\Product $oProduct)
 	{
-		if (!\Aurora\System\Utils\Validate::IsEmpty($oProduct->{$this->GetModule()->GetName() . '::ShareItProductId'}))
+		if (!\Aurora\System\Utils\Validate::IsEmpty($oProduct->{$this->GetModule()::GetName() . '::ShareItProductId'}))
 		{
-			$mResult = $this->getProductByShareItProductId($oProduct->{$this->GetModule()->GetName() . '::ShareItProductId'});
+			$mResult = $this->getProductByShareItProductId($oProduct->{$this->GetModule()::GetName() . '::ShareItProductId'});
 			if (!!$mResult)
 			{
 				throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
 			}
 		}
-		if (!\Aurora\System\Utils\Validate::IsEmpty($oProduct->{$this->GetModule()->GetName() . '::CrmProductId'}))
+		if (!\Aurora\System\Utils\Validate::IsEmpty($oProduct->{$this->GetModule()::GetName() . '::CrmProductId'}))
 		{
-			$mResult = $this->getProductByShareItProductId($oProduct->{$this->GetModule()->GetName() . '::CrmProductId'});
+			$mResult = $this->getProductByShareItProductId($oProduct->{$this->GetModule()::GetName() . '::CrmProductId'});
 			if (!!$mResult)
 			{
 				throw new \Aurora\System\Exceptions\BaseException(\Aurora\Modules\Sales\Enums\ErrorCodes::Validation_InvalidParameters);
