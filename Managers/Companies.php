@@ -99,7 +99,7 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 		$aCompanies = [];
 
 		$aResults = $this->oEavManager->getEntities(
-			\Aurora\System\Api::GetModule('ContactObjects')::getNamespace() . '\Classes\Company',
+			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Company',
 			$aViewAttributes,
 			$iOffset,
 			$iLimit,
@@ -125,7 +125,7 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 	{
 		$iResult = 0;
 		$iResult = $this->oEavManager->getEntitiesCount(
-			\Aurora\System\Api::GetModule('ContactObjects')::getNamespace() . '\Classes\Company',
+			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Company',
 			$aSearchFilters
 		);
 		return $iResult;
@@ -143,7 +143,7 @@ class Companies extends \Aurora\System\Managers\AbstractManager
 		if (is_string($sTitle))
 		{
 			$aResults = $this->oEavManager->getEntities(
-				\Aurora\System\Api::GetModule('ContactObjects')::getNamespace() . '\Classes\Company',
+				\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Company',
 				[],
 				0,
 				1,

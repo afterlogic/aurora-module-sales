@@ -55,7 +55,7 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function deleteSale(\Aurora\Modules\SaleObjects\Classes\Sale $oSale)
 	{
-		$oSale->{$this->GetModule()::GetName() . '::Deleted'} = true;
+		$oSale->{\Aurora\Modules\Sales\Module::GetName() . '::Deleted'} = true;
 		$bResult = $this->updateSale($oSale);
 		return $bResult;
 	}
@@ -71,7 +71,7 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 
 		$aSearchFilters = $this->getFilters($aSearchFilters);
 		$mResult = $this->oEavManager->getEntities(
-			\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\Sale',
+			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Sale',
 			$aViewAttributes,
 			$iOffset,
 			$iLimit,
@@ -90,7 +90,7 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 	{
 		$aSearchFilters = $this->getFilters($aSearchFilters);
 		$iResult = $this->oEavManager->getEntitiesCount(
-			\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\Sale',
+			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Sale',
 			$aSearchFilters
 		);
 		return $iResult;
@@ -107,7 +107,7 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 		$mSale = false;
 		if ($mIdOrUUID)
 		{
-			$mSale = $this->oEavManager->getEntity($mIdOrUUID, '\Aurora\Modules\SaleObjects\Classes\Sale');
+			$mSale = $this->oEavManager->getEntity($mIdOrUUID, \Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Sale');
 		}
 		else
 		{
@@ -142,16 +142,16 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 			$aSearchFilters = [
 				'$AND' => $aSearchFilters,
 				'$OR' => [
-					'1@' . $this->GetModule()::GetName() . '::Deleted' => false,
-					'2@' . $this->GetModule()::GetName() . '::Deleted' => ['NULL', 'IS']
+					'1@' . \Aurora\Modules\Sales\Module::GetName() . '::Deleted' => false,
+					'2@' . \Aurora\Modules\Sales\Module::GetName() . '::Deleted' => ['NULL', 'IS']
 				]
 			];
 		}
 		else
 		{
 			$aSearchFilters = ['$OR' => [
-				'1@' . $this->GetModule()::GetName() . '::Deleted' => false,
-				'2@' . $this->GetModule()::GetName() . '::Deleted' => ['NULL', 'IS'],
+				'1@' . \Aurora\Modules\Sales\Module::GetName() . '::Deleted' => false,
+				'2@' . \Aurora\Modules\Sales\Module::GetName() . '::Deleted' => ['NULL', 'IS'],
 			]];
 		}
 		return is_array($aSearchFilters) ? $aSearchFilters : [];

@@ -75,12 +75,12 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 		if (is_numeric($iProductCode))
 		{
 			$aResults = $this->oEavManager->getEntities(
-			\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\ProductGroup',
+			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\ProductGroup',
 				[],
 				0,
 				0,
 				[
-					$this->GetModule()::GetName() . '::ProductCode' => $iProductCode
+					\Aurora\Modules\Sales\Module::GetName() . '::ProductCode' => $iProductCode
 				]
 			);
 
@@ -127,7 +127,7 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 	{
 		$aProductGroups = [];
 		$aResults = $this->oEavManager->getEntities(
-		\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\ProductGroup',
+		\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\ProductGroup',
 			$aViewAttributes,
 			$iOffset,
 			$iLimit,
@@ -149,7 +149,7 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 	public function getProductGroupsCount($aSearchFilters = [])
 	{
 		$iResult = $this->oEavManager->getEntitiesCount(
-			\Aurora\System\Api::GetModule('SaleObjects')::getNamespace() . '\Classes\ProductGroup',
+			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\ProductGroup',
 			$aSearchFilters
 		);
 		return $iResult;
