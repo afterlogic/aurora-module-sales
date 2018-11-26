@@ -26,7 +26,7 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 	{
 		parent::__construct($oModule);
 
-		$this->oEavManager = new \Aurora\System\Managers\Eav();
+		$this->oEavManager = \Aurora\System\Managers\Eav::getInstance();
 
 	}
 
@@ -100,7 +100,7 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 		if (is_string($sEmail) && !empty($sEmail))
 		{
 			$aResults = $this->oEavManager->getEntities(
-				\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Contact',
+				\Aurora\Modules\ContactObjects\Classes\Contact::class,
 				[],
 				0,
 				1,
@@ -147,7 +147,7 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 		}
 
 		$aResults = $this->oEavManager->getEntities(
-			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Contact',
+			\Aurora\Modules\ContactObjects\Classes\Contact::class,
 			$aViewAttributes,
 			$iOffset,
 			$iLimit,
@@ -185,7 +185,7 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 			$aSearchFilters = ['Storage' => $this->GetModule()->sStorage];
 		}
 		$iResult = $this->oEavManager->getEntitiesCount(
-			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Contact',
+			\Aurora\Modules\ContactObjects\Classes\Contact::class,
 			$aSearchFilters
 		);
 		return $iResult;

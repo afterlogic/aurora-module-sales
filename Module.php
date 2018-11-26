@@ -16,13 +16,16 @@ namespace Aurora\Modules\Sales;
  */
 class Module extends \Aurora\System\Module\AbstractModule
 {
-	public $oApiSalesManager = null;
-	public $oApiCustomersManager = null;
-	public $oApiProductsManager = null;
-	public $oApiProductGroupsManager = null;
-	public $oApiContactsManager = null;
-	public $oApiCompaniesManager = null;
-	public $oApiMailchimpManager = null;
+	protected $aManagers = [
+		'Sales' => null,
+		'Customers' => null,
+		'Products' => null,
+		'ProductGroups' => null,
+		'Contacts' => null,
+		'Companies' => null,
+		'Mailchimp' => null
+	];
+	
 	public $sStorage = null;
 	public $oSxGeo = null;
 
@@ -32,6 +35,18 @@ class Module extends \Aurora\System\Module\AbstractModule
 	];
 	
 	protected $oPDO = null;
+
+	public function getManager($sManager)
+	{
+		if ($this->aManagers[$sManager] === null)
+		{
+			$sManagerClass = Module::getNamespace() . "\\Managers\\" . $sManager;
+			$this->aManagers[$sManager] = new $sManagerClass($this);
+		}
+
+		return $this->aManagers[$sManager];
+	}
+
 
 	/**
 	 * Initializes Sales Module.
@@ -70,13 +85,6 @@ class Module extends \Aurora\System\Module\AbstractModule
 			)
 		);
 
-		$this->oApiSalesManager = new Managers\Sales($this);
-		$this->oApiCustomersManager = new Managers\Customers($this);
-		$this->oApiProductsManager = new Managers\Products($this);
-		$this->oApiProductGroupsManager = new Managers\ProductGroups($this);
-		$this->oApiContactsManager = new Managers\Contacts($this);
-		$this->oApiCompaniesManager = new Managers\Companies($this);
-		$this->oApiMailchimpManager = new Managers\Mailchimp($this);
 		$this->sStorage = 'sales';
 
 		$this->extendObject(
@@ -198,11 +206,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		if (!empty($ShareItProductId))
 		{
-			$oProduct = $this->oApiProductsManager->getProductByShareItProductId($ShareItProductId);
+			$oProduct = $this->getManager('Products')->getProductByShareItProductId($ShareItProductId);
 		}
 		elseif (!empty($CrmProductId))
 		{
-			$oProduct = $this->oApiProductsManager->getProductByCrmProductId($CrmProductId);
+			$oProduct = $this->getManager('Products')->getProductByCrmProductId($CrmProductId);
 		}
 		else
 		{
@@ -214,7 +222,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$ProductGroupUUID = '';
 			if (isset($ProductCode))
 			{
-				$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByCode($ProductCode);
+				$oProductGroup = $this->getManager('ProductGroups')->getProductGroupByCode($ProductCode);
 				if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 				{
 					$ProductGroupUUID = $oProductGroup->UUID;
@@ -223,7 +231,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$iProductId = $this->createProduct($ProductTitle, $ShareItProductId, $CrmProductId, true, $ProductGroupUUID);
 			if ($iProductId)
 			{
-				$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($iProductId);
+				$oProduct = $this->getManager('Products')->getProductByIdOrUUID($iProductId);
 			}
 			if (!$oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
 			{
@@ -231,7 +239,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 		}
 
-		$oCustomer = $Email ? $this->oApiCustomersManager->getCustomerByEmail($Email) : null;
+		$oCustomer = $Email ? $this->getManager('Customers')->getCustomerByEmail($Email) : null;
 		if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer &&
 			(!empty($FullName) || !empty($CustomerTitle) || !empty($Email) || !empty($FirstName) || !empty($LastName) || !empty($Company))
 		)
@@ -246,7 +254,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		else if ($oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
 		{
 			//Update contact if needed
-			$oContact = $Email ? $this->oApiContactsManager->getContactByEmail($Email) : null;
+			$oContact = $Email ? $this->getManager('Contacts')->getContactByEmail($Email) : null;
 			if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
 			{
 				$bNeedToUpdate = false;
@@ -287,7 +295,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				}
 				if ($bNeedToUpdate)
 				{
-					$this->oApiContactsManager->UpdateContact($oContact);
+					$this->getManager('Contacts')->UpdateContact($oContact);
 				}
 			}
 		}
@@ -322,7 +330,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$oSale->{self::GetName() . '::MaintenanceExpirationDate'} = $MaintenanceExpirationDate;
 		}
-		$bSaleResult = $this->oApiSalesManager->createSale($oSale);
+		$bSaleResult = $this->getManager('Sales')->createSale($oSale);
 		if ($bSaleResult)
 		{
 			return $oSale;
@@ -434,7 +442,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$aProductSearchFilters = [
 				'Title' => ['%'.$Search.'%', 'LIKE']
 			];
-			$aSearchProducts = $this->oApiProductsManager->getProducts(0, 0, $aProductSearchFilters, [
+			$aSearchProducts = $this->getManager('Products')->getProducts(0, 0, $aProductSearchFilters, [
 				'ProductGroupUUID',
 				'Title',
 				self::GetName() . '::ShareItProductId',
@@ -446,7 +454,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 					self::GetName() . '::LastName' => ['%'.$Search.'%', 'LIKE']
 				]
 			];
-			$aSearchContacts = $this->oApiContactsManager->getContacts(0, 0, $aContactsSearchFilters, ['CustomerUUID']);
+			$aSearchContacts = $this->getManager('Contacts')->getContacts(0, 0, $aContactsSearchFilters, ['CustomerUUID']);
 			if (is_array($aSearchContacts) && count($aSearchContacts) > 0)
 			{
 				$aCustomerUIDs = [];
@@ -455,7 +463,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 					$aCustomerUIDs[] = $oContact->CustomerUUID;
 				}
 				$aCustomersSearchFilters['UUID'] = [$aCustomerUIDs, 'IN'];
-				$aSearchCustomers = $this->oApiCustomersManager->getCustomers(0, 0, $aCustomersSearchFilters, [self::GetName() . '::Email']);
+				$aSearchCustomers = $this->getManager('Customers')->getCustomers(0, 0, $aCustomersSearchFilters, [self::GetName() . '::Email']);
 			}
 
 			$aSalesSearchFilters = [
@@ -494,8 +502,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$aProductsUUID = [];
 		$Search = \trim($Search);
 		$aSalesSearchFilters = $this->getSalesFilters($Search, $Filters);
-		$iSalesCount = (int)$this->oApiSalesManager->getSalesCount($aSalesSearchFilters);
-		$aSales = $this->oApiSalesManager->getSales($Limit, $Offset, $aSalesSearchFilters, [
+		$iSalesCount = (int)$this->getManager('Sales')->getSalesCount($aSalesSearchFilters);
+		$aSales = $this->getManager('Sales')->getSales($Limit, $Offset, $aSalesSearchFilters, [
 			'CustomerUUID',
 			'ProductUUID',
 			'Date',
@@ -553,14 +561,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 				$oSale->Country =!empty($aCity["country"]["name_en"]) ? $aCity["country"]["name_en"] : '';
 			}
 		}
-		$aCustomers = count($aCustomersUUID) > 0 ? $this->oApiCustomersManager->getCustomers(0, 0, ['UUID' => [\array_unique($aCustomersUUID), 'IN']]) : [];
-		$aProducts = count($aProductsUUID) > 0 ? $this->oApiProductsManager->getProducts(0, 0, ['UUID' => [\array_unique($aProductsUUID), 'IN']]) : [];
-		$aCompanies = count($aCustomersUUID) > 0 ? $this->oApiCompaniesManager->getCompanies(0, 0, ['CustomerUUID' => [\array_unique($aCustomersUUID), 'IN']]) : [];
+		$aCustomers = count($aCustomersUUID) > 0 ? $this->getManager('Customers')->getCustomers(0, 0, ['UUID' => [\array_unique($aCustomersUUID), 'IN']]) : [];
+		$aProducts = count($aProductsUUID) > 0 ? $this->getManager('Products')->getProducts(0, 0, ['UUID' => [\array_unique($aProductsUUID), 'IN']]) : [];
+		$aCompanies = count($aCustomersUUID) > 0 ? $this->getManager('Companies')->getCompanies(0, 0, ['CustomerUUID' => [\array_unique($aCustomersUUID), 'IN']]) : [];
 
 		//add Contact and Company information to oCustomer
 		if (count($aCustomersUUID) > 0)
 		{
-			$aContacts = $this->oApiContactsManager->getContacts(0, 0, ['CustomerUUID' => [\array_unique($aCustomersUUID), 'IN']]);
+			$aContacts = $this->getManager('Contacts')->getContacts(0, 0, ['CustomerUUID' => [\array_unique($aCustomersUUID), 'IN']]);
 			foreach ($aContacts as $oContact)
 			{
 				if (isset($aCustomers[$oContact->CustomerUUID]) && !isset($aCustomers[$oContact->CustomerUUID]->{self::GetName() . '::FullName'}))
@@ -639,7 +647,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'2@' . self::GetName() . '::ParsingStatus' => ['NULL', 'IS']
 			];
 		}
-		$aSales = $this->oApiSalesManager->getSales(0, 0, $aFilters, ['Date', 'Price']);
+		$aSales = $this->getManager('Sales')->getSales(0, 0, $aFilters, ['Date', 'Price']);
 
 		$fGetChartData = function($value) {
 			return ['Date' => $value->Date, 'Price' => $value->Price];
@@ -685,12 +693,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 				}
 			}
 		}
-		$aProductGroups = $this->oApiProductGroupsManager->getProductGroups(0, 0, [], ['Title']);
+		$aProductGroups = $this->getManager('ProductGroups')->getProductGroups(0, 0, [], ['Title']);
 		foreach ($aProductGroups as $oProductGroup)
 		{
 			$aProductGroupsWithUUIDs[$oProductGroup->UUID] = $oProductGroup;
 		}
-		$aProducts = $this->oApiProductsManager->getProducts($Limit, $Offset, $aSearchFilters);
+		$aProducts = $this->getManager('Products')->getProducts($Limit, $Offset, $aSearchFilters);
 		foreach ($aProducts as &$oProduct)
 		{
 			$oProductGroup = isset($aProductGroupsWithUUIDs[$oProduct->ProductGroupUUID]) ? $aProductGroupsWithUUIDs[$oProduct->ProductGroupUUID] : null;
@@ -698,7 +706,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 		return [
 			'Products' => is_array($aProducts) ? $aProducts : [],
-			'ItemsCount' => (int)$this->oApiProductsManager->getProductsCount($aSearchFilters)
+			'ItemsCount' => (int)$this->getManager('Products')->getProductsCount($aSearchFilters)
 		];
 	}
 
@@ -721,10 +729,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 				'Title' => ['%'.$Search.'%', 'LIKE']
 			];
 		}
-		$aProductGroups = $this->oApiProductGroupsManager->getProductGroups($Limit, $Offset, $aSearchFilters);
+		$aProductGroups = $this->getManager('ProductGroups')->getProductGroups($Limit, $Offset, $aSearchFilters);
 		return [
 			'ProductGroups' => is_array($aProductGroups) ? $aProductGroups : [],
-			'ItemsCount' => (int)$this->oApiProductGroupsManager->getProductGroupsCount($aSearchFilters)
+			'ItemsCount' => (int)$this->getManager('ProductGroups')->getProductGroupsCount($aSearchFilters)
 		];
 	}
 
@@ -744,7 +752,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($ProductId);
+		$oProduct = $this->getManager('Products')->getProductByIdOrUUID($ProductId);
 		if (isset($Title))
 		{
 			$oProduct->Title = $Title;
@@ -793,14 +801,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$oProduct->{self::GetName() . '::MailchimpGroupUUID'} = $MailchimpGroupUUID;
 		}
-		return $this->oApiProductsManager->UpdateProduct($oProduct);
+		return $this->getManager('Products')->UpdateProduct($oProduct);
 	}
 
 	public function UpdateProductGroup($ProductGroupId, $Title = null, $Homepage = null, $ProductCode = null)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($ProductGroupId);
+		$oProductGroup = $this->getManager('ProductGroups')->getProductGroupByIdOrUUID($ProductGroupId);
 		if (!$oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 		{
 			return false;
@@ -817,7 +825,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$oProductGroup->{self::GetName() . '::ProductCode'} = (int) $ProductCode;
 		}
-		return $this->oApiProductGroupsManager->UpdateProductGroup($oProductGroup);
+		return $this->getManager('ProductGroups')->UpdateProductGroup($oProductGroup);
 	}
 
 	public function UpdateSale($SaleId,
@@ -841,12 +849,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		$oSale = $this->oApiSalesManager->getSaleByIdOrUUID((int) $SaleId);
+		$oSale = $this->getManager('Sales')->getSaleByIdOrUUID((int) $SaleId);
 		if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
 		{
 			if (isset($ProductIdOrUUID))
 			{
-				$Product = $this->oApiProductsManager->getProductByIdOrUUID($ProductIdOrUUID);
+				$Product = $this->getManager('Products')->getProductByIdOrUUID($ProductIdOrUUID);
 			}
 			$oSale->ProductUUID = isset($Product, $Product->UUID) ? $Product->UUID : $oSale->ProductUUID;
 			$oSale->Date = isset($Date) ? $Date : $oSale->Date;
@@ -870,7 +878,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			return false;
 		}
 
-		return $this->oApiSalesManager->UpdateSale($oSale);
+		return $this->getManager('Sales')->UpdateSale($oSale);
 	}
 
 	/**
@@ -899,7 +907,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$bResult = false;
 		if ($ProductCode !== 0 && !$CrmProductId)
 		{
-			$oProduct = $this->oApiProductsManager->getDefaultProductByGroupCode($ProductCode);
+			$oProduct = $this->getManager('Products')->getDefaultProductByGroupCode($ProductCode);
 			if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
 			{
 				$CrmProductId = $oProduct->{self::GetName() . '::CrmProductId'};
@@ -957,7 +965,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$mSale->{self::GetName() . '::IsUpgrade'} = $IsUpgrade;
 			$mSale->{self::GetName() . '::PlatformType'} = $PlatformType;
 
-			$bResult = $this->oApiSalesManager->updateSale($mSale);
+			$bResult = $this->getManager('Sales')->updateSale($mSale);
 		}
 
 		if ($bResult)
@@ -971,7 +979,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function CreateProducts()
 	{
 		$bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
-		$aProductGroups = $this->oApiProductGroupsManager->getProductGroups();
+		$aProductGroups = $this->getManager('ProductGroups')->getProductGroups();
 		if (is_array($aProductGroups))
 		{
 			foreach ($aProductGroups as $oProductGroup)
@@ -982,7 +990,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 					$oProduct->ProductGroupUUID = $oProductGroup->UUID;
 					$oProduct->Title = 'Free';
 					$oProduct->{self::GetName() . '::ProductCode'} = $oProductGroup->{self::GetName() . '::ProductCode'};
-					$this->oApiProductsManager->updateProduct($oProduct);
+					$this->getManager('Products')->updateProduct($oProduct);
 				}
 			}
 		}
@@ -1045,17 +1053,17 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oProductGroup = new \Aurora\Modules\SaleObjects\Classes\ProductGroup(self::GetName());
 			$oProductGroup->Title = $aGroup['Title'];
 			$oProductGroup->{self::GetName() . '::ProductCode'} = (int) $aGroup['ProductCode'];
-			$iProductGroupId = $this->oApiProductGroupsManager->createProductGroup($oProductGroup);
+			$iProductGroupId = $this->getManager('ProductGroups')->createProductGroup($oProductGroup);
 			unset($oProductGroup);
 
-			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($iProductGroupId);
+			$oProductGroup = $this->getManager('ProductGroups')->getProductGroupByIdOrUUID($iProductGroupId);
 			$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product(self::GetName());
 			$oProduct->ProductGroupUUID = $oProductGroup->UUID;
 			$oProduct->{self::GetName() . '::IsAutocreated'} = true;
 			$oProduct->Title = $aGroup['Title'] . " free license";
 			$oProduct->{self::GetName() . '::IsDefault'} = true;
 			$oProduct->{self::GetName() . '::CrmProductId'} = "CRM" . $aGroup['ProductCode'];
-			$this->oApiProductsManager->createProduct($oProduct);
+			$this->getManager('Products')->createProduct($oProduct);
 		}
 		\Aurora\System\Api::skipCheckUserRole($bPrevState);
 		return true;
@@ -1091,7 +1099,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oProduct = new \Aurora\Modules\SaleObjects\Classes\Product(self::GetName());
 		if (isset($ProductGroupUUID) && !empty($ProductGroupUUID))
 		{
-			$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($ProductGroupUUID);
+			$oProductGroup = $this->getManager('ProductGroups')->getProductGroupByIdOrUUID($ProductGroupUUID);
 			if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 			{
 				$oProduct->ProductGroupUUID = $oProductGroup->UUID;
@@ -1109,7 +1117,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oProduct->{self::GetName() . '::MailchimpGroupTitle'} = $MailchimpGroupTitle;
 		$oProduct->{self::GetName() . '::MailchimpGroupUUID'} = $MailchimpGroupUUID;
 
-		return $this->oApiProductsManager->createProduct($oProduct);
+		return $this->getManager('Products')->createProduct($oProduct);
 	}
 
 	/**
@@ -1130,7 +1138,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oProductGroup->Description = $Description;
 		$oProductGroup->Homepage = $Homepage;
 
-		return $this->oApiProductGroupsManager->createProductGroup($oProductGroup);
+		return $this->getManager('ProductGroups')->createProductGroup($oProductGroup);
 	}
 
 	/**
@@ -1162,7 +1170,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oContact->{self::GetName() . '::LastName'} = $LastName;
 		$oContact->{self::GetName() . '::Fax'} = $Fax;
 		$oContact->{self::GetName() . '::Salutation'} = $Salutation;
-		return $this->oApiContactsManager->createContact($oContact);
+		return $this->getManager('Contacts')->createContact($oContact);
 	}
 
 	/**
@@ -1182,7 +1190,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oCustomer->Description = $Description;
 		$oCustomer->Status = $Status;
 		$oCustomer->{self::GetName() . '::Language'} = $Language;
-		return $this->oApiCustomersManager->createCustomer($oCustomer);
+		return $this->getManager('Customers')->createCustomer($oCustomer);
 	}
 
 	/**
@@ -1216,7 +1224,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$iCustomerId = $this->CreateCustomer($CustomerTitle, $CustomerDescription, $CustomerStatus, $CustomerLanguage);
 		if ($iCustomerId)
 		{
-			$oCustomer = $this->oApiCustomersManager->getCustomerByIdOrUUID($iCustomerId);
+			$oCustomer = $this->getManager('Customers')->getCustomerByIdOrUUID($iCustomerId);
 		}
 		if (!$oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
 		{
@@ -1227,10 +1235,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$oCompany = new \Aurora\Modules\ContactObjects\Classes\Company(self::GetName());
 			$oCompany->Title = $Company;
 			$oCompany->CustomerUUID = $oCustomer->UUID;
-			$iCompanyId = $this->oApiCompaniesManager->createCompany($oCompany);
+			$iCompanyId = $this->getManager('Companies')->createCompany($oCompany);
 			if ($iCompanyId)
 			{
-				$oCompany = $this->oApiCompaniesManager->getCompanyByIdOrUUID($iCompanyId);
+				$oCompany = $this->getManager('Companies')->getCompanyByIdOrUUID($iCompanyId);
 			}
 			if (!$oCompany instanceof \Aurora\Modules\ContactObjects\Classes\Company)
 			{
@@ -1238,7 +1246,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 		}
 
-		$oContact = $Email ? $this->oApiContactsManager->getContactByEmail($Email) : null;
+		$oContact = $Email ? $this->getManager('Contacts')->getContactByEmail($Email) : null;
 		if (!$oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
 		{
 			if (!empty($ContactFullName) || !empty($Email) || !empty($Address) || !empty($Phone) || !empty($FirstName) || !empty($LastName))
@@ -1280,16 +1288,16 @@ class Module extends \Aurora\System\Module\AbstractModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$mResult = false;
 
-		$oProductGroup = $this->oApiProductGroupsManager->getProductGroupByIdOrUUID($IdOrUUID);
+		$oProductGroup = $this->getManager('ProductGroups')->getProductGroupByIdOrUUID($IdOrUUID);
 
 		if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 		{
-			$aProducts = $this->oApiProductsManager->getProductsByGroup($oProductGroup->UUID);
+			$aProducts = $this->getManager('Products')->getProductsByGroup($oProductGroup->UUID);
 			if (is_array($aProducts) && count($aProducts) > 0)
 			{
 				throw new \Aurora\System\Exceptions\BaseException(Enums\ErrorCodes::DataIntegrity);
 			}
-			$mResult = $this->oApiProductGroupsManager->deleteProductGroup($oProductGroup);
+			$mResult = $this->getManager('ProductGroups')->deleteProductGroup($oProductGroup);
 		}
 		return $mResult;
 	}
@@ -1305,16 +1313,16 @@ class Module extends \Aurora\System\Module\AbstractModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$mResult = false;
 
-		$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($IdOrUUID);
+		$oProduct = $this->getManager('Products')->getProductByIdOrUUID($IdOrUUID);
 		if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product)
 		{
 			$aSearchFilters = ['ProductUUID' => $oProduct->UUID];
-			$aSales = $this->oApiSalesManager->getSales(0, 0, $aSearchFilters, ['UUID']);
+			$aSales = $this->getManager('Sales')->getSales(0, 0, $aSearchFilters, ['UUID']);
 			if (is_array($aSales) && count($aSales) > 0)
 			{
 				throw new \Aurora\System\Exceptions\BaseException(Enums\ErrorCodes::DataIntegrity);
 			}
-			$mResult = $this->oApiProductsManager->deleteProduct($oProduct);
+			$mResult = $this->getManager('Products')->deleteProduct($oProduct);
 		}
 		return $mResult;
 	}
@@ -1331,10 +1339,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		
 		$mResult = false;
 
-		$oContact = $this->oApiContactsManager->getContactByIdOrUUID($IdOrUUID);
+		$oContact = $this->getManager('Contacts')->getContactByIdOrUUID($IdOrUUID);
 		if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
 		{
-			$mResult = $this->oApiContactsManager->deleteContact($oContact);
+			$mResult = $this->getManager('Contacts')->deleteContact($oContact);
 		}
 		
 		return $mResult;
@@ -1369,10 +1377,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 				self::GetName() . '::FirstName' =>['%'.$Search.'%', 'LIKE']
 			]];
 		}
-		$aContacts = $this->oApiContactsManager->getContacts($Limit, $Offset, $aSearchFilters);
+		$aContacts = $this->getManager('Contacts')->getContacts($Limit, $Offset, $aSearchFilters);
 		return [
 			'Contacts' => is_array($aContacts) ? $aContacts : [],
-			'ItemsCount' => (int)$this->oApiContactsManager->getContactsCount($aSearchFilters)
+			'ItemsCount' => (int)$this->getManager('Contacts')->getContactsCount($aSearchFilters)
 		];
 	}
 
@@ -1390,18 +1398,18 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			throw new \Aurora\System\Exceptions\BaseException(\Aurora\System\Exceptions\Errs::Validation_InvalidParameters);
 		}
-		$oContact = $this->oApiContactsManager->getContactByIdOrUUID($ContactUUID);
+		$oContact = $this->getManager('Contacts')->getContactByIdOrUUID($ContactUUID);
 		if ($oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact && isset($oContact->CustomerUUID))
 		{
-			$oCustomer = $this->oApiCustomersManager->getCustomerByIdOrUUID($oContact->CustomerUUID);
+			$oCustomer = $this->getManager('Customers')->getCustomerByIdOrUUID($oContact->CustomerUUID);
 			if ($oCustomer instanceof \Aurora\Modules\SaleObjects\Classes\Customer)
 			{
 				$aSalesFilters = ['CustomerUUID' => $oCustomer->UUID];
-				$aSales = $this->oApiSalesManager->getSales(0, 0, $aSalesFilters);
+				$aSales = $this->getManager('Sales')->getSales(0, 0, $aSalesFilters);
 
 				$aResult = [
 					'Sales' => is_array($aSales) ? $aSales : [],
-					'SalesCount' => $this->oApiSalesManager->getSalesCount($aSalesFilters)
+					'SalesCount' => $this->getManager('Sales')->getSalesCount($aSalesFilters)
 				];
 			}
 		}
@@ -1433,7 +1441,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		$oContact = $this->oApiContactsManager->getContactByIdOrUUID($ContactId);
+		$oContact = $this->getManager('Contacts')->getContactByIdOrUUID($ContactId);
 		if (!$oContact instanceof \Aurora\Modules\ContactObjects\Classes\Contact)
 		{
 			return false;
@@ -1482,7 +1490,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		{
 			$oContact->{self::GetName() . '::FirstName'} = $FirstName;
 		}
-		return $this->oApiContactsManager->UpdateContact($oContact);
+		return $this->getManager('Contacts')->UpdateContact($oContact);
 	}
 
 	public function EntryDownloadEmlFile()
@@ -1492,7 +1500,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$UUID = (string) \Aurora\System\Application::GetPathItemByIndex(1, '');
 		if (!empty($UUID))
 		{
-			$oSale = $this->oApiSalesManager->getSaleByIdOrUUID($UUID);
+			$oSale = $this->getManager('Sales')->getSaleByIdOrUUID($UUID);
 			if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
 			{
 				$sFileName = $oSale->{self::GetName() . '::MessageSubject'} . '.eml';
@@ -1515,10 +1523,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$mResult = false;
-		$oSale = $this->oApiSalesManager->getSaleByIdOrUUID($UUID);
+		$oSale = $this->getManager('Sales')->getSaleByIdOrUUID($UUID);
 		if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale)
 		{
-			$mResult = $this->oApiSalesManager->deleteSale($oSale);
+			$mResult = $this->getManager('Sales')->deleteSale($oSale);
 		}
 		return $mResult;
 	}
@@ -1612,13 +1620,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$oMailchimpList->Description = $Description;
 		$oMailchimpList->ListId = $ListId;
 
-		return $this->oApiMailchimpManager->createMailchimpList($oMailchimpList);
+		return $this->getManager('Mailchimp')->createMailchimpList($oMailchimpList);
 	}
 
 	public function GetMailchimpList()
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
-		return $this->oApiMailchimpManager->getMailchimpList();
+		return $this->getManager('Mailchimp')->getMailchimpList();
 	}
 
 	public function UpdateMailchimpList($Title = null, $Description = null, $ListId = null)
@@ -1626,7 +1634,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		$bResult = false;
-		$oMailchimpList = $this->oApiMailchimpManager->getMailchimpList();
+		$oMailchimpList = $this->getManager('Mailchimp')->getMailchimpList();
 		if (!$oMailchimpList instanceof \Aurora\Modules\Sales\Classes\MailchimpList)
 		{
 			$bResult = !!$this->CreateMailchimpList($Title, $ListId, $Description);
@@ -1645,7 +1653,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			{
 				$oMailchimpList->Description = $Description;
 			}
-			$bResult = !!$this->oApiMailchimpManager->updateMailchimpList($oMailchimpList);
+			$bResult = !!$this->getManager('Mailchimp')->updateMailchimpList($oMailchimpList);
 		}
 		return $bResult;
 	}
@@ -1654,7 +1662,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		return $this->oApiMailchimpManager->addMemberToList($Email);
+		return $this->getManager('Mailchimp')->addMemberToList($Email);
 	}
 
 	public function GetSettings()
@@ -1679,7 +1687,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
 		return  [
-			'Groups' =>$this->oApiMailchimpManager->getGroups()
+			'Groups' =>$this->getManager('Mailchimp')->getGroups()
 		];
 	}
 
@@ -1694,18 +1702,18 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		if ($oSale instanceof \Aurora\Modules\SaleObjects\Classes\Sale && !empty($aArgs['Email']) && !empty($oSale->ProductUUID))
 		{
-			$oProduct = $this->oApiProductsManager->getProductByIdOrUUID($oSale->ProductUUID);
+			$oProduct = $this->getManager('Products')->getProductByIdOrUUID($oSale->ProductUUID);
 
 			if ($oProduct instanceof \Aurora\Modules\SaleObjects\Classes\Product
 				&& isset($oProduct->{self::GetName() . '::MailchimpGroupUUID'})
 				&& $aArgs['Subscribe'] === true
 			)
 			{
-				$oMember = $this->oApiMailchimpManager->getMemberByEmail($aArgs['Email']);
+				$oMember = $this->getManager('Mailchimp')->getMemberByEmail($aArgs['Email']);
 				if (!$oMember)
 				{//add member if not exists
 					$this->AddMemeberToMailchimpList($aArgs['Email']);
-					$oMember = $this->oApiMailchimpManager->getMemberByEmail($aArgs['Email']);
+					$oMember = $this->getManager('Mailchimp')->getMemberByEmail($aArgs['Email']);
 				}
 				if (isset($oMember['interests']) && is_array($oMember['interests']))
 				{
@@ -1716,7 +1724,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 							$oMember['interests'][$GroupUUID] = true;
 						}
 					}
-					$this->oApiMailchimpManager->updateMember($oMember);
+					$this->getManager('Mailchimp')->updateMember($oMember);
 				}
 			}
 		}

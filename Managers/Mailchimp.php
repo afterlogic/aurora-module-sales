@@ -27,7 +27,7 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 	{
 		parent::__construct($oModule);
 
-		$this->oEavManager = new \Aurora\System\Managers\Eav();
+		$this->oEavManager = \Aurora\System\Managers\Eav::getInstance();
 		if (!empty($this->GetModule()->getConfig('MailchimpApiKey', '')))
 		{
 			$this->oMailchimpApi = new \DrewM\MailChimp\MailChimp($this->GetModule()->getConfig('MailchimpApiKey', ''));
@@ -69,7 +69,7 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 	{
 		if (!$this->oMailchimpList)
 		{
-			$aResults = $this->oEavManager->getEntities(\Aurora\Modules\Sales\Module::getNamespace() . '\Classes\MailchimpList',
+			$aResults = $this->oEavManager->getEntities(\Aurora\Modules\Sales\Classes\MailchimpList::class,
 				['Title', 'Description', 'ListId']);
 
 			if (is_array($aResults) && isset($aResults[0]))
@@ -169,13 +169,18 @@ class Mailchimp extends \Aurora\System\Managers\AbstractManager
 
 	public function ping()
 	{
-		$this->oMailchimpApi->get('/ping');
-		if ($this->oMailchimpApi->getLastError())
+		$mResult = false;
+		if ($this->oMailchimpApi)
 		{
-			\Aurora\System\Api::Log('Error: Mailchimp connection failed. ' . $this->oMailchimpApi->getLastError(), \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
-			return false;
+			$this->oMailchimpApi->get('/ping');
+			if ($this->oMailchimpApi->getLastError())
+			{
+				\Aurora\System\Api::Log('Error: Mailchimp connection failed. ' . $this->oMailchimpApi->getLastError(), \Aurora\System\Enums\LogLevel::Full, 'mailchimp-');
+			}
+			$mResult = true;
 		}
-		return true;
+
+		return $mResult;
 	}
 
 	public function getMembers()

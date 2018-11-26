@@ -26,7 +26,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	{
 		parent::__construct($oModule);
 
-		$this->oEavManager = new \Aurora\System\Managers\Eav();
+		$this->oEavManager = \Aurora\System\Managers\Eav::getInstance();
 	}
 
 	/**
@@ -79,7 +79,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 			if ($oProductGroup instanceof \Aurora\Modules\SaleObjects\Classes\ProductGroup)
 			{
 				$aResults = $this->oEavManager->getEntities(
-				\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Product',
+				\Aurora\Modules\SaleObjects\Classes\Product::class,
 					[],
 					0,
 					1,
@@ -129,7 +129,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 		if (!empty($sShareItProductId))
 		{
 			$aResults = $this->oEavManager->getEntities(
-			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Product',
+			\Aurora\Modules\SaleObjects\Classes\Product::class,
 				[],
 				0,
 				0,
@@ -160,7 +160,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 		if (!empty($sCrmProductId))
 		{
 			$aResults = $this->oEavManager->getEntities(
-			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Product',
+			\Aurora\Modules\SaleObjects\Classes\Product::class,
 				[],
 				0,
 				0,
@@ -211,7 +211,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 		if ($sName !== "")
 		{
 			$aResults = $this->oEavManager->getEntities(
-			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Product',
+			\Aurora\Modules\SaleObjects\Classes\Product::class,
 				[],
 				0,
 				0,
@@ -254,7 +254,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 			];
 		}
 		$aResults = $this->oEavManager->getEntities(
-		\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Product',
+		\Aurora\Modules\SaleObjects\Classes\Product::class,
 			[],
 			0,
 			0,
@@ -279,7 +279,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	{
 		$aProducts = [];
 		$aResults = $this->oEavManager->getEntities(
-		\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Product',
+		\Aurora\Modules\SaleObjects\Classes\Product::class,
 			$aViewAttributes,
 			$iOffset,
 			$iLimit,
@@ -302,7 +302,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	{
 		$iResult = 0;
 		$iResult = $this->oEavManager->getEntitiesCount(
-			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Product',
+			\Aurora\Modules\SaleObjects\Classes\Product::class,
 			$aSearchFilters
 		);
 		return $iResult;

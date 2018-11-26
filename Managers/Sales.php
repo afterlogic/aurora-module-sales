@@ -26,7 +26,7 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 	{
 		parent::__construct($oModule);
 
-		$this->oEavManager = new \Aurora\System\Managers\Eav();
+		$this->oEavManager = \Aurora\System\Managers\Eav::getInstance();
 	}
 
 	/**
@@ -71,7 +71,7 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 
 		$aSearchFilters = $this->getFilters($aSearchFilters);
 		$mResult = $this->oEavManager->getEntities(
-			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Sale',
+			\Aurora\Modules\SaleObjects\Classes\Sale::class,
 			$aViewAttributes,
 			$iOffset,
 			$iLimit,
@@ -90,7 +90,7 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 	{
 		$aSearchFilters = $this->getFilters($aSearchFilters);
 		$iResult = $this->oEavManager->getEntitiesCount(
-			\Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Sale',
+			\Aurora\Modules\SaleObjects\Classes\Sale::class,
 			$aSearchFilters
 		);
 		return $iResult;
@@ -107,7 +107,7 @@ class Sales extends \Aurora\System\Managers\AbstractManager
 		$mSale = false;
 		if ($mIdOrUUID)
 		{
-			$mSale = $this->oEavManager->getEntity($mIdOrUUID, \Aurora\Modules\SaleObjects\Module::getNamespace() . '\Classes\Sale');
+			$mSale = $this->oEavManager->getEntity($mIdOrUUID, \Aurora\Modules\SaleObjects\Classes\Sale::class);
 		}
 		else
 		{
