@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2018, Afterlogic Corp.
+ * @copyright Copyright (c) 2019, Afterlogic Corp.
  * @license AGPL-3.0 or AfterLogic Software License
  */
 
