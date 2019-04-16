@@ -1,6 +1,6 @@
 <?php
 /**
- * This code is licensed under AGPLv3 license or AfterLogic Software License
+ * This code is licensed under AGPLv3 license or Afterlogic Software License
  * if commercial version of the product was purchased.
  * For full statements of the licenses see LICENSE-AFTERLOGIC and LICENSE-AGPL3 files.
  */
@@ -9,7 +9,7 @@ namespace Aurora\Modules\Sales;
 
 /**
  * @license https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0
- * @license https://afterlogic.com/products/common-licensing AfterLogic Software License
+ * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
  * @copyright Copyright (c) 2019, Afterlogic Corp.
  *
  * @package Modules
@@ -1010,12 +1010,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 			["Title" => "Undefined 7","ProductCode" => "7"],
 			["Title" => "Undefined 11","ProductCode" => "11"],
 			["Title" => "Undefined 16","ProductCode" => "16"],
-			["Title" => "AfterLogic WebMail Pro ASP.NET","ProductCode" => "17"],
+			["Title" => "Afterlogic WebMail Pro ASP.NET","ProductCode" => "17"],
 			["Title" => "Undefined 18","ProductCode" => "18"],
 			["Title" => "Undefined 19","ProductCode" => "19"],
 			["Title" => "Undefined 20","ProductCode" => "20"],
 			["Title" => "Undefined 21","ProductCode" => "21"],
-			["Title" => "AfterLogic WebMail Pro PHP","ProductCode" => "22"],
+			["Title" => "Afterlogic WebMail Pro PHP","ProductCode" => "22"],
 			["Title" => "Undefined 24","ProductCode" => "24"],
 			["Title" => "Undefined 30","ProductCode" => "30"],
 			["Title" => "Undefined 31","ProductCode" => "31"],
@@ -1031,7 +1031,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			["Title" => "PRODUCT_XMAIL_SERVER_PRO_WIN","ProductCode" => "41"],
 			["Title" => "PRODUCT_XMAIL_SERVER_PRO_LINUX","ProductCode" => "42"],
 			["Title" => "Undefined 43","ProductCode" => "43"],
-			["Title" => "AfterLogic MailSuite Pro","ProductCode" => "44"],
+			["Title" => "Afterlogic MailSuite Pro","ProductCode" => "44"],
 			["Title" => "Undefined 45","ProductCode" => "45"],
 			["Title" => "Undefined 46","ProductCode" => "46"],
 			["Title" => "MailBee.NET IMAP Bundle","ProductCode" => "48"],
