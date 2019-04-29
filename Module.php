@@ -1497,7 +1497,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
-		$UUID = (string) \Aurora\System\Application::GetPathItemByIndex(1, '');
+		$UUID = (string) \Aurora\System\Router::getItemByIndex(1, '');
 		if (!empty($UUID))
 		{
 			$oSale = $this->getManager('Sales')->getSaleByIdOrUUID($UUID);
