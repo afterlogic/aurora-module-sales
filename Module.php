@@ -76,7 +76,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			Enums\ErrorCodes::MailchimpConnectionFailed		=> $this->i18N('ERROR_MAILCHIMP_CONNECTION_FAILED')
 		];
 
-		$this->subscribeEvent('Contacts::GetStorage', array($this, 'onGetStorage'));
+		$this->subscribeEvent('Contacts::GetStorages', array($this, 'onGetStorages'));
 		$this->subscribeEvent('Sales::CreateSale::after', array($this, 'onCreateSale'));
 
 		$this->AddEntries(
@@ -1272,7 +1272,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		return $oCustomer;
 	}
 
-	public function onGetStorage(&$aStorages)
+	public function onGetStorages(&$aStorages)
 	{
 		$aStorages[] = $this->sStorage;
 	}
