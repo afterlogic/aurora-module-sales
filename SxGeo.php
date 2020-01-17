@@ -207,7 +207,7 @@ class SxGeo {
 			$type0 = $type{0};
 			if($empty) {
 				$unpacked[$name] = $type0 == 'b' || $type0 == 'c' ? '' : 0;
-				continue;
+				continue 2;
 			}
 			switch($type0){
 				case 't':
