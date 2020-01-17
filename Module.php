@@ -1548,7 +1548,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			{
 				if ((int) $aSale['shareit_product_id'] < 1)
 				{
-					continue 2;
+					continue;
 				}
 				$aAdressParts = [$aSale['street'], $aSale['city'], $aSale['state'], $aSale['zip'], $aSale['country']];
 				$aAdressPartsClear = [];
