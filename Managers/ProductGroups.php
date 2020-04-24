@@ -163,7 +163,7 @@ class ProductGroups extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function deleteProductGroup(\Aurora\Modules\SaleObjects\Classes\ProductGroup $oProductGroup)
 	{
-		$bResult = $this->oEavManager->deleteEntity($oProductGroup->EntityId);
+		$bResult = $this->oEavManager->deleteEntity($oProductGroup->EntityId, \Aurora\Modules\SaleObjects\Classes\ProductGroup::class);
 		return $bResult;
 	}
 }

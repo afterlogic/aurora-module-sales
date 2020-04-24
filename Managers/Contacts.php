@@ -198,7 +198,7 @@ class Contacts extends \Aurora\System\Managers\AbstractManager
 	 */
 	public function deleteContact(\Aurora\Modules\ContactObjects\Classes\Contact $oContact)
 	{
-		$bResult = $this->oEavManager->deleteEntity($oContact->EntityId);
+		$bResult = $this->oEavManager->deleteEntity($oContact->EntityId, \Aurora\Modules\ContactObjects\Classes\Contact::class);
 		return $bResult;
 	}
 }

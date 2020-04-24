@@ -316,7 +316,7 @@ class Products extends \Aurora\System\Managers\AbstractManager
 	public function deleteProduct(\Aurora\Modules\SaleObjects\Classes\Product $oProduct)
 	{
 		$bResult = false;
-		$bResult = $this->oEavManager->deleteEntity($oProduct->EntityId);
+		$bResult = $this->oEavManager->deleteEntity($oProduct->EntityId, \Aurora\Modules\SaleObjects\Classes\Product::class);
 		return $bResult;
 	}
 
